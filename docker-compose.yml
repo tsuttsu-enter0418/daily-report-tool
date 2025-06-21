@@ -1,0 +1,67 @@
+version: "3.8"
+
+services:
+  # データベース（PostgreSQL）
+  database:
+    image: postgres:15
+    container_name: daily-report-tool-db
+    environment:
+      - POSTGRES_DB: daily_report_tool
+        POSTGRES_USER: admin
+        POSTGRES_PASSWORD: reportAdmin
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - daily-report-tool-network
+
+  # バックエンド（Spring Boot）
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: daily-report-tool-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - DB_HOST=database
+      - DB_PORT=5432
+      - DB_NAME=daily_report_tool
+      - DB_USER=admin
+      - DB_PASSWORD=reportAdmin
+    depends_on:
+      - database
+    networks:
+      - daily-report-network
+    volumes:
+      - ./backend:/app
+    command: ["./mvnw", "spring-boot:run"]
+
+  # フロントエンド（React + TypeScript）
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: daily-report-tool-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+    depends_on:
+      - backend
+    networks:
+      - daily-report-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: ["npm", "start"]
+
+volumes:
+  postgres_data:
+
+networks:
+  daily-report-tool-network:
+    driver: bridge
