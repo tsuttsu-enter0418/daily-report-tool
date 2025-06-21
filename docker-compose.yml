@@ -6,9 +6,9 @@ services:
     image: postgres:15
     container_name: daily-report-tool-db
     environment:
-      - POSTGRES_DB: daily_report_tool
-        POSTGRES_USER: admin
-        POSTGRES_PASSWORD: reportAdmin
+      POSTGRES_DB: daily_report_tool
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: reportAdmin
     ports:
       - "5432:5432"
     volumes:
@@ -35,10 +35,10 @@ services:
     depends_on:
       - database
     networks:
-      - daily-report-network
+      - daily-report-tool-network
     volumes:
       - ./backend:/app
-    command: ["./mvnw", "spring-boot:run"]
+    command: ["./mvn", "spring-boot:run"]
 
   # フロントエンド（React + TypeScript）
   frontend:
@@ -49,15 +49,15 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_API_URL=http://localhost:8080
+      - VITE_API_URL=http://localhost:8080
     depends_on:
       - backend
     networks:
-      - daily-report-network
+      - daily-report-tool-network
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    command: ["npm", "start"]
+    command: ["npm", "run", "dev"]
 
 volumes:
   postgres_data:
