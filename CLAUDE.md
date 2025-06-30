@@ -118,12 +118,12 @@ export interface UserInfo {
 
 ##### 選択理由
 
-| 項目 | type | interface | 採用理由 |
-|------|------|-----------|----------|
-| **型合成** | ✅ `&` 演算子 | ❌ `extends` のみ | 柔軟な合成 |
-| **ユニオン型** | ✅ 直接定義可能 | ❌ 不可 | 状態管理で有用 |
-| **計算型** | ✅ `keyof`, `Pick` 等 | ❌ 制限あり | 動的型生成 |
-| **プリミティブ** | ✅ `string`, `number` | ❌ オブジェクトのみ | 統一性 |
+| 項目             | type                  | interface           | 採用理由       |
+| ---------------- | --------------------- | ------------------- | -------------- |
+| **型合成**       | ✅ `&` 演算子         | ❌ `extends` のみ   | 柔軟な合成     |
+| **ユニオン型**   | ✅ 直接定義可能       | ❌ 不可             | 状態管理で有用 |
+| **計算型**       | ✅ `keyof`, `Pick` 等 | ❌ 制限あり         | 動的型生成     |
+| **プリミティブ** | ✅ `string`, `number` | ❌ オブジェクトのみ | 統一性         |
 
 ##### 実装例
 
@@ -133,14 +133,14 @@ export type UserRole = "管理者" | "上長" | "部下";
 
 // 型合成
 export type LoginFormData = LoginRequest;
-export type CustomButtonProps = Omit<ButtonProps, 'loading'> & {
+export type CustomButtonProps = Omit<ButtonProps, "loading"> & {
   loading?: boolean;
-  variant?: 'primary' | 'secondary';
+  variant?: "primary" | "secondary";
 };
 
 // 計算型
 export type UserKeys = keyof UserInfo;
-export type PublicUserInfo = Pick<UserInfo, 'username' | 'role'>;
+export type PublicUserInfo = Pick<UserInfo, "username" | "role">;
 ```
 
 ##### フォルダ構成
@@ -202,6 +202,8 @@ src/types/
 ✅ **Lombok 導入**: バックエンドのボイラープレートコード削減
 ✅ **OpenAPI/Swagger**: 自動生成 API 仕様書とテスト環境
 ✅ **型定義統一**: type エイリアス優先による型安全性と柔軟性向上
+✅ **上司ダッシュボード**: レスポンシブ対応の部下日報管理画面実装
+✅ **暖色系デザインシステム**: フレッシュで暖かみのあるUI/UXデザイン実装
 
 ### 実装済み機能
 
@@ -218,6 +220,9 @@ src/types/
 - **Jotai 状態管理**: ユーザー情報の全画面参照、ローカルストレージ同期
 - **型定義統一**: type エイリアス使用による型安全性と柔軟性向上
 - **カスタムフック**: useLogin, useAuth によるロジック分離
+- **上司ダッシュボード**: SimpleGrid によるレスポンシブ日報一覧表示
+- **暖色系デザインシステム**: オレンジ・アンバー基調のフレッシュなUIデザイン
+- **レスポンシブ対応**: モバイル1列、タブレット2列、PC3列の自動調整レイアウト
 
 #### バックエンド
 
@@ -235,6 +240,14 @@ src/types/
 - users テーブル（id, username, email, password, role）
 - daily_reports テーブル（基本設計）
 - 初期テストデータ（admin/password）
+
+### UI/UXデザインシステム
+
+- **暖色系カラーパレット**: オレンジ・アンバー・イエロー基調
+- **グラデーション背景**: 複数色による滑らかなフレッシュデザイン
+- **カードUIシステム**: 半透明背景・暖色ボーダー・ホバーアニメーション
+- **StatusBadge**: 暖色系統一されたバッジシステム（success: teal, warning: yellow等）
+- **レスポンシブレイアウト**: SimpleGridによる画面幅対応（1/2/3列）
 
 ### 開発モード
 
@@ -262,3 +275,9 @@ src/types/
 - 長時間処理（Docker build 等）は事前に時間を伝える
 - メモリ大量消費処理はこまめに確認
 - テスト実行時にメモリ不足が起きたら報告
+
+## Git Commit ルール
+
+- コミットは 1 機能改修するたびにコミットする
+- コミットはフロントエンド、バックエンド混在すると見づらいので分けてコミットする
+- コミットコメントは簡潔に箇条書きで行う

@@ -68,6 +68,21 @@ export const MessageConst = {
     REAL_API_SWITCH_INSTRUCTION: "実際のAPIを使用する場合は npm run dev:api で起動してください。",
   },
 
+  // ===== ダッシュボード関連 =====
+  DASHBOARD: {
+    TEAM_REPORTS_TITLE: "チーム日報",
+    SUPERVISOR_GREETING: (name: string) => `${name} さんのチーム管理画面`,
+    FILTER_ALL: "すべて",
+    FILTER_COMPLETED: "提出済み",
+    FILTER_PENDING: "確認待ち",
+    STATUS_COMPLETED: "提出済み",
+    STATUS_PENDING: "確認待ち",
+    STATUS_DRAFT: "下書き",
+    NO_REPORTS_TITLE: "まだ日報が提出されていません",
+    NO_REPORTS_MESSAGE: "部下からの日報提出をお待ちください",
+    MOCK_DASHBOARD_DESCRIPTION: "現在はモックデータを表示しています。実際の日報機能は今後実装予定です。",
+  },
+
   // ===== ボタン・アクション関連 =====
   ACTION: {
     LOGIN: "ログイン",
@@ -83,6 +98,9 @@ export const MessageConst = {
     NEXT: "次へ",
     CONFIRM: "確認",
     RETRY: "再試行",
+    VIEW_TEAM_REPORTS: "📊 チーム日報を確認",
+    CREATE_REPORT: "📝 日報を作成",
+    VIEW_HISTORY: "📖 自分の日報履歴",
   },
 
   // ===== フォームラベル関連 =====
@@ -102,14 +120,49 @@ export const MessageConst = {
     SEARCH: "検索...",
   },
 
-  // ===== 日報関連（将来拡張用） =====
+  // ===== 日報関連 =====
   REPORT: {
+    // 成功・失敗メッセージ
     CREATE_SUCCESS: "日報を作成しました",
     UPDATE_SUCCESS: "日報を更新しました",
     DELETE_SUCCESS: "日報を削除しました",
+    SAVE_DRAFT_SUCCESS: "下書きを保存しました",
     CREATE_FAILED: "日報の作成に失敗しました",
     UPDATE_FAILED: "日報の更新に失敗しました",
     DELETE_FAILED: "日報の削除に失敗しました",
     NOT_FOUND: "日報が見つかりません",
+    
+    // フォームタイトル・ラベル
+    CREATE_FORM_TITLE: "日報作成",
+    EDIT_FORM_TITLE: "日報編集",
+    WORK_CONTENT_LABEL: "今日の作業内容",
+    WORK_CONTENT_PLACEHOLDER: "今日行った作業内容を詳しく記載してください...",
+    
+    // バリデーション
+    WORK_CONTENT_REQUIRED: "作業内容は必須です",
+    WORK_CONTENT_MIN_LENGTH: (min: number) => `作業内容は${min}文字以上で入力してください`,
+    WORK_CONTENT_MAX_LENGTH: (max: number) => `作業内容は${max}文字以内で入力してください`,
+    
+    // アクション
+    SUBMIT_REPORT: "日報を提出",
+    SAVE_DRAFT: "下書き保存",
+    EDIT_REPORT: "編集",
+    DELETE_REPORT: "削除",
+    
+    // 説明・ガイド
+    FORM_DESCRIPTION: "本日の作業内容を記入して日報を作成してください。",
+    DRAFT_AUTO_SAVE: "内容は自動的に下書きとして保存されます。",
+    SUBMIT_CONFIRMATION: "日報を提出しますか？提出後は上司に通知されます。",
+    
+    // 一覧画面
+    LIST_TITLE: "自分の日報履歴",
+    LIST_DESCRIPTION: "過去に作成した日報の一覧を確認できます。",
+    NO_REPORTS_MESSAGE: "まだ日報を作成していません。",
+    CREATE_FIRST_REPORT: "最初の日報を作成しましょう。",
+    FILTER_ALL_REPORTS: "すべて",
+    FILTER_SUBMITTED: "提出済み",
+    FILTER_DRAFTS: "下書き",
+    SORT_BY_DATE: "作成日順",
+    SORT_BY_STATUS: "ステータス順",
   },
 } as const;

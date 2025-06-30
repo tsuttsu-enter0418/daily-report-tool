@@ -29,31 +29,36 @@ type StatusBadgeProps = {
 const getColorScheme = (status: StatusBadgeProps["status"]) => {
   switch (status) {
     case "dev-mock":
-      return "blue";
+      return "orange";
     case "dev-api":
-      return "green";
+      return "teal";
     case "production":
-      return "purple";
+      return "pink";
     case "success":
-      return "green";
+      return "teal";
     case "warning":
       return "yellow";
     case "error":
       return "red";
     default:
-      return "gray";
+      return "orange";
   }
 };
 
 export const StatusBadge = ({ 
   status, 
   children, 
-  variant = "outline" 
+  variant = "solid" 
 }: StatusBadgeProps) => {
   return (
     <Badge 
       colorScheme={getColorScheme(status)} 
       variant={variant}
+      fontWeight="semibold"
+      fontSize="xs"
+      px={3}
+      py={1}
+      borderRadius="full"
     >
       {children}
     </Badge>

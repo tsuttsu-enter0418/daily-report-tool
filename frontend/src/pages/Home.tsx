@@ -1,4 +1,5 @@
 import { Box, Heading, Text, VStack, HStack, Badge } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../components/atoms";
 import { StatusBadge } from "../components/molecules";
 import { useAuth } from "../hooks";
@@ -20,10 +21,26 @@ import { MessageConst } from "../constants/MessageConst";
  */
 export const Home = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   
   // 開発モードかどうかの判定
   const isDevelopment = import.meta.env.DEV;
   const useRealAPI = import.meta.env.VITE_USE_REAL_API === 'true';
+
+  // 上長・管理者かどうかの判定
+  const canAccessSupervisorDashboard = user?.role === "上長" || user?.role === "管理者";
+
+  const handleSupervisorDashboard = () => {
+    navigate("/supervisor");
+  };
+
+  const handleCreateReport = () => {
+    navigate("/report/create");
+  };
+
+  const handleViewHistory = () => {
+    navigate("/report/list");
+  };
 
   return (
     <Box p={8}>
@@ -58,6 +75,30 @@ export const Home = () => {
               <Text fontSize="sm" color="gray.600">
                 ID: {user.id} | Email: {user.email || "未設定"}
               </Text>
+            </VStack>
+          </Box>
+        )}
+
+        {/* 役職別アクション */}
+        {user && (
+          <Box p={4} bg="gray.50" borderRadius="md" w="full">
+            <VStack align="start" spacing={3}>
+              <Text fontSize="md" fontWeight="semibold" color="gray.700">
+                利用可能な機能
+              </Text>
+              <HStack spacing={3}>
+                {canAccessSupervisorDashboard && (
+                  <Button variant="primary" onClick={handleSupervisorDashboard}>
+                    {MessageConst.ACTION.VIEW_TEAM_REPORTS}
+                  </Button>
+                )}
+                <Button variant="secondary" onClick={handleCreateReport}>
+                  {MessageConst.ACTION.CREATE_REPORT}
+                </Button>
+                <Button variant="secondary" onClick={handleViewHistory}>
+                  {MessageConst.ACTION.VIEW_HISTORY}
+                </Button>
+              </HStack>
             </VStack>
           </Box>
         )}
