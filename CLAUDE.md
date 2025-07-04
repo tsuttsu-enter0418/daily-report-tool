@@ -204,6 +204,9 @@ src/types/
 ✅ **型定義統一**: type エイリアス優先による型安全性と柔軟性向上
 ✅ **上司ダッシュボード**: レスポンシブ対応の部下日報管理画面実装
 ✅ **暖色系デザインシステム**: フレッシュで暖かみのあるUI/UXデザイン実装
+✅ **データベース設計統一**: DATABASE_DESIGN.md準拠の完全スキーマ実装
+✅ **日報CRUD API**: DailyReport完全実装（Entity・Repository・Service・Controller）
+✅ **上司-部下関係**: ユーザー階層管理・権限制御機能実装
 
 ### 実装済み機能
 
@@ -234,12 +237,21 @@ src/types/
 - **Lombok 導入**: @Data, @Builder, @NoArgsConstructor 等でボイラープレート削減
 - **OpenAPI/Swagger**: 自動生成 API 仕様書（http://localhost:8080/swagger-ui.html）
 - **型安全 DTO**: LoginRequest/Response の完全型定義
+- **日報CRUD API**: 完全実装済み（作成・取得・更新・削除）
+- **上司-部下関係**: supervisor_id による階層管理実装
+- **権限制御**: 本人・上司のみアクセス可能な認可システム
+- **1日1件制限**: ユニーク制約による重複防止機能
+- **ステータス管理**: 下書き・提出済みの状態管理
 
 #### データベース
 
-- users テーブル（id, username, email, password, role）
-- daily_reports テーブル（基本設計）
-- 初期テストデータ（admin/password）
+- **users テーブル**: 拡張済み（id, username, email, password, role, display_name, supervisor_id, is_active）
+- **daily_reports テーブル**: 完全実装（id, user_id, title, work_content, status, report_date, submitted_at）
+- **teams・user_teams テーブル**: チーム管理機能（設計完了・実装準備完了）
+- **インデックス**: パフォーマンス最適化済み
+- **制約**: 1日1件制限・文字数制限・外部キー制約
+- **トリガー**: updated_at自動更新機能
+- **初期データ**: 階層関係・チーム・サンプル日報データ
 
 ### UI/UXデザインシステム
 
