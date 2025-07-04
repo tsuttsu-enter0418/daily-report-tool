@@ -2,6 +2,7 @@ import { Box, VStack, Heading, Card, Text } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { useMemo, memo } from "react";
 import { Button } from "../components/atoms";
 import { InputField, StatusBadge } from "../components/molecules";
 import { useLogin, type LoginFormData } from "../hooks";
@@ -35,12 +36,12 @@ const schema = yup.object({
  * - コンテンツ: 中央配置のカード（最大400px）
  * - レスポンシブ対応済み
  */
-export const Login = () => {
+const LoginComponent = () => {
   const { isLoading, login } = useLogin();
 
-  // 開発モードかどうかの判定
-  const isDevelopment = import.meta.env.DEV;
-  const useRealAPI = import.meta.env.VITE_USE_REAL_API === "true";
+  // 開発モードかどうかの判定（メモ化）
+  const isDevelopment = useMemo(() => import.meta.env.DEV, []);
+  const useRealAPI = useMemo(() => import.meta.env.VITE_USE_REAL_API === "true", []);
 
   const {
     register,
@@ -49,6 +50,9 @@ export const Login = () => {
   } = useForm<LoginFormData>({
     resolver: yupResolver(schema),
   });
+
+  // フォーム送信ハンドラーのメモ化
+  const onSubmit = useMemo(() => handleSubmit(login), [handleSubmit, login]);
 
   return (
     <Box minH="100vh" w="100vw" bg="gray.50">
@@ -82,7 +86,7 @@ export const Login = () => {
                 </StatusBadge>
               )}
 
-              <Box as="form" onSubmit={handleSubmit(login)} w="full">
+              <Box as="form" onSubmit={onSubmit} w="full">
                 <VStack gap={4}>
                   <InputField
                     label={MessageConst.LABEL.USERNAME}
@@ -124,3 +128,6 @@ export const Login = () => {
     </Box>
   );
 };
+
+// メモ化による再レンダリング最適化
+export const Login = memo(LoginComponent);

@@ -3,7 +3,7 @@ import {
   type ButtonProps,
   Spinner,
 } from "@chakra-ui/react";
-import { forwardRef } from "react";
+import { forwardRef, useMemo } from "react";
 import { type ButtonVariant } from "../../types";
 
 /**
@@ -88,7 +88,7 @@ const getVariantStyles = (variant: CustomButtonProps["variant"]) => {
   }
 };
 
-export const Button = forwardRef<HTMLButtonElement, CustomButtonProps>(
+const ButtonComponent = forwardRef<HTMLButtonElement, CustomButtonProps>(
   (
     {
       children,
@@ -104,8 +104,8 @@ export const Button = forwardRef<HTMLButtonElement, CustomButtonProps>(
     },
     ref
   ) => {
-    const variantStyles = getVariantStyles(variant);
-    const isDisabled = disabled || loading;
+    const variantStyles = useMemo(() => getVariantStyles(variant), [variant]);
+    const isDisabled = useMemo(() => disabled || loading, [disabled, loading]);
 
     return (
       <ChakraButton
@@ -141,4 +141,7 @@ export const Button = forwardRef<HTMLButtonElement, CustomButtonProps>(
   }
 );
 
-Button.displayName = "Button";
+ButtonComponent.displayName = "Button";
+
+// メモ化による再レンダリング最適化
+export const Button = ButtonComponent;

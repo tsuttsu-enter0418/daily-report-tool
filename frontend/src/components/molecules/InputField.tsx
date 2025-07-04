@@ -1,5 +1,5 @@
 import { Field, Input } from "@chakra-ui/react";
-import { forwardRef, useId } from "react";
+import { forwardRef, useId, useMemo, memo } from "react";
 import { type ValidationState } from "../../types";
 
 /**
@@ -33,7 +33,7 @@ type InputFieldProps = ValidationState & {
   [key: string]: any;
 };
 
-export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
+const InputFieldComponent = forwardRef<HTMLInputElement, InputFieldProps>(
   ({ 
     label, 
     placeholder, 
@@ -46,12 +46,15 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
     ...props 
   }, ref) => {
     const errorId = useId();
-    const isErrorState = isInvalid || !!error;
+    const isErrorState = useMemo(() => isInvalid || !!error, [isInvalid, error]);
     
     // エラーがある場合のaria-describedby設定
-    const describedBy = isErrorState 
-      ? [ariaDescribedby, errorId].filter(Boolean).join(' ')
-      : ariaDescribedby;
+    const describedBy = useMemo(() => 
+      isErrorState 
+        ? [ariaDescribedby, errorId].filter(Boolean).join(' ')
+        : ariaDescribedby,
+      [isErrorState, ariaDescribedby, errorId]
+    );
 
     return (
       <Field.Root invalid={isErrorState}>
@@ -83,4 +86,7 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
   }
 );
 
-InputField.displayName = "InputField";
+InputFieldComponent.displayName = "InputField";
+
+// メモ化による再レンダリング最適化
+export const InputField = memo(InputFieldComponent);

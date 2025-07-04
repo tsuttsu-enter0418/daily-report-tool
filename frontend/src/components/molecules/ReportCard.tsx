@@ -1,4 +1,5 @@
 import { Box, HStack, VStack, Heading, Text } from "@chakra-ui/react";
+import { memo, useCallback, useMemo } from "react";
 import { StatusBadge } from "./StatusBadge";
 import { MessageConst } from "../../constants/MessageConst";
 import { type ReportCardData, type ClickHandler } from "../../types";
@@ -49,15 +50,21 @@ const getStatusText = (status: ReportCardData["status"]) => {
   }
 };
 
-export const ReportCard = ({ report, onClick }: ReportCardProps) => {
-  const handleKeyDown = (event: React.KeyboardEvent) => {
+const ReportCardComponent = ({ report, onClick }: ReportCardProps) => {
+  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       onClick();
     }
-  };
+  }, [onClick]);
 
-  const ariaLabel = `${report.author}の日報「${report.title}」を開く。ステータス: ${getStatusText(report.status)}、提出日: ${report.date}`;
+  const ariaLabel = useMemo(
+    () => `${report.author}の日報「${report.title}」を開く。ステータス: ${getStatusText(report.status)}、提出日: ${report.date}`,
+    [report.author, report.title, report.status, report.date]
+  );
+
+  const statusColor = useMemo(() => getStatusColor(report.status), [report.status]);
+  const statusText = useMemo(() => getStatusText(report.status), [report.status]);
 
   return (
     <Box
@@ -121,8 +128,8 @@ export const ReportCard = ({ report, onClick }: ReportCardProps) => {
               </Text>
             </VStack>
             <Box flexShrink={0} ml={6}>
-              <StatusBadge status={getStatusColor(report.status)}>
-                {getStatusText(report.status)}
+              <StatusBadge status={statusColor}>
+                {statusText}
               </StatusBadge>
             </Box>
           </HStack>
@@ -134,3 +141,6 @@ export const ReportCard = ({ report, onClick }: ReportCardProps) => {
     </Box>
   );
 };
+
+// メモ化による再レンダリング最適化
+export const ReportCard = memo(ReportCardComponent);

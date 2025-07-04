@@ -1,5 +1,6 @@
 import { Box, Heading, Text, VStack, HStack, Badge } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import { useCallback, useMemo, memo } from "react";
 import { Button } from "../components/atoms";
 import { StatusBadge } from "../components/molecules";
 import { useAuth } from "../hooks";
@@ -19,28 +20,31 @@ import { MessageConst } from "../constants/MessageConst";
  * - Jotaiによるユーザー情報管理
  * - 環境変数による表示切り替え
  */
-export const Home = () => {
+const HomeComponent = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   
-  // 開発モードかどうかの判定
-  const isDevelopment = import.meta.env.DEV;
-  const useRealAPI = import.meta.env.VITE_USE_REAL_API === 'true';
+  // 開発モードかどうかの判定（メモ化）
+  const isDevelopment = useMemo(() => import.meta.env.DEV, []);
+  const useRealAPI = useMemo(() => import.meta.env.VITE_USE_REAL_API === 'true', []);
 
-  // 上長・管理者かどうかの判定
-  const canAccessSupervisorDashboard = user?.role === "上長" || user?.role === "管理者";
+  // 上長・管理者かどうかの判定（メモ化）
+  const canAccessSupervisorDashboard = useMemo(
+    () => user?.role === "上長" || user?.role === "管理者",
+    [user?.role]
+  );
 
-  const handleSupervisorDashboard = () => {
+  const handleSupervisorDashboard = useCallback(() => {
     navigate("/supervisor");
-  };
+  }, [navigate]);
 
-  const handleCreateReport = () => {
+  const handleCreateReport = useCallback(() => {
     navigate("/report/create");
-  };
+  }, [navigate]);
 
-  const handleViewHistory = () => {
+  const handleViewHistory = useCallback(() => {
     navigate("/report/list");
-  };
+  }, [navigate]);
 
   return (
     <Box p={8}>
@@ -127,3 +131,6 @@ export const Home = () => {
     </Box>
   );
 };
+
+// メモ化による再レンダリング最適化
+export const Home = memo(HomeComponent);

@@ -17,7 +17,7 @@ import { Button } from "../components/atoms";
 import { StatusBadge } from "../components/molecules";
 import { useAuth } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
-import { useState } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 
 /**
  * 日報作成・編集フォームページ (Organism)
@@ -58,7 +58,7 @@ const validationSchema = yup.object({
     .max(1000, MessageConst.REPORT.WORK_CONTENT_MAX_LENGTH(1000)),
 });
 
-export const DailyReportForm = ({
+const DailyReportFormComponent = ({
   isEditMode = false,
   initialData,
 }: Omit<DailyReportFormProps, "reportId">) => {
@@ -68,9 +68,9 @@ export const DailyReportForm = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDraftSaving, setIsDraftSaving] = useState(false);
 
-  // 開発モード表示判定
-  const isDevelopment = import.meta.env.DEV;
-  const useRealAPI = import.meta.env.VITE_USE_REAL_API === "true";
+  // 開発モード表示判定（メモ化）
+  const isDevelopment = useMemo(() => import.meta.env.DEV, []);
+  const useRealAPI = useMemo(() => import.meta.env.VITE_USE_REAL_API === "true", []);
 
   // React Hook Form セットアップ
   const {
@@ -89,8 +89,8 @@ export const DailyReportForm = ({
   // フォーム値の監視（文字数カウント用）
   const workContent = watch("workContent");
 
-  // 提出処理
-  const onSubmit = async (data: DailyReportFormData) => {
+  // 提出処理（メモ化）
+  const onSubmit = useCallback(async (data: DailyReportFormData) => {
     setIsSubmitting(true);
     try {
       console.log("日報提出:", { ...data, reportId, isEditMode });
@@ -112,10 +112,10 @@ export const DailyReportForm = ({
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [reportId, isEditMode]);
 
-  // 下書き保存処理
-  const handleSaveDraft = async () => {
+  // 下書き保存処理（メモ化）
+  const handleSaveDraft = useCallback(async () => {
     setIsDraftSaving(true);
     try {
       const currentData = { workContent };
@@ -131,12 +131,12 @@ export const DailyReportForm = ({
     } finally {
       setIsDraftSaving(false);
     }
-  };
+  }, [workContent]);
 
-  // 戻る処理
-  const handleBack = () => {
+  // 戻る処理（メモ化）
+  const handleBack = useCallback(() => {
     navigate(-1); // 前のページに戻る
-  };
+  }, [navigate]);
 
   return (
     <Box
@@ -319,3 +319,6 @@ export const DailyReportForm = ({
     </Box>
   );
 };
+
+// メモ化による再レンダリング最適化
+export const DailyReportForm = memo(DailyReportFormComponent);

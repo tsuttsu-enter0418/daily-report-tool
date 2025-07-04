@@ -7,7 +7,7 @@ import {
   SimpleGrid,
   Card
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/atoms";
 import { StatusBadge } from "../components/molecules";
@@ -87,27 +87,30 @@ type PersonalReportCardProps = {
   onDelete: (reportId: string) => void;
 };
 
-const PersonalReportCard = ({ report, onEdit, onDelete }: PersonalReportCardProps) => {
-  const getStatusColor = (status: PersonalReport["status"]) => {
-    switch (status) {
+const PersonalReportCardComponent = ({ report, onEdit, onDelete }: PersonalReportCardProps) => {
+  const statusColor = useMemo(() => {
+    switch (report.status) {
       case "submitted": return "success";
       case "draft": return "warning";
       default: return "error";
     }
-  };
+  }, [report.status]);
 
-  const getStatusText = (status: PersonalReport["status"]) => {
-    switch (status) {
+  const statusText = useMemo(() => {
+    switch (report.status) {
       case "submitted": return MessageConst.REPORT.FILTER_SUBMITTED;
       case "draft": return MessageConst.REPORT.FILTER_DRAFTS;
       default: return "不明";
     }
-  };
+  }, [report.status]);
 
-  // 作業内容を100文字で切り詰め
-  const truncatedContent = report.workContent.length > 100 
-    ? report.workContent.substring(0, 100) + "..." 
-    : report.workContent;
+  // 作業内容を100文字で切り詰め（メモ化）
+  const truncatedContent = useMemo(() => 
+    report.workContent.length > 100 
+      ? report.workContent.substring(0, 100) + "..." 
+      : report.workContent,
+    [report.workContent]
+  );
 
   return (
     <Card.Root
@@ -141,8 +144,8 @@ const PersonalReportCard = ({ report, onEdit, onDelete }: PersonalReportCardProp
                 </Text>
               )}
             </VStack>
-            <StatusBadge status={getStatusColor(report.status)}>
-              {getStatusText(report.status)}
+            <StatusBadge status={statusColor}>
+              {statusText}
             </StatusBadge>
           </HStack>
 
@@ -182,41 +185,47 @@ const PersonalReportCard = ({ report, onEdit, onDelete }: PersonalReportCardProp
   );
 };
 
-export const DailyReportList = () => {
+// メモ化による再レンダリング最適化
+const PersonalReportCard = memo(PersonalReportCardComponent);
+
+const DailyReportListComponent = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [currentFilter, setCurrentFilter] = useState<FilterType>("all");
 
-  // 開発モード表示判定
-  const isDevelopment = import.meta.env.DEV;
-  const useRealAPI = import.meta.env.VITE_USE_REAL_API === 'true';
+  // 開発モード表示判定（メモ化）
+  const isDevelopment = useMemo(() => import.meta.env.DEV, []);
+  const useRealAPI = useMemo(() => import.meta.env.VITE_USE_REAL_API === 'true', []);
 
-  // フィルタリング処理
-  const filteredReports = mockPersonalReports.filter(report => {
-    switch (currentFilter) {
-      case "submitted": return report.status === "submitted";
-      case "draft": return report.status === "draft";
-      default: return true;
-    }
-  });
+  // フィルタリング処理（メモ化）
+  const filteredReports = useMemo(() => 
+    mockPersonalReports.filter(report => {
+      switch (currentFilter) {
+        case "submitted": return report.status === "submitted";
+        case "draft": return report.status === "draft";
+        default: return true;
+      }
+    }),
+    [currentFilter]
+  );
 
-  // ハンドラー関数
-  const handleCreateNew = () => {
+  // ハンドラー関数（メモ化）
+  const handleCreateNew = useCallback(() => {
     navigate("/report/create");
-  };
+  }, [navigate]);
 
-  const handleEdit = (reportId: string) => {
+  const handleEdit = useCallback((reportId: string) => {
     navigate(`/report/edit/${reportId}`);
-  };
+  }, [navigate]);
 
-  const handleDelete = (reportId: string) => {
+  const handleDelete = useCallback((reportId: string) => {
     console.log(`日報削除: ${reportId}`);
     // TODO: 削除確認ダイアログ + 実際の削除処理
-  };
+  }, []);
 
-  const handleFilterChange = (filter: FilterType) => {
+  const handleFilterChange = useCallback((filter: FilterType) => {
     setCurrentFilter(filter);
-  };
+  }, []);
 
   return (
     <Box 
@@ -348,6 +357,9 @@ export const DailyReportList = () => {
     </Box>
   );
 };
+
+// メモ化による再レンダリング最適化
+export const DailyReportList = memo(DailyReportListComponent);
 
 // フィルター名を取得するヘルパー関数
 const getFilterText = (filter: FilterType): string => {

@@ -1,4 +1,5 @@
 import { Badge } from "@chakra-ui/react";
+import { memo, useMemo } from "react";
 import { type StatusBadgeType } from "../../types";
 
 /**
@@ -70,17 +71,18 @@ const getStatusDescription = (status: StatusBadgeType): string => {
   }
 };
 
-export const StatusBadge = ({ 
+const StatusBadgeComponent = ({ 
   status, 
   children, 
   variant = "solid",
   "aria-label": ariaLabel
 }: StatusBadgeProps) => {
-  const defaultAriaLabel = ariaLabel || getStatusDescription(status);
+  const colorScheme = useMemo(() => getColorScheme(status), [status]);
+  const defaultAriaLabel = useMemo(() => ariaLabel || getStatusDescription(status), [ariaLabel, status]);
 
   return (
     <Badge 
-      colorScheme={getColorScheme(status)} 
+      colorScheme={colorScheme} 
       variant={variant}
       fontWeight="semibold"
       fontSize="xs"
@@ -94,3 +96,6 @@ export const StatusBadge = ({
     </Badge>
   );
 };
+
+// メモ化による再レンダリング最適化
+export const StatusBadge = memo(StatusBadgeComponent);

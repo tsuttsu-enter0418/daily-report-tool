@@ -1,4 +1,5 @@
 import { Box, Heading, VStack, HStack, Text, SimpleGrid } from "@chakra-ui/react";
+import { useCallback, useMemo, memo } from "react";
 import { Button } from "../components/atoms";
 import { StatusBadge, ReportCard } from "../components/molecules";
 import { useAuth } from "../hooks";
@@ -86,22 +87,22 @@ const mockReports: MockReport[] = [
 ];
 
 
-export const SupervisorDashboard = () => {
+const SupervisorDashboardComponent = () => {
   const { user } = useAuth();
 
-  // 開発モード表示判定
-  const isDevelopment = import.meta.env.DEV;
-  const useRealAPI = import.meta.env.VITE_USE_REAL_API === 'true';
+  // 開発モード表示判定（メモ化）
+  const isDevelopment = useMemo(() => import.meta.env.DEV, []);
+  const useRealAPI = useMemo(() => import.meta.env.VITE_USE_REAL_API === 'true', []);
 
-  const handleReportClick = (reportId: string) => {
+  const handleReportClick = useCallback((reportId: string) => {
     console.log(`日報詳細表示: ${reportId}`);
     // 今後、日報詳細ページへの遷移を実装
-  };
+  }, []);
 
-  const handleFilterClick = (filter: FilterType) => {
+  const handleFilterClick = useCallback((filter: FilterType) => {
     console.log(`フィルター変更: ${filter}`);
     // 今後、フィルタリング機能を実装
-  };
+  }, []);
 
   return (
     <Box 
@@ -203,3 +204,6 @@ export const SupervisorDashboard = () => {
     </Box>
   );
 };
+
+// メモ化による再レンダリング最適化
+export const SupervisorDashboard = memo(SupervisorDashboardComponent);
