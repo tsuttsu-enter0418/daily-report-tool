@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useSetAtom } from "jotai";
 import Cookies from "js-cookie";
 import { apiService } from "../services/apiService";
-import { Toast } from "../components/atoms";
 import { MessageConst } from "../constants/MessageConst";
 import { loginAtom } from "../stores";
+import { useErrorHandler } from "./useErrorHandler";
 import type { LoginRequest, UserRole } from "../types";
 
 /**
@@ -43,6 +43,7 @@ export const useLogin = (): UseLoginReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const login = useSetAtom(loginAtom);
+  const { handleError, showSuccess } = useErrorHandler();
 
   /**
    * ログイン処理
@@ -80,30 +81,17 @@ export const useLogin = (): UseLoginReturn => {
       });
 
       // 成功時のToast表示
-      Toast.success({
-        title: MessageConst.AUTH.LOGIN_SUCCESS_TITLE,
-        description: MessageConst.AUTH.LOGIN_SUCCESS_DESCRIPTION(
-          result.username
-        ),
-        duration: 2000,
-      });
+      showSuccess(
+        MessageConst.AUTH.LOGIN_SUCCESS_DESCRIPTION(result.username)
+      );
 
       // Toastを見せるために少し遅れてリダイレクト
       setTimeout(() => {
         navigate("/home");
       }, 500);
     } catch (err) {
-      // エラーハンドリングとToast表示
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : MessageConst.AUTH.LOGIN_FAILED_NETWORK_ERROR;
-
-      Toast.error({
-        title: MessageConst.AUTH.LOGIN_FAILED_TITLE,
-        description: errorMessage,
-        duration: 4000,
-      });
+      // エラーハンドリング
+      handleError(err, 'ログイン処理');
     } finally {
       setIsLoading(false);
     }

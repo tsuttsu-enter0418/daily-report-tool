@@ -1,8 +1,9 @@
 import { Box, Heading, VStack, HStack, Text, SimpleGrid } from "@chakra-ui/react";
 import { Button } from "../components/atoms";
-import { StatusBadge, ReportCard, type ReportCardData } from "../components/molecules";
+import { StatusBadge, ReportCard } from "../components/molecules";
 import { useAuth } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
+import { type ReportCardData, type FilterType } from "../types";
 
 /**
  * 上司用ダッシュボードページ (Organism)
@@ -23,8 +24,6 @@ import { MessageConst } from "../constants/MessageConst";
  * - 提出ステータス
  * - アバター画像
  */
-
-type FilterType = "all" | "completed" | "pending";
 
 type MockReport = ReportCardData;
 

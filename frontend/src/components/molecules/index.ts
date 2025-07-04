@@ -11,4 +11,4 @@
 
 export { InputField } from "./InputField";
 export { StatusBadge } from "./StatusBadge";
-export { ReportCard, type ReportCardData } from "./ReportCard";
+export { ReportCard } from "./ReportCard";

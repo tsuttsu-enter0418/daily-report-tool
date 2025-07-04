@@ -30,6 +30,18 @@ export type {
   UserRole,
 } from "./api";
 
+// コンポーネント関連の型定義
+export type {
+  ReportCardData,
+  FilterType,
+  ButtonVariant,
+  StatusBadgeType,
+  ValidationState,
+  ClickHandler,
+  EventHandler,
+  SortOrder,
+  SortField,
+} from "./components";
+
 // 他の型定義がある場合は追加
-// export type { ... } from "./components";
 // export type { ... } from "./forms";

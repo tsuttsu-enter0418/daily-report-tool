@@ -4,6 +4,7 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { forwardRef } from "react";
+import { type ButtonVariant } from "../../types";
 
 /**
  * カスタムButtonコンポーネント (Atom)
@@ -27,7 +28,7 @@ type CustomButtonProps = Omit<ButtonProps, "loading" | "variant"> & {
   /** ローディング時のテキスト */
   loadingText?: string;
   /** ボタンの用途に応じたバリアント */
-  variant?: "primary" | "secondary" | "danger" | "ghost";
+  variant?: ButtonVariant;
 };
 
 /**

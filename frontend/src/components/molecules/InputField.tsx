@@ -1,5 +1,6 @@
 import { Field, Input } from "@chakra-ui/react";
 import { forwardRef } from "react";
+import { type ValidationState } from "../../types";
 
 /**
  * 入力フィールドコンポーネント (Molecule)
@@ -15,17 +16,13 @@ import { forwardRef } from "react";
  * - 各種設定フォーム
  */
 
-type InputFieldProps = {
+type InputFieldProps = ValidationState & {
   /** ラベルテキスト */
   label: string;
   /** プレースホルダーテキスト */
   placeholder?: string;
   /** 入力タイプ（text, password, email等） */
   type?: string;
-  /** エラーメッセージ */
-  error?: string;
-  /** バリデーションエラー状態 */
-  isInvalid?: boolean;
   /** その他のInput props */
   [key: string]: any;
 };

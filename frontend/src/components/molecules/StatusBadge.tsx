@@ -1,4 +1,5 @@
 import { Badge } from "@chakra-ui/react";
+import { type StatusBadgeType } from "../../types";
 
 /**
  * ステータス表示バッジコンポーネント (Molecule)
@@ -16,7 +17,7 @@ import { Badge } from "@chakra-ui/react";
 
 type StatusBadgeProps = {
   /** 表示するステータスタイプ */
-  status: "dev-mock" | "dev-api" | "production" | "success" | "warning" | "error";
+  status: StatusBadgeType;
   /** 表示テキスト */
   children: React.ReactNode;
   /** バッジのバリアント */
@@ -26,7 +27,7 @@ type StatusBadgeProps = {
 /**
  * ステータスに応じた色スキームを決定
  */
-const getColorScheme = (status: StatusBadgeProps["status"]) => {
+const getColorScheme = (status: StatusBadgeType) => {
   switch (status) {
     case "dev-mock":
       return "orange";

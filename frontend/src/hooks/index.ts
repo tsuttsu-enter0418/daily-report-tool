@@ -15,3 +15,5 @@ export type { LoginFormData, UseLoginReturn } from "./useLogin";
 
 export { useAuth } from "./useAuth";
 export type { UseAuthReturn } from "./useAuth";
+
+export { useErrorHandler } from "./useErrorHandler";

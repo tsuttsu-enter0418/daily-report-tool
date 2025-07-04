@@ -1,6 +1,7 @@
 import { Box, HStack, VStack, Heading, Text } from "@chakra-ui/react";
 import { StatusBadge } from "./StatusBadge";
 import { MessageConst } from "../../constants/MessageConst";
+import { type ReportCardData, type ClickHandler } from "../../types";
 
 /**
  * 日報カードコンポーネント (Molecule)
@@ -17,21 +18,11 @@ import { MessageConst } from "../../constants/MessageConst";
  * - 検索結果表示
  */
 
-export type ReportCardData = {
-  id: string;
-  title: string;
-  author: string;
-  team: string;
-  status: "completed" | "pending" | "draft";
-  date: string;
-  avatarBg: string;
-};
-
 type ReportCardProps = {
   /** 日報データ */
   report: ReportCardData;
   /** クリック時のハンドラー */
-  onClick: () => void;
+  onClick: ClickHandler;
 };
 
 /**
