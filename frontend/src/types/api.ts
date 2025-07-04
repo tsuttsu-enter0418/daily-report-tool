@@ -1,17 +1,17 @@
 /**
  * API関連の型定義
- * 
+ *
  * 機能:
  * - APIレスポンスの型安全性確保
  * - フロントエンド/バックエンド間の型統一
  * - TypeScript厳密チェック対応
  * - type使用による型合成の柔軟性向上
- * 
+ *
  * 使用場面:
  * - APIサービス層での型定義
  * - コンポーネントでのAPIデータ利用
  * - モックAPIとの型統一
- * 
+ *
  * 設計方針:
  * - interfaceではなくtypeを使用
  * - 型合成やユニオン型の活用
@@ -60,7 +60,6 @@ export type ApiError = {
   code?: string;
 };
 
-
 /**
  * ユーザー情報の型定義（詳細版）
  */
@@ -86,18 +85,18 @@ export type UserInfo = {
  */
 export const isLoginResponse = (obj: unknown): obj is LoginResponse => {
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
-    'token' in obj &&
-    'id' in obj &&
-    'username' in obj &&
-    'email' in obj &&
-    'role' in obj &&
-    typeof (obj as LoginResponse).token === 'string' &&
-    typeof (obj as LoginResponse).id === 'string' &&
-    typeof (obj as LoginResponse).username === 'string' &&
-    typeof (obj as LoginResponse).email === 'string' &&
-    ['管理者', '上長', '部下'].includes((obj as LoginResponse).role)
+    "token" in obj &&
+    "id" in obj &&
+    "username" in obj &&
+    "email" in obj &&
+    "role" in obj &&
+    typeof (obj as LoginResponse).token === "string" &&
+    typeof (obj as LoginResponse).id === "string" &&
+    typeof (obj as LoginResponse).username === "string" &&
+    typeof (obj as LoginResponse).email === "string" &&
+    ["管理者", "上長", "部下"].includes((obj as LoginResponse).role)
   );
 };
 
@@ -106,10 +105,10 @@ export const isLoginResponse = (obj: unknown): obj is LoginResponse => {
  */
 export const isApiError = (obj: unknown): obj is ApiError => {
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
-    'message' in obj &&
-    typeof (obj as ApiError).message === 'string'
+    "message" in obj &&
+    typeof (obj as ApiError).message === "string"
   );
 };
 
@@ -118,15 +117,15 @@ export const isApiError = (obj: unknown): obj is ApiError => {
  */
 export const isUserInfo = (obj: unknown): obj is UserInfo => {
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
-    'id' in obj &&
-    'username' in obj &&
-    'email' in obj &&
-    'role' in obj &&
-    typeof (obj as UserInfo).id === 'string' &&
-    typeof (obj as UserInfo).username === 'string' &&
-    typeof (obj as UserInfo).email === 'string' &&
-    ['管理者', '上長', '部下'].includes((obj as UserInfo).role)
+    "id" in obj &&
+    "username" in obj &&
+    "email" in obj &&
+    "role" in obj &&
+    typeof (obj as UserInfo).id === "string" &&
+    typeof (obj as UserInfo).username === "string" &&
+    typeof (obj as UserInfo).email === "string" &&
+    ["管理者", "上長", "部下"].includes((obj as UserInfo).role)
   );
 };

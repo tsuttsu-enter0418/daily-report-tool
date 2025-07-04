@@ -2,13 +2,13 @@ import { toaster } from "../ui/toaster";
 
 /**
  * カスタムToastユーティリティ (Atom)
- * 
+ *
  * 機能:
  * - ChakraUI v3.2対応のToastラッパー
  * - 統一されたToast表示設定
  * - タイプ別の適切なduration設定
  * - プロジェクト標準のToast管理
- * 
+ *
  * 使用場面:
  * - 成功メッセージ表示
  * - エラーメッセージ表示
@@ -30,15 +30,15 @@ export type ToastOptions = {
 /**
  * Toastタイプ別のデフォルト設定
  */
-const getToastDefaults = (type: 'success' | 'error' | 'warning' | 'info') => {
+const getToastDefaults = (type: "success" | "error" | "warning" | "info") => {
   switch (type) {
-    case 'success':
+    case "success":
       return { duration: 3000, isClosable: true };
-    case 'error':
+    case "error":
       return { duration: 5000, isClosable: true };
-    case 'warning':
+    case "warning":
       return { duration: 4000, isClosable: true };
-    case 'info':
+    case "info":
       return { duration: 3000, isClosable: true };
     default:
       return { duration: 3000, isClosable: true };
@@ -53,9 +53,9 @@ export const Toast = {
    * 成功メッセージを表示
    */
   success: (options: ToastOptions) => {
-    const defaults = getToastDefaults('success');
+    const defaults = getToastDefaults("success");
     toaster.create({
-      type: 'success',
+      type: "success",
       ...defaults,
       ...options,
     });
@@ -65,9 +65,9 @@ export const Toast = {
    * エラーメッセージを表示
    */
   error: (options: ToastOptions) => {
-    const defaults = getToastDefaults('error');
+    const defaults = getToastDefaults("error");
     toaster.create({
-      type: 'error',
+      type: "error",
       ...defaults,
       ...options,
     });
@@ -77,9 +77,9 @@ export const Toast = {
    * 警告メッセージを表示
    */
   warning: (options: ToastOptions) => {
-    const defaults = getToastDefaults('warning');
+    const defaults = getToastDefaults("warning");
     toaster.create({
-      type: 'warning',
+      type: "warning",
       ...defaults,
       ...options,
     });
@@ -89,9 +89,9 @@ export const Toast = {
    * 情報メッセージを表示
    */
   info: (options: ToastOptions) => {
-    const defaults = getToastDefaults('info');
+    const defaults = getToastDefaults("info");
     toaster.create({
-      type: 'info',
+      type: "info",
       ...defaults,
       ...options,
     });
@@ -100,7 +100,10 @@ export const Toast = {
   /**
    * カスタムToastを表示
    */
-  custom: (type: 'success' | 'error' | 'warning' | 'info', options: ToastOptions) => {
+  custom: (
+    type: "success" | "error" | "warning" | "info",
+    options: ToastOptions,
+  ) => {
     const defaults = getToastDefaults(type);
     toaster.create({
       type,

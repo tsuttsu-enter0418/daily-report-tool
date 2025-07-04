@@ -1,23 +1,23 @@
 /**
  * フォーム関連の型定義
- * 
+ *
  * 機能:
  * - フォームデータの型安全性確保
  * - バリデーション関連の型定義
  * - フォームイベントハンドラーの型統一
- * 
+ *
  * 使用場面:
  * - フォームコンポーネントでの型定義
  * - バリデーションライブラリとの連携
  * - React Hook Formとの統合
- * 
+ *
  * 設計方針:
  * - ジェネリック型の積極活用
  * - 厳密な型制約
  * - 再利用可能な型構造
  */
 
-import type { ValidationState } from './components';
+import type { ValidationState } from "./components";
 
 /**
  * フォームフィールドの基本型定義
@@ -34,7 +34,14 @@ export type FormFieldConfig<T = string> = {
   /** 初期値 */
   readonly defaultValue?: T;
   /** 入力タイプ */
-  readonly type?: 'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search';
+  readonly type?:
+    | "text"
+    | "password"
+    | "email"
+    | "number"
+    | "tel"
+    | "url"
+    | "search";
 };
 
 /**
@@ -62,7 +69,7 @@ export type DailyReportFormData = {
   /** 特記事項（オプション） */
   notes?: string;
   /** ステータス */
-  status: 'draft' | 'submitted';
+  status: "draft" | "submitted";
   /** 報告日 */
   reportDate: string;
 };
@@ -94,7 +101,7 @@ export type ValidationRule<T = any> = {
   /** エラーメッセージ */
   message: string;
   /** バリデーションタイプ */
-  type: 'required' | 'pattern' | 'minLength' | 'maxLength' | 'custom';
+  type: "required" | "pattern" | "minLength" | "maxLength" | "custom";
 };
 
 /**
@@ -158,12 +165,12 @@ export type FormEventHandlers<T = Record<string, any>> = {
  */
 export const isLoginFormData = (obj: unknown): obj is LoginFormData => {
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
-    'username' in obj &&
-    'password' in obj &&
-    typeof (obj as LoginFormData).username === 'string' &&
-    typeof (obj as LoginFormData).password === 'string' &&
+    "username" in obj &&
+    "password" in obj &&
+    typeof (obj as LoginFormData).username === "string" &&
+    typeof (obj as LoginFormData).password === "string" &&
     (obj as LoginFormData).username.length > 0 &&
     (obj as LoginFormData).password.length > 0
   );
@@ -172,16 +179,18 @@ export const isLoginFormData = (obj: unknown): obj is LoginFormData => {
 /**
  * 型ガード：日報フォームデータの検証
  */
-export const isDailyReportFormData = (obj: unknown): obj is DailyReportFormData => {
+export const isDailyReportFormData = (
+  obj: unknown,
+): obj is DailyReportFormData => {
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
-    'workContent' in obj &&
-    'status' in obj &&
-    'reportDate' in obj &&
-    typeof (obj as DailyReportFormData).workContent === 'string' &&
-    ['draft', 'submitted'].includes((obj as DailyReportFormData).status) &&
-    typeof (obj as DailyReportFormData).reportDate === 'string' &&
+    "workContent" in obj &&
+    "status" in obj &&
+    "reportDate" in obj &&
+    typeof (obj as DailyReportFormData).workContent === "string" &&
+    ["draft", "submitted"].includes((obj as DailyReportFormData).status) &&
+    typeof (obj as DailyReportFormData).reportDate === "string" &&
     (obj as DailyReportFormData).workContent.length > 0
   );
 };
@@ -189,15 +198,17 @@ export const isDailyReportFormData = (obj: unknown): obj is DailyReportFormData 
 /**
  * 型ガード：フォーム送信状態の検証
  */
-export const isFormSubmissionState = (obj: unknown): obj is FormSubmissionState => {
+export const isFormSubmissionState = (
+  obj: unknown,
+): obj is FormSubmissionState => {
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
-    'isSubmitting' in obj &&
-    'isSubmitted' in obj &&
-    'isSuccess' in obj &&
-    typeof (obj as FormSubmissionState).isSubmitting === 'boolean' &&
-    typeof (obj as FormSubmissionState).isSubmitted === 'boolean' &&
-    typeof (obj as FormSubmissionState).isSuccess === 'boolean'
+    "isSubmitting" in obj &&
+    "isSubmitted" in obj &&
+    "isSuccess" in obj &&
+    typeof (obj as FormSubmissionState).isSubmitting === "boolean" &&
+    typeof (obj as FormSubmissionState).isSubmitted === "boolean" &&
+    typeof (obj as FormSubmissionState).isSuccess === "boolean"
   );
 };

@@ -25,15 +25,15 @@ import { type ButtonVariant, type CommonComponentProps } from "../../types";
 /**
  * カスタムButtonコンポーネントのProps型定義（型安全性向上）
  */
-type CustomButtonProps = Omit<ButtonProps, "loading" | "variant"> & 
+type CustomButtonProps = Omit<ButtonProps, "loading" | "variant"> &
   CommonComponentProps & {
-  /** ローディング状態（デフォルト: false） */
-  loading?: boolean;
-  /** ローディング時のテキスト */
-  loadingText?: string;
-  /** ボタンの用途に応じたバリアント（デフォルト: primary） */
-  variant?: ButtonVariant;
-};
+    /** ローディング状態（デフォルト: false） */
+    loading?: boolean;
+    /** ローディング時のテキスト */
+    loadingText?: string;
+    /** ボタンの用途に応じたバリアント（デフォルト: primary） */
+    variant?: ButtonVariant;
+  };
 
 /**
  * バリアントに応じたスタイルを返す
@@ -53,16 +53,16 @@ const getVariantStyles = (variant: CustomButtonProps["variant"]) => {
         color: "gray.700",
         border: "2px solid",
         borderColor: "orange.200",
-        _hover: { 
+        _hover: {
           bg: "orange.50",
           borderColor: "orange.300",
           transform: "translateY(-1px)",
-          boxShadow: "sm"
+          boxShadow: "sm",
         },
-        _active: { 
+        _active: {
           bg: "orange.100",
           borderColor: "orange.400",
-          transform: "translateY(0)"
+          transform: "translateY(0)",
         },
       };
     case "danger":
@@ -102,7 +102,7 @@ const ButtonComponent = forwardRef<HTMLButtonElement, CustomButtonProps>(
       "aria-describedby": ariaDescribedby,
       ...props
     },
-    ref
+    ref,
   ) => {
     const variantStyles = useMemo(() => getVariantStyles(variant), [variant]);
     const isDisabled = useMemo(() => disabled || loading, [disabled, loading]);
@@ -126,11 +126,7 @@ const ButtonComponent = forwardRef<HTMLButtonElement, CustomButtonProps>(
       >
         {loading ? (
           <>
-            <Spinner 
-              size="sm" 
-              mr={2}
-              aria-label="読み込み中"
-            />
+            <Spinner size="sm" mr={2} aria-label="読み込み中" />
             {loadingText || children}
           </>
         ) : (
@@ -138,7 +134,7 @@ const ButtonComponent = forwardRef<HTMLButtonElement, CustomButtonProps>(
         )}
       </ChakraButton>
     );
-  }
+  },
 );
 
 ButtonComponent.displayName = "Button";

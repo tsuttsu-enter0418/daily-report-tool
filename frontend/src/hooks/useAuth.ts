@@ -1,24 +1,24 @@
 import { useAtomValue, useSetAtom } from "jotai";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import { 
-  userAtom, 
-  isAuthenticatedAtom, 
-  tokenAtom, 
-  logoutAtom 
+import {
+  userAtom,
+  isAuthenticatedAtom,
+  tokenAtom,
+  logoutAtom,
 } from "../stores";
 import { Toast } from "../components/atoms";
 import { MessageConst } from "../constants/MessageConst";
 
 /**
  * 認証関連の機能を提供するカスタムフック
- * 
+ *
  * 機能:
  * - ユーザー情報の取得
  * - 認証状態の確認
  * - ログアウト処理
  * - 認証トークンの取得
- * 
+ *
  * 使用場面:
  * - 認証が必要な画面でのユーザー情報表示
  * - ログアウトボタンの実装
@@ -39,7 +39,7 @@ export type UseAuthReturn = {
 
 /**
  * 認証機能カスタムフック
- * 
+ *
  * @returns {UseAuthReturn} 認証機能のインターface
  */
 export const useAuth = (): UseAuthReturn => {
@@ -51,7 +51,7 @@ export const useAuth = (): UseAuthReturn => {
 
   /**
    * ログアウト処理
-   * 
+   *
    * 処理フロー:
    * 1. Cookieから認証トークンを削除
    * 2. Jotai状態管理から認証情報をクリア

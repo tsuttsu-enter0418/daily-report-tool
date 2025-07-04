@@ -76,7 +76,7 @@ describe("Login", () => {
     expect(screen.getByLabelText("ユーザー名")).toBeInTheDocument();
     expect(screen.getByLabelText("パスワード")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "ログイン" })
+      screen.getByRole("button", { name: "ログイン" }),
     ).toBeInTheDocument();
     expect(screen.getByText("テストアカウント:")).toBeInTheDocument();
   });
@@ -85,7 +85,7 @@ describe("Login", () => {
     render(<Login />);
 
     expect(
-      screen.getByText("🔧 開発モード (モックAPI使用中)")
+      screen.getByText("🔧 開発モード (モックAPI使用中)"),
     ).toBeInTheDocument();
   });
 
@@ -100,7 +100,7 @@ describe("Login", () => {
     render(<Login />);
 
     expect(
-      screen.getByText("🌐 開発モード (実際のAPI使用中)")
+      screen.getByText("🌐 開発モード (実際のAPI使用中)"),
     ).toBeInTheDocument();
   });
 
@@ -156,7 +156,7 @@ describe("Login", () => {
       expect(mockCookies.set).toHaveBeenCalledWith(
         "authToken",
         "mock-jwt-token",
-        { expires: 7 }
+        { expires: 7 },
       );
     });
 
@@ -172,7 +172,7 @@ describe("Login", () => {
     const user = userEvent.setup();
 
     mockApiService.login.mockRejectedValue(
-      new Error("ユーザー名またはパスワードが正しくありません")
+      new Error("ユーザー名またはパスワードが正しくありません"),
     );
 
     render(<Login />);
@@ -244,9 +244,9 @@ describe("Login", () => {
                 email: "admin@example.com",
                 role: "管理者",
               }),
-            2000
-          )
-        )
+            2000,
+          ),
+        ),
     );
 
     render(<Login />);

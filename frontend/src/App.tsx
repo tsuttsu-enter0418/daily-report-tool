@@ -1,14 +1,35 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Spinner, Center } from "@chakra-ui/react";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 // 遅延読み込み（Lazy Loading）
-const Login = lazy(() => import("./pages/Login").then(module => ({ default: module.Login })));
-const Home = lazy(() => import("./pages/Home").then(module => ({ default: module.Home })));
-const SupervisorDashboard = lazy(() => import("./pages/SupervisorDashboard").then(module => ({ default: module.SupervisorDashboard })));
-const DailyReportForm = lazy(() => import("./pages/DailyReportForm").then(module => ({ default: module.DailyReportForm })));
-const DailyReportList = lazy(() => import("./pages/DailyReportList").then(module => ({ default: module.DailyReportList })));
+const Login = lazy(() =>
+  import("./pages/Login").then((module) => ({ default: module.Login })),
+);
+const Home = lazy(() =>
+  import("./pages/Home").then((module) => ({ default: module.Home })),
+);
+const SupervisorDashboard = lazy(() =>
+  import("./pages/SupervisorDashboard").then((module) => ({
+    default: module.SupervisorDashboard,
+  })),
+);
+const DailyReportForm = lazy(() =>
+  import("./pages/DailyReportForm").then((module) => ({
+    default: module.DailyReportForm,
+  })),
+);
+const DailyReportList = lazy(() =>
+  import("./pages/DailyReportList").then((module) => ({
+    default: module.DailyReportList,
+  })),
+);
 
 // ローディングコンポーネント
 const PageLoader = () => (

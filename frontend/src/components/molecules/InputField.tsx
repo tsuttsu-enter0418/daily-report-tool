@@ -4,12 +4,12 @@ import { type ValidationState } from "../../types";
 
 /**
  * 入力フィールドコンポーネント (Molecule)
- * 
+ *
  * 機能:
  * - ラベル付きの入力フィールド
  * - エラーメッセージ表示
  * - バリデーション状態の視覚化
- * 
+ *
  * 再利用場面:
  * - ログインフォーム
  * - ユーザー登録フォーム
@@ -34,26 +34,33 @@ type InputFieldProps = ValidationState & {
 };
 
 const InputFieldComponent = forwardRef<HTMLInputElement, InputFieldProps>(
-  ({ 
-    label, 
-    placeholder, 
-    type = "text", 
-    error, 
-    isInvalid, 
-    required = false,
-    "aria-label": ariaLabel,
-    "aria-describedby": ariaDescribedby,
-    ...props 
-  }, ref) => {
+  (
+    {
+      label,
+      placeholder,
+      type = "text",
+      error,
+      isInvalid,
+      required = false,
+      "aria-label": ariaLabel,
+      "aria-describedby": ariaDescribedby,
+      ...props
+    },
+    ref,
+  ) => {
     const errorId = useId();
-    const isErrorState = useMemo(() => isInvalid || !!error, [isInvalid, error]);
-    
+    const isErrorState = useMemo(
+      () => isInvalid || !!error,
+      [isInvalid, error],
+    );
+
     // エラーがある場合のaria-describedby設定
-    const describedBy = useMemo(() => 
-      isErrorState 
-        ? [ariaDescribedby, errorId].filter(Boolean).join(' ')
-        : ariaDescribedby,
-      [isErrorState, ariaDescribedby, errorId]
+    const describedBy = useMemo(
+      () =>
+        isErrorState
+          ? [ariaDescribedby, errorId].filter(Boolean).join(" ")
+          : ariaDescribedby,
+      [isErrorState, ariaDescribedby, errorId],
     );
 
     return (
@@ -61,7 +68,10 @@ const InputFieldComponent = forwardRef<HTMLInputElement, InputFieldProps>(
         <Field.Label>
           {label}
           {required && (
-            <span aria-label="必須項目" style={{ color: 'red', marginLeft: '4px' }}>
+            <span
+              aria-label="必須項目"
+              style={{ color: "red", marginLeft: "4px" }}
+            >
               *
             </span>
           )}
@@ -83,7 +93,7 @@ const InputFieldComponent = forwardRef<HTMLInputElement, InputFieldProps>(
         )}
       </Field.Root>
     );
-  }
+  },
 );
 
 InputFieldComponent.displayName = "InputField";

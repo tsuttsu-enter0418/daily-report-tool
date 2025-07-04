@@ -4,12 +4,12 @@ import { type StatusBadgeType, type CommonComponentProps } from "../../types";
 
 /**
  * ステータス表示バッジコンポーネント (Molecule)
- * 
+ *
  * 機能:
  * - 開発モード・本番モードの表示
  * - 日報ステータスの表示
  * - 色分けによる状態の視覚化
- * 
+ *
  * 再利用場面:
  * - ログイン画面での開発モード表示
  * - ホーム画面でのAPI使用状況表示
@@ -74,18 +74,21 @@ const getStatusDescription = (status: StatusBadgeType): string => {
   }
 };
 
-const StatusBadgeComponent = ({ 
-  status, 
-  children, 
+const StatusBadgeComponent = ({
+  status,
+  children,
   variant = "solid",
-  "aria-label": ariaLabel
+  "aria-label": ariaLabel,
 }: StatusBadgeProps) => {
   const colorScheme = useMemo(() => getColorScheme(status), [status]);
-  const defaultAriaLabel = useMemo(() => ariaLabel || getStatusDescription(status), [ariaLabel, status]);
+  const defaultAriaLabel = useMemo(
+    () => ariaLabel || getStatusDescription(status),
+    [ariaLabel, status],
+  );
 
   return (
-    <Badge 
-      colorScheme={colorScheme} 
+    <Badge
+      colorScheme={colorScheme}
       variant={variant}
       fontWeight="semibold"
       fontSize="xs"

@@ -81,9 +81,7 @@ export const useLogin = (): UseLoginReturn => {
       });
 
       // 成功時のToast表示
-      showSuccess(
-        MessageConst.AUTH.LOGIN_SUCCESS_DESCRIPTION(result.username)
-      );
+      showSuccess(MessageConst.AUTH.LOGIN_SUCCESS_DESCRIPTION(result.username));
 
       // Toastを見せるために少し遅れてリダイレクト
       setTimeout(() => {
@@ -91,7 +89,7 @@ export const useLogin = (): UseLoginReturn => {
       }, 500);
     } catch (err) {
       // エラーハンドリング
-      handleError(err, 'ログイン処理');
+      handleError(err, "ログイン処理");
     } finally {
       setIsLoading(false);
     }

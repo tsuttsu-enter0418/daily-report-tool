@@ -6,13 +6,13 @@ import { type ReportCardData, type ClickHandler } from "../../types";
 
 /**
  * 日報カードコンポーネント (Molecule)
- * 
+ *
  * 機能:
  * - 日報の概要情報を表示
  * - ステータスバッジによる状態表示
  * - グラデーションアバター表示
  * - ホバーエフェクト
- * 
+ *
  * 再利用場面:
  * - 上司ダッシュボード
  * - 日報一覧画面
@@ -31,10 +31,14 @@ type ReportCardProps = {
  */
 const getStatusColor = (status: ReportCardData["status"]) => {
   switch (status) {
-    case "completed": return "success";
-    case "pending": return "warning";
-    case "draft": return "error";
-    default: return "error";
+    case "completed":
+      return "success";
+    case "pending":
+      return "warning";
+    case "draft":
+      return "error";
+    default:
+      return "error";
   }
 };
 
@@ -43,28 +47,42 @@ const getStatusColor = (status: ReportCardData["status"]) => {
  */
 const getStatusText = (status: ReportCardData["status"]) => {
   switch (status) {
-    case "completed": return MessageConst.DASHBOARD.STATUS_COMPLETED;
-    case "pending": return MessageConst.DASHBOARD.STATUS_PENDING;
-    case "draft": return MessageConst.DASHBOARD.STATUS_DRAFT;
-    default: return "不明";
+    case "completed":
+      return MessageConst.DASHBOARD.STATUS_COMPLETED;
+    case "pending":
+      return MessageConst.DASHBOARD.STATUS_PENDING;
+    case "draft":
+      return MessageConst.DASHBOARD.STATUS_DRAFT;
+    default:
+      return "不明";
   }
 };
 
 const ReportCardComponent = ({ report, onClick }: ReportCardProps) => {
-  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      onClick();
-    }
-  }, [onClick]);
-
-  const ariaLabel = useMemo(
-    () => `${report.author}の日報「${report.title}」を開く。ステータス: ${getStatusText(report.status)}、提出日: ${report.date}`,
-    [report.author, report.title, report.status, report.date]
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        onClick();
+      }
+    },
+    [onClick],
   );
 
-  const statusColor = useMemo(() => getStatusColor(report.status), [report.status]);
-  const statusText = useMemo(() => getStatusText(report.status), [report.status]);
+  const ariaLabel = useMemo(
+    () =>
+      `${report.author}の日報「${report.title}」を開く。ステータス: ${getStatusText(report.status)}、提出日: ${report.date}`,
+    [report.author, report.title, report.status, report.date],
+  );
+
+  const statusColor = useMemo(
+    () => getStatusColor(report.status),
+    [report.status],
+  );
+  const statusText = useMemo(
+    () => getStatusText(report.status),
+    [report.status],
+  );
 
   return (
     <Box
@@ -82,12 +100,12 @@ const ReportCardComponent = ({ report, onClick }: ReportCardProps) => {
         boxShadow: "0 8px 30px rgba(251, 146, 60, 0.25)",
         transform: "translateY(-6px)",
         borderColor: "orange.400",
-        bg: "rgba(255, 247, 237, 1)"
+        bg: "rgba(255, 247, 237, 1)",
       }}
       _focus={{
         outline: "3px solid",
         outlineColor: "orange.400",
-        outlineOffset: "2px"
+        outlineOffset: "2px",
       }}
       onClick={onClick}
       onKeyDown={handleKeyDown}
@@ -128,9 +146,7 @@ const ReportCardComponent = ({ report, onClick }: ReportCardProps) => {
               </Text>
             </VStack>
             <Box flexShrink={0} ml={6}>
-              <StatusBadge status={statusColor}>
-                {statusText}
-              </StatusBadge>
+              <StatusBadge status={statusColor}>{statusText}</StatusBadge>
             </Box>
           </HStack>
           <Text fontSize="md" color="gray.600" fontWeight="medium">

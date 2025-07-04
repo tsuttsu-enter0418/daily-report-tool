@@ -1,16 +1,16 @@
 /**
  * コンポーネント関連の型定義
- * 
+ *
  * 機能:
  * - コンポーネント間で共有される型定義
  * - プロパティの型安全性確保
  * - 再利用可能なコンポーネントの型統一
- * 
+ *
  * 使用場面:
  * - コンポーネントのPropsの型定義
  * - 状態管理の型定義
  * - イベントハンドラーの型定義
- * 
+ *
  * 設計方針:
  * - type エイリアス使用
  * - 型合成の柔軟性重視
@@ -50,12 +50,12 @@ export type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
 /**
  * ステータスバッジのタイプ
  */
-export type StatusBadgeType = 
-  | "dev-mock" 
-  | "dev-api" 
-  | "production" 
-  | "success" 
-  | "warning" 
+export type StatusBadgeType =
+  | "dev-mock"
+  | "dev-api"
+  | "production"
+  | "success"
+  | "warning"
   | "error";
 
 /**
@@ -110,7 +110,9 @@ export type AsyncClickHandler = () => Promise<void>;
 /**
  * 非同期パラメータ付きクリックハンドラー
  */
-export type AsyncClickHandlerWithParam<T = string> = (param: T) => Promise<void>;
+export type AsyncClickHandlerWithParam<T = string> = (
+  param: T,
+) => Promise<void>;
 
 /**
  * Reactイベントハンドラー（型安全性向上）
@@ -120,12 +122,16 @@ export type EventHandler<T = React.SyntheticEvent> = (event: T) => void;
 /**
  * フォーム送信ハンドラー
  */
-export type FormSubmitHandler = (event: React.FormEvent<HTMLFormElement>) => void;
+export type FormSubmitHandler = (
+  event: React.FormEvent<HTMLFormElement>,
+) => void;
 
 /**
  * 入力変更ハンドラー
  */
-export type InputChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => void;
+export type InputChangeHandler = (
+  event: React.ChangeEvent<HTMLInputElement>,
+) => void;
 
 /**
  * キーボードイベントハンドラー
@@ -187,13 +193,13 @@ export type CommonComponentProps = {
  */
 export const isValidationState = (obj: unknown): obj is ValidationState => {
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
-    (typeof (obj as ValidationState).error === 'string' ||
+    (typeof (obj as ValidationState).error === "string" ||
       (obj as ValidationState).error === undefined) &&
-    (typeof (obj as ValidationState).isInvalid === 'boolean' ||
+    (typeof (obj as ValidationState).isInvalid === "boolean" ||
       (obj as ValidationState).isInvalid === undefined) &&
-    (typeof (obj as ValidationState).isValid === 'boolean' ||
+    (typeof (obj as ValidationState).isValid === "boolean" ||
       (obj as ValidationState).isValid === undefined)
   );
 };
@@ -203,10 +209,10 @@ export const isValidationState = (obj: unknown): obj is ValidationState => {
  */
 export const isLoadingState = (obj: unknown): obj is LoadingState => {
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
-    typeof (obj as LoadingState).isLoading === 'boolean' &&
-    (typeof (obj as LoadingState).loadingMessage === 'string' ||
+    typeof (obj as LoadingState).isLoading === "boolean" &&
+    (typeof (obj as LoadingState).loadingMessage === "string" ||
       (obj as LoadingState).loadingMessage === undefined)
   );
 };

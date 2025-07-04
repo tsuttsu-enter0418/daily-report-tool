@@ -8,14 +8,14 @@ import { MessageConst } from "../constants/MessageConst";
 
 /**
  * ホームページコンポーネント (Organism)
- * 
+ *
  * 機能:
  * - ログイン成功後のメイン画面
  * - ユーザー情報表示（Jotai状態管理から取得）
  * - 開発モード表示
  * - ログアウト機能
  * - 今後の日報管理機能への入り口
- * 
+ *
  * 状態管理:
  * - Jotaiによるユーザー情報管理
  * - 環境変数による表示切り替え
@@ -23,15 +23,18 @@ import { MessageConst } from "../constants/MessageConst";
 const HomeComponent = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  
+
   // 開発モードかどうかの判定（メモ化）
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);
-  const useRealAPI = useMemo(() => import.meta.env.VITE_USE_REAL_API === 'true', []);
+  const useRealAPI = useMemo(
+    () => import.meta.env.VITE_USE_REAL_API === "true",
+    [],
+  );
 
   // 上長・管理者かどうかの判定（メモ化）
   const canAccessSupervisorDashboard = useMemo(
     () => user?.role === "上長" || user?.role === "管理者",
-    [user?.role]
+    [user?.role],
   );
 
   const handleSupervisorDashboard = useCallback(() => {
@@ -50,7 +53,9 @@ const HomeComponent = () => {
     <Box p={8}>
       <VStack gap={6} align="start">
         <HStack>
-          <Heading size="lg" color="gray.800">{MessageConst.APP.TITLE}</Heading>
+          <Heading size="lg" color="gray.800">
+            {MessageConst.APP.TITLE}
+          </Heading>
           {/* 開発モード表示 */}
           {isDevelopment && !useRealAPI && (
             <StatusBadge status="dev-mock">
@@ -66,11 +71,19 @@ const HomeComponent = () => {
 
         {/* ユーザー情報表示 */}
         {user && (
-          <Box p={4} bg="green.50" borderRadius="md" borderLeftWidth="4px" borderLeftColor="green.400">
+          <Box
+            p={4}
+            bg="green.50"
+            borderRadius="md"
+            borderLeftWidth="4px"
+            borderLeftColor="green.400"
+          >
             <VStack align="start" gap={2}>
               <HStack>
                 <Text fontSize="lg" fontWeight="semibold" color="gray.700">
-                  {MessageConst.AUTH.LOGIN_SUCCESS_DESCRIPTION(user.displayName || user.username)}
+                  {MessageConst.AUTH.LOGIN_SUCCESS_DESCRIPTION(
+                    user.displayName || user.username,
+                  )}
                 </Text>
                 <Badge colorScheme="blue" variant="solid">
                   {user.role}
@@ -106,13 +119,21 @@ const HomeComponent = () => {
             </VStack>
           </Box>
         )}
-        
-        <Text fontSize="lg" color="gray.700">{MessageConst.APP.WELCOME_MESSAGE}</Text>
+
+        <Text fontSize="lg" color="gray.700">
+          {MessageConst.APP.WELCOME_MESSAGE}
+        </Text>
         <Text color="gray.700">{MessageConst.APP.HOME_DESCRIPTION}</Text>
-        
+
         {/* 開発モード時の説明 */}
         {isDevelopment && !useRealAPI && (
-          <Box p={4} bg="blue.50" borderRadius="md" borderLeftWidth="4px" borderLeftColor="blue.400">
+          <Box
+            p={4}
+            bg="blue.50"
+            borderRadius="md"
+            borderLeftWidth="4px"
+            borderLeftColor="blue.400"
+          >
             <VStack align="start" gap={1}>
               <Text fontSize="sm" color="blue.700">
                 <strong>{MessageConst.DEV.MOCK_API_DESCRIPTION}</strong>
@@ -123,7 +144,7 @@ const HomeComponent = () => {
             </VStack>
           </Box>
         )}
-        
+
         <Button variant="danger" onClick={logout}>
           {MessageConst.ACTION.LOGOUT}
         </Button>

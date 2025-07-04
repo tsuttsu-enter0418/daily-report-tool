@@ -1,18 +1,18 @@
 /**
  * テストユーティリティ関数
- * 
+ *
  * 機能:
  * - コンポーネントテスト用のレンダリング関数
  * - Chakra UI Provider とルーターのセットアップ
  * - 共通のテストヘルパー関数
  */
 
-import { type ReactElement } from 'react'
-import { render, type RenderOptions } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
-import { Provider } from '@/components/ui/provider'
-import { Toaster } from '@/components/ui/toaster'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { type ReactElement } from "react";
+import { render, type RenderOptions } from "@testing-library/react";
+import { BrowserRouter } from "react-router-dom";
+import { Provider } from "@/components/ui/provider";
+import { Toaster } from "@/components/ui/toaster";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 /**
  * テスト用のプロバイダーラッパー
@@ -24,7 +24,7 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
         retry: false,
       },
     },
-  })
+  });
 
   return (
     <Provider>
@@ -35,8 +35,8 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
         </BrowserRouter>
       </QueryClientProvider>
     </Provider>
-  )
-}
+  );
+};
 
 /**
  * カスタムレンダー関数
@@ -44,8 +44,8 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
  */
 const customRender = (
   ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>
-) => render(ui, { wrapper: AllTheProviders, ...options })
+  options?: Omit<RenderOptions, "wrapper">,
+) => render(ui, { wrapper: AllTheProviders, ...options });
 
 /**
  * ルーターなしのシンプルなレンダー関数
@@ -53,7 +53,7 @@ const customRender = (
  */
 const renderWithoutRouter = (
   ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>
+  options?: Omit<RenderOptions, "wrapper">,
 ) => {
   const SimpleWrapper = ({ children }: { children: React.ReactNode }) => {
     const queryClient = new QueryClient({
@@ -62,7 +62,7 @@ const renderWithoutRouter = (
           retry: false,
         },
       },
-    })
+    });
 
     return (
       <Provider>
@@ -71,12 +71,12 @@ const renderWithoutRouter = (
           <Toaster />
         </QueryClientProvider>
       </Provider>
-    )
-  }
+    );
+  };
 
-  return render(ui, { wrapper: SimpleWrapper, ...options })
-}
+  return render(ui, { wrapper: SimpleWrapper, ...options });
+};
 
 // re-export everything
-export * from '@testing-library/react'
-export { customRender as render, renderWithoutRouter }
+export * from "@testing-library/react";
+export { customRender as render, renderWithoutRouter };

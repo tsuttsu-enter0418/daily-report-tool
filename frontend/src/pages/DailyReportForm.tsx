@@ -72,7 +72,10 @@ const DailyReportFormComponent = ({
 
   // 開発モード表示判定（メモ化）
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);
-  const useRealAPI = useMemo(() => import.meta.env.VITE_USE_REAL_API === "true", []);
+  const useRealAPI = useMemo(
+    () => import.meta.env.VITE_USE_REAL_API === "true",
+    [],
+  );
 
   // React Hook Form セットアップ
   const {
@@ -92,31 +95,34 @@ const DailyReportFormComponent = ({
   const workContent = watch("workContent");
 
   // 提出処理（メモ化）
-  const onSubmit = useCallback(async (data: DailyReportFormData) => {
-    setIsSubmitting(true);
-    try {
-      console.log("日報提出:", { ...data, reportId, isEditMode });
-      // TODO: 実際のAPI呼び出し実装
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // モック遅延
+  const onSubmit = useCallback(
+    async (data: DailyReportFormData) => {
+      setIsSubmitting(true);
+      try {
+        console.log("日報提出:", { ...data, reportId, isEditMode });
+        // TODO: 実際のAPI呼び出し実装
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // モック遅延
 
-      if (isEditMode) {
-        showSuccess(MessageConst.REPORT.UPDATE_SUCCESS);
-        showInfo("日報が更新されました。");
-      } else {
-        showSuccess(MessageConst.REPORT.CREATE_SUCCESS);
-        showInfo("日報が作成されました。");
+        if (isEditMode) {
+          showSuccess(MessageConst.REPORT.UPDATE_SUCCESS);
+          showInfo("日報が更新されました。");
+        } else {
+          showSuccess(MessageConst.REPORT.CREATE_SUCCESS);
+          showInfo("日報が作成されました。");
+        }
+
+        // 成功時のリダイレクト
+        setTimeout(() => {
+          navigate("/home");
+        }, 1000);
+      } catch (error) {
+        handleError(error, "日報提出処理");
+      } finally {
+        setIsSubmitting(false);
       }
-
-      // 成功時のリダイレクト
-      setTimeout(() => {
-        navigate("/home");
-      }, 1000);
-    } catch (error) {
-      handleError(error, "日報提出処理");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [reportId, isEditMode, handleError, showSuccess, showInfo, navigate]);
+    },
+    [reportId, isEditMode, handleError, showSuccess, showInfo, navigate],
+  );
 
   // 下書き保存処理（メモ化）
   const handleSaveDraft = useCallback(async () => {

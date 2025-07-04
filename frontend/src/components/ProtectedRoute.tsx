@@ -8,14 +8,14 @@ import { isAuthenticatedAtom, logoutAtom } from "../stores";
 
 /**
  * 認証保護ルートコンポーネント (Organism)
- * 
+ *
  * 機能:
  * - Jotai状態管理からの認証状態確認
  * - JWT トークンの存在確認
  * - トークンの有効性検証
  * - 未認証時のログイン画面リダイレクト
  * - 認証中のローディング表示
- * 
+ *
  * 使用場面:
  * - ホーム画面など認証が必要なページ
  * - 管理者専用ページ
@@ -35,7 +35,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   useEffect(() => {
     /**
      * 認証状態の検証処理
-     * 
+     *
      * 処理フロー:
      * 1. Jotai状態管理の認証状態を確認
      * 2. 未認証の場合、Cookieから JWT トークンを取得
@@ -52,7 +52,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       }
 
       const token = Cookies.get("authToken");
-      
+
       if (!token) {
         navigate("/login");
         return;
@@ -81,11 +81,11 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   if (isValidating) {
     return (
-      <Box 
-        display="flex" 
+      <Box
+        display="flex"
         flexDirection="column"
-        alignItems="center" 
-        justifyContent="center" 
+        alignItems="center"
+        justifyContent="center"
         height="100vh"
         gap={4}
       >

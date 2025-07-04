@@ -41,7 +41,10 @@ const LoginComponent = () => {
 
   // 開発モードかどうかの判定（メモ化）
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);
-  const useRealAPI = useMemo(() => import.meta.env.VITE_USE_REAL_API === "true", []);
+  const useRealAPI = useMemo(
+    () => import.meta.env.VITE_USE_REAL_API === "true",
+    [],
+  );
 
   const {
     register,
