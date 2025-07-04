@@ -1,6 +1,6 @@
 import { Badge } from "@chakra-ui/react";
 import { memo, useMemo } from "react";
-import { type StatusBadgeType } from "../../types";
+import { type StatusBadgeType, type CommonComponentProps } from "../../types";
 
 /**
  * ステータス表示バッジコンポーネント (Molecule)
@@ -16,15 +16,18 @@ import { type StatusBadgeType } from "../../types";
  * - 日報一覧での進捗ステータス表示
  */
 
-type StatusBadgeProps = {
-  /** 表示するステータスタイプ */
+/**
+ * StatusBadgeコンポーネントのProps型定義（型安全性向上）
+ */
+type StatusBadgeProps = CommonComponentProps & {
+  /** 表示するステータスタイプ（必須） */
   status: StatusBadgeType;
-  /** 表示テキスト */
+  /** 表示テキスト（必須） */
   children: React.ReactNode;
-  /** バッジのバリアント */
+  /** バッジのバリアント（デフォルト: solid） */
   variant?: "solid" | "outline" | "subtle";
-  /** アクセシブルなラベル（スクリーンリーダー用） */
-  "aria-label"?: string;
+  /** サイズ（デフォルト: sm） */
+  size?: "xs" | "sm" | "md" | "lg";
 };
 
 /**

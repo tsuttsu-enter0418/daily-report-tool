@@ -1,4 +1,4 @@
-import type { LoginRequest, LoginResponse } from "../types";
+import type { LoginRequest, LoginResponse, UserRole } from "../types";
 
 /**
  * モックAPIサービス
@@ -15,11 +15,18 @@ import type { LoginRequest, LoginResponse } from "../types";
  * - デモンストレーション
  */
 
+/**
+ * モックユーザーの型定義（型安全性向上）
+ */
 type MockUser = {
-  id: string;
+  /** ユーザーID */
+  readonly id: string;
+  /** ユーザー名 */
   username: string;
+  /** メールアドレス */
   email: string;
-  role: string;
+  /** ユーザー役職（型安全性向上） */
+  role: UserRole;
 };
 
 // モックユーザーデータ

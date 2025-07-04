@@ -4,7 +4,7 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { forwardRef, useMemo } from "react";
-import { type ButtonVariant } from "../../types";
+import { type ButtonVariant, type CommonComponentProps } from "../../types";
 
 /**
  * カスタムButtonコンポーネント (Atom)
@@ -22,17 +22,17 @@ import { type ButtonVariant } from "../../types";
  * - ナビゲーションボタン
  */
 
-type CustomButtonProps = Omit<ButtonProps, "loading" | "variant"> & {
+/**
+ * カスタムButtonコンポーネントのProps型定義（型安全性向上）
+ */
+type CustomButtonProps = Omit<ButtonProps, "loading" | "variant"> & 
+  CommonComponentProps & {
   /** ローディング状態（デフォルト: false） */
   loading?: boolean;
   /** ローディング時のテキスト */
   loadingText?: string;
-  /** ボタンの用途に応じたバリアント */
+  /** ボタンの用途に応じたバリアント（デフォルト: primary） */
   variant?: ButtonVariant;
-  /** アクセシブルなボタンラベル（スクリーンリーダー用） */
-  "aria-label"?: string;
-  /** ボタンの詳細説明（必要に応じて） */
-  "aria-describedby"?: string;
 };
 
 /**
