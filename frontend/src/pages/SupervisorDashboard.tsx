@@ -120,7 +120,7 @@ export const SupervisorDashboard = () => {
         <Box w="full">
           <VStack align="start" gap={4}>
             <HStack wrap="wrap" gap={4}>
-              <Heading size="xl" color="orange.800">{MessageConst.DASHBOARD.TEAM_REPORTS_TITLE}</Heading>
+              <Heading size="xl" color="gray.800">{MessageConst.DASHBOARD.TEAM_REPORTS_TITLE}</Heading>
               {/* 開発モード表示 */}
               {isDevelopment && !useRealAPI && (
                 <StatusBadge status="dev-mock">
@@ -134,7 +134,7 @@ export const SupervisorDashboard = () => {
               )}
             </HStack>
             {user && (
-              <Text color="amber.700" fontSize="lg">
+              <Text color="gray.700" fontSize="lg" fontWeight="medium">
                 {MessageConst.DASHBOARD.SUPERVISOR_GREETING(user.displayName || user.username)}
               </Text>
             )}
@@ -190,10 +190,10 @@ export const SupervisorDashboard = () => {
             py={10}
             w="full"
           >
-            <Text color="amber.600" fontSize="lg">
+            <Text color="gray.600" fontSize="lg" fontWeight="medium">
               {MessageConst.DASHBOARD.NO_REPORTS_TITLE}
             </Text>
-            <Text color="amber.500" fontSize="sm" mt={2}>
+            <Text color="gray.500" fontSize="sm" mt={2}>
               {MessageConst.DASHBOARD.NO_REPORTS_MESSAGE}
             </Text>
           </Box>

@@ -93,10 +93,10 @@ export const ReportCard = ({ report, onClick }: ReportCardProps) => {
         <VStack align="start" gap={4} flex={1} h="full" justify="center">
           <HStack justify="space-between" w="full" align="start">
             <VStack align="start" gap={2} flex={1}>
-              <Heading size="lg" color="orange.800" lineHeight="1.3">
+              <Heading size="lg" color="gray.800" lineHeight="1.3">
                 {report.title}
               </Heading>
-              <Text fontSize="lg" color="amber.700" fontWeight="medium">
+              <Text fontSize="lg" color="gray.700" fontWeight="medium">
                 {report.author}, {report.team}
               </Text>
             </VStack>
@@ -106,7 +106,7 @@ export const ReportCard = ({ report, onClick }: ReportCardProps) => {
               </StatusBadge>
             </Box>
           </HStack>
-          <Text fontSize="md" color="amber.600" fontWeight="medium">
+          <Text fontSize="md" color="gray.600" fontWeight="medium">
             提出日: {report.date}
           </Text>
         </VStack>
