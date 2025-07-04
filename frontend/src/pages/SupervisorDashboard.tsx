@@ -3,6 +3,7 @@ import { useCallback, useMemo, memo } from "react";
 import { Button } from "../components/atoms";
 import { StatusBadge, ReportCard } from "../components/molecules";
 import { useAuth } from "../hooks";
+import { useErrorHandler } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 import { type ReportCardData, type FilterType } from "../types";
 
@@ -89,20 +90,31 @@ const mockReports: MockReport[] = [
 
 const SupervisorDashboardComponent = () => {
   const { user } = useAuth();
+  const { handleError, showInfo } = useErrorHandler();
 
   // 開発モード表示判定（メモ化）
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);
   const useRealAPI = useMemo(() => import.meta.env.VITE_USE_REAL_API === 'true', []);
 
-  const handleReportClick = useCallback((reportId: string) => {
-    console.log(`日報詳細表示: ${reportId}`);
-    // 今後、日報詳細ページへの遷移を実装
-  }, []);
+  const handleReportClick = useCallback(async (reportId: string) => {
+    try {
+      console.log(`日報詳細表示: ${reportId}`);
+      // TODO: 日報詳細ページへの遷移を実装
+      showInfo("日報詳細ページは今後実装予定です。");
+    } catch (error) {
+      handleError(error, "日報詳細表示処理");
+    }
+  }, [handleError, showInfo]);
 
-  const handleFilterClick = useCallback((filter: FilterType) => {
-    console.log(`フィルター変更: ${filter}`);
-    // 今後、フィルタリング機能を実装
-  }, []);
+  const handleFilterClick = useCallback(async (filter: FilterType) => {
+    try {
+      console.log(`フィルター変更: ${filter}`);
+      // TODO: フィルタリング機能を実装
+      showInfo(`フィルター機能は今後実装予定です。選択: ${filter}`);
+    } catch (error) {
+      handleError(error, "フィルター変更処理");
+    }
+  }, [handleError, showInfo]);
 
   return (
     <Box 

@@ -16,6 +16,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "../components/atoms";
 import { StatusBadge } from "../components/molecules";
 import { useAuth } from "../hooks";
+import { useErrorHandler } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 import { useState, useCallback, useMemo, memo } from "react";
 
@@ -63,6 +64,7 @@ const DailyReportFormComponent = ({
   initialData,
 }: Omit<DailyReportFormProps, "reportId">) => {
   const { user } = useAuth();
+  const { handleError, showSuccess, showInfo } = useErrorHandler();
   const { id: reportId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -98,21 +100,23 @@ const DailyReportFormComponent = ({
       await new Promise((resolve) => setTimeout(resolve, 1000)); // モック遅延
 
       if (isEditMode) {
-        console.log("日報更新完了");
-        // TODO: 成功Toast表示
+        showSuccess(MessageConst.REPORT.UPDATE_SUCCESS);
+        showInfo("日報が更新されました。");
       } else {
-        console.log("日報作成完了");
-        // TODO: 成功Toast表示
+        showSuccess(MessageConst.REPORT.CREATE_SUCCESS);
+        showInfo("日報が作成されました。");
       }
 
-      // TODO: ダッシュボードまたは一覧画面に遷移
+      // 成功時のリダイレクト
+      setTimeout(() => {
+        navigate("/home");
+      }, 1000);
     } catch (error) {
-      console.error("日報提出エラー:", error);
-      // TODO: エラーToast表示
+      handleError(error, "日報提出処理");
     } finally {
       setIsSubmitting(false);
     }
-  }, [reportId, isEditMode]);
+  }, [reportId, isEditMode, handleError, showSuccess, showInfo, navigate]);
 
   // 下書き保存処理（メモ化）
   const handleSaveDraft = useCallback(async () => {
@@ -123,15 +127,13 @@ const DailyReportFormComponent = ({
       // TODO: 実際のAPI呼び出し実装
       await new Promise((resolve) => setTimeout(resolve, 500)); // モック遅延
 
-      console.log("下書き保存完了");
-      // TODO: 成功Toast表示
+      showSuccess("下書きが保存されました。");
     } catch (error) {
-      console.error("下書き保存エラー:", error);
-      // TODO: エラーToast表示
+      handleError(error, "下書き保存処理");
     } finally {
       setIsDraftSaving(false);
     }
-  }, [workContent]);
+  }, [workContent, handleError, showSuccess]);
 
   // 戻る処理（メモ化）
   const handleBack = useCallback(() => {

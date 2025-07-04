@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../components/atoms";
 import { StatusBadge } from "../components/molecules";
 import { useAuth } from "../hooks";
+import { useErrorHandler } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 
 /**
@@ -190,6 +191,7 @@ const PersonalReportCard = memo(PersonalReportCardComponent);
 
 const DailyReportListComponent = () => {
   const { user } = useAuth();
+  const { handleError, showSuccess, showInfo } = useErrorHandler();
   const navigate = useNavigate();
   const [currentFilter, setCurrentFilter] = useState<FilterType>("all");
 
@@ -218,10 +220,22 @@ const DailyReportListComponent = () => {
     navigate(`/report/edit/${reportId}`);
   }, [navigate]);
 
-  const handleDelete = useCallback((reportId: string) => {
-    console.log(`日報削除: ${reportId}`);
-    // TODO: 削除確認ダイアログ + 実際の削除処理
-  }, []);
+  const handleDelete = useCallback(async (reportId: string) => {
+    try {
+      // TODO: 削除確認ダイアログの実装
+      const confirmed = window.confirm("日報を削除しますか？");
+      if (!confirmed) return;
+
+      console.log(`日報削除: ${reportId}`);
+      // TODO: 実際のAPI呼び出し実装
+      await new Promise((resolve) => setTimeout(resolve, 500)); // モック遅延
+
+      showSuccess("日報が削除されました。");
+      showInfo("ページをリロードして更新された一覧を表示します。");
+    } catch (error) {
+      handleError(error, "日報削除処理");
+    }
+  }, [handleError, showSuccess, showInfo]);
 
   const handleFilterChange = useCallback((filter: FilterType) => {
     setCurrentFilter(filter);
