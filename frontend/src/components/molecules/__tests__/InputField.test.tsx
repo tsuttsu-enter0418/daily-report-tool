@@ -147,7 +147,6 @@ describe('InputField', () => {
     )
 
     const input = screen.getByTestId('accessibility-input')
-    const label = screen.getByText('アクセシビリティテスト')
 
     // ラベルクリックでinputにフォーカスが当たることを確認
     expect(input).toHaveAccessibleName('アクセシビリティテスト')

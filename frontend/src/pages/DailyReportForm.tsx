@@ -78,7 +78,6 @@ export const DailyReportForm = ({
     handleSubmit,
     formState: { errors, isValid },
     watch,
-    setValue,
   } = useForm<DailyReportFormData>({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -151,11 +150,11 @@ export const DailyReportForm = ({
         px={{ base: 4, md: 8 }}
         py={8}
       >
-        <VStack spacing={8} align="stretch">
+        <VStack gap={8} align="stretch">
           {/* ヘッダー */}
           <Box w="full">
-            <VStack align="start" spacing={4}>
-              <HStack wrap="wrap" spacing={4}>
+            <VStack align="start" gap={4}>
+              <HStack wrap="wrap" gap={4}>
                 <Heading size="xl" color="orange.800">
                   {isEditMode ? MessageConst.REPORT.EDIT_FORM_TITLE : MessageConst.REPORT.CREATE_FORM_TITLE}
                 </Heading>
@@ -188,7 +187,7 @@ export const DailyReportForm = ({
           {/* 開発モード時の説明 */}
           {isDevelopment && !useRealAPI && (
             <Box p={4} bg="blue.50" borderRadius="md" borderLeftWidth="4px" borderLeftColor="blue.400">
-              <VStack align="start" spacing={1}>
+              <VStack align="start" gap={1}>
                 <Text fontSize="sm" color="blue.700">
                   <strong>{MessageConst.DEV.MOCK_API_DESCRIPTION}</strong>
                 </Text>
@@ -210,7 +209,7 @@ export const DailyReportForm = ({
           >
             <Card.Body p={8}>
               <form onSubmit={handleSubmit(onSubmit)}>
-                <VStack spacing={6} align="stretch">
+                <VStack gap={6} align="stretch">
                   {/* 作業内容入力 */}
                   <Field.Root invalid={!!errors.workContent}>
                     <Field.Label color="orange.800" fontSize="lg" fontWeight="semibold">
@@ -260,8 +259,8 @@ export const DailyReportForm = ({
                   </Box>
 
                   {/* アクションボタン */}
-                  <Stack direction={{ base: "column", md: "row" }} spacing={4} justify="space-between">
-                    <HStack spacing={3}>
+                  <Stack direction={{ base: "column", md: "row" }} gap={4} justify="space-between">
+                    <HStack gap={3}>
                       <Button 
                         variant="secondary" 
                         onClick={handleBack}
@@ -284,7 +283,7 @@ export const DailyReportForm = ({
                       variant="primary"
                       loading={isSubmitting}
                       loadingText={isEditMode ? MessageConst.SYSTEM.SAVING : MessageConst.SYSTEM.PROCESSING}
-                      isDisabled={!isValid}
+                      disabled={!isValid}
                       size="lg"
                     >
                       {isEditMode ? MessageConst.ACTION.UPDATE : MessageConst.REPORT.SUBMIT_REPORT}

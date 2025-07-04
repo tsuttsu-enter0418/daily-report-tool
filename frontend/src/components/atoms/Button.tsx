@@ -21,7 +21,7 @@ import { forwardRef } from "react";
  * - ナビゲーションボタン
  */
 
-type CustomButtonProps = Omit<ButtonProps, "loading"> & {
+type CustomButtonProps = Omit<ButtonProps, "loading" | "variant"> & {
   /** ローディング状態（デフォルト: false） */
   loading?: boolean;
   /** ローディング時のテキスト */
@@ -37,17 +37,17 @@ const getVariantStyles = (variant: CustomButtonProps["variant"]) => {
   switch (variant) {
     case "primary":
       return {
-        bg: "blue.500",
+        bg: "orange.500",
         color: "white",
-        _hover: { bg: "blue.600" },
-        _active: { bg: "blue.700" },
+        _hover: { bg: "orange.600" },
+        _active: { bg: "orange.700" },
       };
     case "secondary":
       return {
-        bg: "gray.100",
-        color: "gray.700",
-        _hover: { bg: "gray.200" },
-        _active: { bg: "gray.300" },
+        bg: "amber.50",
+        color: "amber.800",
+        _hover: { bg: "amber.100" },
+        _active: { bg: "amber.200" },
       };
     case "danger":
       return {
@@ -59,15 +59,15 @@ const getVariantStyles = (variant: CustomButtonProps["variant"]) => {
     case "ghost":
       return {
         bg: "transparent",
-        _hover: { bg: "gray.100" },
-        _active: { bg: "gray.200" },
+        _hover: { bg: "orange.50" },
+        _active: { bg: "orange.100" },
       };
     default:
       return {
-        bg: "blue.500",
+        bg: "orange.500",
         color: "white",
-        _hover: { bg: "blue.600" },
-        _active: { bg: "blue.700" },
+        _hover: { bg: "orange.600" },
+        _active: { bg: "orange.700" },
       };
   }
 };
@@ -94,7 +94,10 @@ export const Button = forwardRef<HTMLButtonElement, CustomButtonProps>(
         disabled={disabled || loading}
         size={size}
         fontWeight={fontWeight}
-        {...variantStyles}
+        bg={variantStyles.bg}
+        color={variantStyles.color}
+        _hover={variantStyles._hover}
+        _active={variantStyles._active}
         {...props}
       >
         {loading ? (

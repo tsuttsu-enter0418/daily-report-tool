@@ -124,7 +124,9 @@ describe("Login", () => {
 
     mockApiService.login.mockResolvedValue({
       token: "mock-jwt-token",
+      id: "1",
       username: "admin",
+      email: "admin@example.com",
       role: "管理者",
     });
 
@@ -237,7 +239,9 @@ describe("Login", () => {
             () =>
               resolve({
                 token: "token",
+                id: "1",
                 username: "admin",
+                email: "admin@example.com",
                 role: "管理者",
               }),
             2000

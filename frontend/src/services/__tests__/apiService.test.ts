@@ -8,7 +8,7 @@
  * - エラーハンドリング
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { apiService } from '../apiService'
 
 // fetch のモック

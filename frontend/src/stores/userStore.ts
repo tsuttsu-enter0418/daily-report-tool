@@ -113,7 +113,7 @@ export const tokenAtom = atom<string | null>((get) => {
  */
 export const loginAtom = atom(
   null,
-  (get, set, { user, token }: { user: UserInfo; token: string }) => {
+  (_get, set, { user, token }: { user: UserInfo; token: string }) => {
     set(authStateAtom, {
       isAuthenticated: true,
       user,
@@ -134,7 +134,7 @@ export const loginAtom = atom(
  * const logout = useSetAtom(logoutAtom);
  * logout();
  */
-export const logoutAtom = atom(null, (get, set) => {
+export const logoutAtom = atom(null, (_get, set) => {
   set(authStateAtom, initialAuthState);
 });
 

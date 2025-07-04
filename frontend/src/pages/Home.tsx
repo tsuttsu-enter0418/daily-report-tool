@@ -44,7 +44,7 @@ export const Home = () => {
 
   return (
     <Box p={8}>
-      <VStack spacing={6} align="start">
+      <VStack gap={6} align="start">
         <HStack>
           <Heading size="lg">{MessageConst.APP.TITLE}</Heading>
           {/* 開発モード表示 */}
@@ -63,7 +63,7 @@ export const Home = () => {
         {/* ユーザー情報表示 */}
         {user && (
           <Box p={4} bg="green.50" borderRadius="md" borderLeftWidth="4px" borderLeftColor="green.400">
-            <VStack align="start" spacing={2}>
+            <VStack align="start" gap={2}>
               <HStack>
                 <Text fontSize="lg" fontWeight="semibold">
                   {MessageConst.AUTH.LOGIN_SUCCESS_DESCRIPTION(user.displayName || user.username)}
@@ -82,11 +82,11 @@ export const Home = () => {
         {/* 役職別アクション */}
         {user && (
           <Box p={4} bg="gray.50" borderRadius="md" w="full">
-            <VStack align="start" spacing={3}>
+            <VStack align="start" gap={3}>
               <Text fontSize="md" fontWeight="semibold" color="gray.700">
                 利用可能な機能
               </Text>
-              <HStack spacing={3}>
+              <HStack gap={3}>
                 {canAccessSupervisorDashboard && (
                   <Button variant="primary" onClick={handleSupervisorDashboard}>
                     {MessageConst.ACTION.VIEW_TEAM_REPORTS}
@@ -109,7 +109,7 @@ export const Home = () => {
         {/* 開発モード時の説明 */}
         {isDevelopment && !useRealAPI && (
           <Box p={4} bg="blue.50" borderRadius="md" borderLeftWidth="4px" borderLeftColor="blue.400">
-            <VStack align="start" spacing={1}>
+            <VStack align="start" gap={1}>
               <Text fontSize="sm" color="blue.700">
                 <strong>{MessageConst.DEV.MOCK_API_DESCRIPTION}</strong>
               </Text>

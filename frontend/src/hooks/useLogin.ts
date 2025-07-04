@@ -6,7 +6,7 @@ import { apiService } from "../services/apiService";
 import { Toast } from "../components/atoms";
 import { MessageConst } from "../constants/MessageConst";
 import { loginAtom } from "../stores";
-import type { LoginRequest } from "../types";
+import type { LoginRequest, UserRole } from "../types";
 
 /**
  * ログイン機能を管理するカスタムフック
@@ -73,7 +73,7 @@ export const useLogin = (): UseLoginReturn => {
           id: result.id || "1",
           username: result.username,
           email: result.email || "",
-          role: result.role || "部下",
+          role: (result.role as UserRole) || "部下",
           displayName: result.displayName || result.username,
         },
         token: result.token,

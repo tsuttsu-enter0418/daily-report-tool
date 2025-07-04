@@ -92,7 +92,7 @@ const PersonalReportCard = ({ report, onEdit, onDelete }: PersonalReportCardProp
     switch (status) {
       case "submitted": return "success";
       case "draft": return "warning";
-      default: return "gray";
+      default: return "error";
     }
   };
 
@@ -125,10 +125,10 @@ const PersonalReportCard = ({ report, onEdit, onDelete }: PersonalReportCardProp
       }}
     >
       <Card.Body p={6}>
-        <VStack align="stretch" spacing={4}>
+        <VStack align="stretch" gap={4}>
           {/* ヘッダー部分 */}
           <HStack justify="space-between" align="start">
-            <VStack align="start" spacing={1} flex={1}>
+            <VStack align="start" gap={1} flex={1}>
               <Heading size="md" color="orange.800" lineHeight="1.3">
                 {report.title}
               </Heading>
@@ -160,7 +160,7 @@ const PersonalReportCard = ({ report, onEdit, onDelete }: PersonalReportCardProp
           </Box>
 
           {/* アクションボタン */}
-          <HStack spacing={2} justify="flex-end">
+          <HStack gap={2} justify="flex-end">
             <Button
               variant="secondary"
               size="sm"
@@ -230,11 +230,11 @@ export const DailyReportList = () => {
         px={{ base: 4, md: 8 }}
         py={8}
       >
-        <VStack spacing={8} align="stretch">
+        <VStack gap={8} align="stretch">
           {/* ヘッダー */}
           <Box w="full">
-            <VStack align="start" spacing={4}>
-              <HStack wrap="wrap" spacing={4}>
+            <VStack align="start" gap={4}>
+              <HStack wrap="wrap" gap={4}>
                 <Heading size="xl" color="orange.800">
                   {MessageConst.REPORT.LIST_TITLE}
                 </Heading>
@@ -272,7 +272,7 @@ export const DailyReportList = () => {
           </HStack>
 
           {/* フィルターボタン */}
-          <HStack spacing={2}>
+          <HStack gap={2}>
             <Button 
               variant={currentFilter === "all" ? "primary" : "secondary"}
               onClick={() => handleFilterChange("all")}
@@ -296,7 +296,7 @@ export const DailyReportList = () => {
           {/* 開発モード時の説明 */}
           {isDevelopment && !useRealAPI && (
             <Box p={4} bg="blue.50" borderRadius="md" borderLeftWidth="4px" borderLeftColor="blue.400">
-              <VStack align="start" spacing={1}>
+              <VStack align="start" gap={1}>
                 <Text fontSize="sm" color="blue.700">
                   <strong>{MessageConst.DEV.MOCK_API_DESCRIPTION}</strong>
                 </Text>
@@ -311,7 +311,7 @@ export const DailyReportList = () => {
           {filteredReports.length > 0 ? (
             <SimpleGrid 
               columns={{ base: 1, md: 2, lg: 3 }} 
-              spacing={6} 
+              gap={6} 
               w="full"
             >
               {filteredReports.map((report) => (
@@ -330,7 +330,7 @@ export const DailyReportList = () => {
               py={10}
               w="full"
             >
-              <VStack spacing={4}>
+              <VStack gap={4}>
                 <Text color="amber.600" fontSize="lg" fontWeight="semibold">
                   {currentFilter === "all" ? MessageConst.REPORT.NO_REPORTS_MESSAGE : `${getFilterText(currentFilter)}の日報がありません`}
                 </Text>

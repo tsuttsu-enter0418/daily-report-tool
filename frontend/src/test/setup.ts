@@ -8,6 +8,7 @@
  */
 
 import '@testing-library/jest-dom'
+import { beforeAll, afterAll } from 'vitest'
 
 // 環境変数のモック設定
 Object.defineProperty(import.meta, 'env', {

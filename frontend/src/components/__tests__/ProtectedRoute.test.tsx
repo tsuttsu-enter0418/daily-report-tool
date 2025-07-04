@@ -9,7 +9,7 @@
  * - 認証失敗時の処理
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@/test/utils'
 import { ProtectedRoute } from '../ProtectedRoute'
 import Cookies from 'js-cookie'
@@ -53,7 +53,7 @@ describe('ProtectedRoute', () => {
   const TestChild = () => <div>保護されたコンテンツ</div>
 
   it('トークンが存在しない場合、ログイン画面にリダイレクトする', () => {
-    mockCookies.get.mockReturnValue(undefined)
+    mockCookies.get.mockReturnValue(undefined as any)
 
     render(
       <ProtectedRoute>
@@ -66,7 +66,7 @@ describe('ProtectedRoute', () => {
   })
 
   it('トークン検証中はローディング画面を表示する', async () => {
-    mockCookies.get.mockReturnValue('valid-token')
+    mockCookies.get.mockReturnValue('valid-token' as any)
     mockApiService.validateToken.mockImplementation(() => 
       new Promise(resolve => setTimeout(() => resolve(true), 1000))
     )
@@ -83,7 +83,7 @@ describe('ProtectedRoute', () => {
   })
 
   it('有効なトークンの場合、子コンポーネントを表示する', async () => {
-    mockCookies.get.mockReturnValue('valid-token')
+    mockCookies.get.mockReturnValue('valid-token' as any)
     mockApiService.validateToken.mockResolvedValue(true)
 
     render(
@@ -100,7 +100,7 @@ describe('ProtectedRoute', () => {
   })
 
   it('無効なトークンの場合、Cookieを削除してログイン画面にリダイレクトする', async () => {
-    mockCookies.get.mockReturnValue('invalid-token')
+    mockCookies.get.mockReturnValue('invalid-token' as any)
     mockApiService.validateToken.mockResolvedValue(false)
 
     render(
@@ -118,7 +118,7 @@ describe('ProtectedRoute', () => {
   })
 
   it('トークン検証でエラーが発生した場合、Cookieを削除してログイン画面にリダイレクトする', async () => {
-    mockCookies.get.mockReturnValue('error-token')
+    mockCookies.get.mockReturnValue('error-token' as any)
     mockApiService.validateToken.mockRejectedValue(new Error('Network error'))
 
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -141,7 +141,7 @@ describe('ProtectedRoute', () => {
   })
 
   it('認証が完了するまで子コンポーネントが表示されない', async () => {
-    mockCookies.get.mockReturnValue('valid-token')
+    mockCookies.get.mockReturnValue('valid-token' as any)
     
     let resolveValidation: (value: boolean) => void
     mockApiService.validateToken.mockImplementation(() => 

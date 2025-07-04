@@ -1,6 +1,6 @@
-import { Box, Heading, VStack, HStack, Text, Badge, SimpleGrid } from "@chakra-ui/react";
+import { Box, Heading, VStack, HStack, Text, SimpleGrid } from "@chakra-ui/react";
 import { Button } from "../components/atoms";
-import { StatusBadge } from "../components/molecules";
+import { StatusBadge, ReportCard, type ReportCardData } from "../components/molecules";
 import { useAuth } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 
@@ -26,15 +26,7 @@ import { MessageConst } from "../constants/MessageConst";
 
 type FilterType = "all" | "completed" | "pending";
 
-type MockReport = {
-  id: string;
-  title: string;
-  author: string;
-  team: string;
-  status: "completed" | "pending" | "draft";
-  date: string;
-  avatarBg: string;
-};
+type MockReport = ReportCardData;
 
 // モックデータ
 const mockReports: MockReport[] = [
@@ -94,97 +86,6 @@ const mockReports: MockReport[] = [
   }
 ];
 
-/**
- * 日報カードコンポーネント (Molecule)
- */
-type ReportCardProps = {
-  report: MockReport;
-  onClick: () => void;
-};
-
-const ReportCard = ({ report, onClick }: ReportCardProps) => {
-  const getStatusColor = (status: MockReport["status"]) => {
-    switch (status) {
-      case "completed": return "success";
-      case "pending": return "warning"; 
-      case "draft": return "error";
-      default: return "gray";
-    }
-  };
-
-  const getStatusText = (status: MockReport["status"]) => {
-    switch (status) {
-      case "completed": return MessageConst.DASHBOARD.STATUS_COMPLETED;
-      case "pending": return MessageConst.DASHBOARD.STATUS_PENDING;
-      case "draft": return MessageConst.DASHBOARD.STATUS_DRAFT;
-      default: return "不明";
-    }
-  };
-
-  return (
-    <Box
-      p={10}
-      bg="rgba(255, 251, 235, 0.9)"
-      borderRadius="xl"
-      boxShadow="0 4px 20px rgba(251, 146, 60, 0.15)"
-      border="2px"
-      borderColor="orange.200"
-      cursor="pointer"
-      transition="all 0.3s"
-      w="full"
-      minH="200px"
-      _hover={{
-        boxShadow: "0 8px 30px rgba(251, 146, 60, 0.25)",
-        transform: "translateY(-6px)",
-        borderColor: "orange.400",
-        bg: "rgba(255, 247, 237, 1)"
-      }}
-      onClick={onClick}
-    >
-      <HStack spacing={8} align="center" h="full">
-        {/* アバター */}
-        <Box
-          w="100px"
-          h="100px"
-          borderRadius="xl"
-          background={report.avatarBg}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          color="white"
-          fontWeight="bold"
-          fontSize="3xl"
-          flexShrink={0}
-          boxShadow="lg"
-        >
-          {report.author.charAt(0)}
-        </Box>
-
-        {/* 日報情報 */}
-        <VStack align="start" spacing={4} flex={1} h="full" justify="center">
-          <HStack justify="space-between" w="full" align="start">
-            <VStack align="start" spacing={2} flex={1}>
-              <Heading size="lg" color="orange.800" lineHeight="1.3">
-                {report.title}
-              </Heading>
-              <Text fontSize="lg" color="amber.700" fontWeight="medium">
-                {report.author}, {report.team}
-              </Text>
-            </VStack>
-            <Box flexShrink={0} ml={6}>
-              <StatusBadge status={getStatusColor(report.status)}>
-                {getStatusText(report.status)}
-              </StatusBadge>
-            </Box>
-          </HStack>
-          <Text fontSize="md" color="amber.600" fontWeight="medium">
-            提出日: {report.date}
-          </Text>
-        </VStack>
-      </HStack>
-    </Box>
-  );
-};
 
 export const SupervisorDashboard = () => {
   const { user } = useAuth();
@@ -215,11 +116,11 @@ export const SupervisorDashboard = () => {
         px={{ base: 4, md: 8 }}
         py={8}
       >
-      <VStack spacing={8} align="stretch">
+      <VStack gap={8} align="stretch">
         {/* ヘッダー */}
         <Box w="full">
-          <VStack align="start" spacing={4}>
-            <HStack wrap="wrap" spacing={4}>
+          <VStack align="start" gap={4}>
+            <HStack wrap="wrap" gap={4}>
               <Heading size="xl" color="orange.800">{MessageConst.DASHBOARD.TEAM_REPORTS_TITLE}</Heading>
               {/* 開発モード表示 */}
               {isDevelopment && !useRealAPI && (
@@ -242,7 +143,7 @@ export const SupervisorDashboard = () => {
         </Box>
 
         {/* フィルターボタン */}
-        <HStack spacing={2}>
+        <HStack gap={2}>
           <Button variant="primary" onClick={() => handleFilterClick("all")}>
             {MessageConst.DASHBOARD.FILTER_ALL}
           </Button>
@@ -257,7 +158,7 @@ export const SupervisorDashboard = () => {
         {/* 開発モード時の説明 */}
         {isDevelopment && !useRealAPI && (
           <Box p={4} bg="blue.50" borderRadius="md" borderLeftWidth="4px" borderLeftColor="blue.400">
-            <VStack align="start" spacing={1}>
+            <VStack align="start" gap={1}>
               <Text fontSize="sm" color="blue.700">
                 <strong>{MessageConst.DEV.MOCK_API_DESCRIPTION}</strong>
               </Text>
@@ -271,7 +172,7 @@ export const SupervisorDashboard = () => {
         {/* 日報一覧 */}
         <SimpleGrid 
           columns={{ base: 1, md: 2, lg: 3 }} 
-          spacing={6} 
+          gap={6} 
           w="full"
         >
           {mockReports.map((report) => (
