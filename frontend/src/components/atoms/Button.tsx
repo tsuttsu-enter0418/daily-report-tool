@@ -45,10 +45,21 @@ const getVariantStyles = (variant: CustomButtonProps["variant"]) => {
       };
     case "secondary":
       return {
-        bg: "amber.50",
-        color: "amber.800",
-        _hover: { bg: "amber.100" },
-        _active: { bg: "amber.200" },
+        bg: "white",
+        color: "gray.700",
+        border: "2px solid",
+        borderColor: "gray.300",
+        _hover: { 
+          bg: "gray.50",
+          borderColor: "gray.400",
+          transform: "translateY(-1px)",
+          boxShadow: "sm"
+        },
+        _active: { 
+          bg: "gray.100",
+          borderColor: "gray.500",
+          transform: "translateY(0)"
+        },
       };
     case "danger":
       return {
