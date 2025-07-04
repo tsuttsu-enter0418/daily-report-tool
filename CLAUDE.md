@@ -72,6 +72,49 @@ docker-compose up backend     # Start backend and database only
 - **統一メッセージ管理**: MessageConst による一元的なテキスト管理
 - **型定義の統一**: type エイリアス優先による柔軟な型合成
 
+#### ChakraUI v3.2 コーディングルール
+
+##### 重要：API 仕様の変更点
+
+ChakraUI v3.2では従来の単一コンポーネントから複合コンポーネント構成に変更されました：
+
+```typescript
+// ✅ v3.2 推奨：複合コンポーネント使用
+<Card.Root>
+  <Card.Body>
+    <Card.Title>タイトル</Card.Title>
+  </Card.Body>
+</Card.Root>
+
+// ❌ v2.x 旧式：単一コンポーネント（エラーになる）
+<Card>
+  <CardBody>
+    <CardTitle>タイトル</CardTitle>
+  </CardBody>
+</Card>
+```
+
+##### 必須対応事項
+
+1. **複合コンポーネントの使用**
+   - `Card` → `Card.Root` + `Card.Body`
+   - `Field` → `Field.Root` + `Field.Label` + `Field.HelperText`
+   - `Button` → `Button.Root` または `Button`（単体可）
+
+2. **型定義の確認**
+   - `ButtonProps` → ChakraUIの最新型定義を使用
+   - カスタムProps作成時は `Omit<>` で型合成
+
+3. **公式ドキュメント確認**
+   - バージョンアップ時は必ず公式ドキュメントで API 変更を確認
+   - TypeScriptエラーが発生した場合は最新の型定義をチェック
+
+##### 開発時の注意点
+
+- **段階的移行**: 既存コンポーネントは一気に変更せず、段階的に最新API化
+- **テスト実行**: API変更後は必ずテストを実行してエラーがないか確認
+- **一貫性維持**: プロジェクト内で ChakraUI の記載方法を統一
+
 #### アトミックデザイン定義
 
 ##### 判定基準
