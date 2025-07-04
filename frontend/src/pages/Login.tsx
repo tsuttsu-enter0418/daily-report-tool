@@ -63,7 +63,7 @@ export const Login = () => {
         <Card.Root maxW="400px" w="full" shadow="lg">
           <Card.Body p={8}>
             <VStack gap={6}>
-              <Heading size="lg" textAlign="center">
+              <Heading size="lg" textAlign="center" color="gray.800">
                 {MessageConst.APP.TITLE}
               </Heading>
               <Heading size="md" textAlign="center" color="gray.600">

@@ -150,7 +150,7 @@ export const DailyReportForm = ({
           <Box w="full">
             <VStack align="start" gap={4}>
               <HStack wrap="wrap" gap={4}>
-                <Heading size="xl" color="orange.800">
+                <Heading size="xl" color="gray.800">
                   {isEditMode
                     ? MessageConst.REPORT.EDIT_FORM_TITLE
                     : MessageConst.REPORT.CREATE_FORM_TITLE}
@@ -170,12 +170,12 @@ export const DailyReportForm = ({
               </HStack>
 
               {user && (
-                <Text color="amber.700" fontSize="lg">
+                <Text color="gray.700" fontSize="lg">
                   {user.displayName || user.username} さんの日報
                 </Text>
               )}
 
-              <Text color="amber.600" fontSize="md">
+              <Text color="gray.700" fontSize="md">
                 {MessageConst.REPORT.FORM_DESCRIPTION}
               </Text>
             </VStack>
@@ -216,7 +216,7 @@ export const DailyReportForm = ({
                   {/* 作業内容入力 */}
                   <Field.Root invalid={!!errors.workContent}>
                     <Field.Label
-                      color="orange.800"
+                      color="gray.800"
                       fontSize="lg"
                       fontWeight="semibold"
                     >
@@ -252,7 +252,7 @@ export const DailyReportForm = ({
                           </Field.ErrorText>
                         )}
                       </Box>
-                      <Text fontSize="sm" color="amber.600">
+                      <Text fontSize="sm" color="gray.600">
                         {workContent?.length || 0} / 1000文字
                       </Text>
                     </HStack>
@@ -261,12 +261,13 @@ export const DailyReportForm = ({
                   {/* 自動保存説明 */}
                   <Box
                     p={3}
-                    bg="amber.50"
+                    bg="amber.500"
                     borderRadius="md"
                     borderLeftWidth="3px"
+                    borderRightWidth="3px"
                     borderLeftColor="amber.400"
                   >
-                    <Text fontSize="sm" color="amber.700">
+                    <Text fontSize="sm" color="gray.700">
                       💡 {MessageConst.REPORT.DRAFT_AUTO_SAVE}
                     </Text>
                   </Box>
@@ -278,7 +279,7 @@ export const DailyReportForm = ({
                     justify="space-between"
                   >
                     <HStack gap={3}>
-                      <Button variant="primary" onClick={handleBack}>
+                      <Button variant="secondary" onClick={handleBack}>
                         {MessageConst.ACTION.BACK}
                       </Button>
 

@@ -46,7 +46,7 @@ export const Home = () => {
     <Box p={8}>
       <VStack gap={6} align="start">
         <HStack>
-          <Heading size="lg">{MessageConst.APP.TITLE}</Heading>
+          <Heading size="lg" color="gray.800">{MessageConst.APP.TITLE}</Heading>
           {/* 開発モード表示 */}
           {isDevelopment && !useRealAPI && (
             <StatusBadge status="dev-mock">
@@ -65,7 +65,7 @@ export const Home = () => {
           <Box p={4} bg="green.50" borderRadius="md" borderLeftWidth="4px" borderLeftColor="green.400">
             <VStack align="start" gap={2}>
               <HStack>
-                <Text fontSize="lg" fontWeight="semibold">
+                <Text fontSize="lg" fontWeight="semibold" color="gray.700">
                   {MessageConst.AUTH.LOGIN_SUCCESS_DESCRIPTION(user.displayName || user.username)}
                 </Text>
                 <Badge colorScheme="blue" variant="solid">
@@ -103,8 +103,8 @@ export const Home = () => {
           </Box>
         )}
         
-        <Text fontSize="lg">{MessageConst.APP.WELCOME_MESSAGE}</Text>
-        <Text>{MessageConst.APP.HOME_DESCRIPTION}</Text>
+        <Text fontSize="lg" color="gray.700">{MessageConst.APP.WELCOME_MESSAGE}</Text>
+        <Text color="gray.700">{MessageConst.APP.HOME_DESCRIPTION}</Text>
         
         {/* 開発モード時の説明 */}
         {isDevelopment && !useRealAPI && (

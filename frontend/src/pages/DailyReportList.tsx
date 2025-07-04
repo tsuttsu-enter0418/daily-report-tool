@@ -129,10 +129,10 @@ const PersonalReportCard = ({ report, onEdit, onDelete }: PersonalReportCardProp
           {/* ヘッダー部分 */}
           <HStack justify="space-between" align="start">
             <VStack align="start" gap={1} flex={1}>
-              <Heading size="md" color="orange.800" lineHeight="1.3">
+              <Heading size="md" color="gray.800" lineHeight="1.3">
                 {report.title}
               </Heading>
-              <Text fontSize="sm" color="amber.600">
+              <Text fontSize="sm" color="gray.600">
                 作成日: {report.createdAt}
               </Text>
               {report.submittedAt && (
@@ -235,7 +235,7 @@ export const DailyReportList = () => {
           <Box w="full">
             <VStack align="start" gap={4}>
               <HStack wrap="wrap" gap={4}>
-                <Heading size="xl" color="orange.800">
+                <Heading size="xl" color="gray.800">
                   {MessageConst.REPORT.LIST_TITLE}
                 </Heading>
                 
@@ -253,12 +253,12 @@ export const DailyReportList = () => {
               </HStack>
               
               {user && (
-                <Text color="amber.700" fontSize="lg">
+                <Text color="gray.700" fontSize="lg" fontWeight="medium">
                   {user.displayName || user.username} さんの日報履歴
                 </Text>
               )}
               
-              <Text color="amber.600" fontSize="md">
+              <Text color="gray.700" fontSize="md">
                 {MessageConst.REPORT.LIST_DESCRIPTION}
               </Text>
             </VStack>
@@ -331,10 +331,10 @@ export const DailyReportList = () => {
               w="full"
             >
               <VStack gap={4}>
-                <Text color="amber.600" fontSize="lg" fontWeight="semibold">
+                <Text color="gray.600" fontSize="lg" fontWeight="semibold">
                   {currentFilter === "all" ? MessageConst.REPORT.NO_REPORTS_MESSAGE : `${getFilterText(currentFilter)}の日報がありません`}
                 </Text>
-                <Text color="amber.500" fontSize="md">
+                <Text color="gray.500" fontSize="md">
                   {MessageConst.REPORT.CREATE_FIRST_REPORT}
                 </Text>
                 <Button variant="primary" onClick={handleCreateNew}>
