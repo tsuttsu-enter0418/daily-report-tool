@@ -1,5 +1,5 @@
 import { Field, Input } from "@chakra-ui/react";
-import { forwardRef } from "react";
+import { forwardRef, useId } from "react";
 import { type ValidationState } from "../../types";
 
 /**
@@ -23,25 +23,64 @@ type InputFieldProps = ValidationState & {
   placeholder?: string;
   /** 入力タイプ（text, password, email等） */
   type?: string;
+  /** 必須フィールドかどうか */
+  required?: boolean;
+  /** アクセシブルな説明（スクリーンリーダー用） */
+  "aria-label"?: string;
+  /** 追加の説明ID */
+  "aria-describedby"?: string;
   /** その他のInput props */
   [key: string]: any;
 };
 
 export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
-  ({ label, placeholder, type = "text", error, isInvalid, ...props }, ref) => {
+  ({ 
+    label, 
+    placeholder, 
+    type = "text", 
+    error, 
+    isInvalid, 
+    required = false,
+    "aria-label": ariaLabel,
+    "aria-describedby": ariaDescribedby,
+    ...props 
+  }, ref) => {
+    const errorId = useId();
+    const isErrorState = isInvalid || !!error;
+    
+    // エラーがある場合のaria-describedby設定
+    const describedBy = isErrorState 
+      ? [ariaDescribedby, errorId].filter(Boolean).join(' ')
+      : ariaDescribedby;
+
     return (
-      <Field.Root invalid={isInvalid}>
-        <Field.Label>{label}</Field.Label>
+      <Field.Root invalid={isErrorState}>
+        <Field.Label>
+          {label}
+          {required && (
+            <span aria-label="必須項目" style={{ color: 'red', marginLeft: '4px' }}>
+              *
+            </span>
+          )}
+        </Field.Label>
         <Input
           ref={ref}
           type={type}
           placeholder={placeholder}
+          required={required}
+          aria-label={ariaLabel || label}
+          aria-describedby={describedBy}
+          aria-invalid={isErrorState}
           {...props}
         />
         {error && (
-          <Field.ErrorText>{error}</Field.ErrorText>
+          <Field.ErrorText id={errorId} role="alert">
+            {error}
+          </Field.ErrorText>
         )}
       </Field.Root>
     );
   }
 );
+
+InputField.displayName = "InputField";

@@ -50,6 +50,15 @@ const getStatusText = (status: ReportCardData["status"]) => {
 };
 
 export const ReportCard = ({ report, onClick }: ReportCardProps) => {
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onClick();
+    }
+  };
+
+  const ariaLabel = `${report.author}の日報「${report.title}」を開く。ステータス: ${getStatusText(report.status)}、提出日: ${report.date}`;
+
   return (
     <Box
       p={10}
@@ -68,7 +77,16 @@ export const ReportCard = ({ report, onClick }: ReportCardProps) => {
         borderColor: "orange.400",
         bg: "rgba(255, 247, 237, 1)"
       }}
+      _focus={{
+        outline: "3px solid",
+        outlineColor: "orange.400",
+        outlineOffset: "2px"
+      }}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={ariaLabel}
     >
       <HStack gap={8} align="center" h="full">
         {/* アバター */}
@@ -85,6 +103,8 @@ export const ReportCard = ({ report, onClick }: ReportCardProps) => {
           fontSize="3xl"
           flexShrink={0}
           boxShadow="lg"
+          aria-label={`${report.author}のアバター`}
+          role="img"
         >
           {report.author.charAt(0)}
         </Box>

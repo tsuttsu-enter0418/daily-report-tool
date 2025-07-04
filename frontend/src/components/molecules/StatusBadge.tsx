@@ -22,6 +22,8 @@ type StatusBadgeProps = {
   children: React.ReactNode;
   /** バッジのバリアント */
   variant?: "solid" | "outline" | "subtle";
+  /** アクセシブルなラベル（スクリーンリーダー用） */
+  "aria-label"?: string;
 };
 
 /**
@@ -46,11 +48,36 @@ const getColorScheme = (status: StatusBadgeType) => {
   }
 };
 
+/**
+ * ステータスに応じたアクセシブルな説明を生成
+ */
+const getStatusDescription = (status: StatusBadgeType): string => {
+  switch (status) {
+    case "dev-mock":
+      return "開発モード（モックAPI使用中）";
+    case "dev-api":
+      return "開発モード（実API使用中）";
+    case "production":
+      return "本番環境";
+    case "success":
+      return "成功ステータス";
+    case "warning":
+      return "警告ステータス";
+    case "error":
+      return "エラーステータス";
+    default:
+      return "ステータス情報";
+  }
+};
+
 export const StatusBadge = ({ 
   status, 
   children, 
-  variant = "solid" 
+  variant = "solid",
+  "aria-label": ariaLabel
 }: StatusBadgeProps) => {
+  const defaultAriaLabel = ariaLabel || getStatusDescription(status);
+
   return (
     <Badge 
       colorScheme={getColorScheme(status)} 
@@ -60,6 +87,8 @@ export const StatusBadge = ({
       px={3}
       py={1}
       borderRadius="full"
+      role="status"
+      aria-label={defaultAriaLabel}
     >
       {children}
     </Badge>

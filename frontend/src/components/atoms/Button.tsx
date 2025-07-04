@@ -29,6 +29,10 @@ type CustomButtonProps = Omit<ButtonProps, "loading" | "variant"> & {
   loadingText?: string;
   /** ボタンの用途に応じたバリアント */
   variant?: ButtonVariant;
+  /** アクセシブルなボタンラベル（スクリーンリーダー用） */
+  "aria-label"?: string;
+  /** ボタンの詳細説明（必要に応じて） */
+  "aria-describedby"?: string;
 };
 
 /**
@@ -94,27 +98,39 @@ export const Button = forwardRef<HTMLButtonElement, CustomButtonProps>(
       size = "lg",
       fontWeight = "semibold",
       disabled,
+      "aria-label": ariaLabel,
+      "aria-describedby": ariaDescribedby,
       ...props
     },
     ref
   ) => {
     const variantStyles = getVariantStyles(variant);
+    const isDisabled = disabled || loading;
 
     return (
       <ChakraButton
         ref={ref}
-        disabled={disabled || loading}
+        disabled={isDisabled}
         size={size}
         fontWeight={fontWeight}
         bg={variantStyles.bg}
         color={variantStyles.color}
-        _hover={variantStyles._hover}
-        _active={variantStyles._active}
+        _hover={!isDisabled ? variantStyles._hover : undefined}
+        _active={!isDisabled ? variantStyles._active : undefined}
+        aria-label={ariaLabel}
+        aria-describedby={ariaDescribedby}
+        aria-busy={loading}
+        aria-disabled={isDisabled}
+        role="button"
         {...props}
       >
         {loading ? (
           <>
-            <Spinner size="sm" mr={2} />
+            <Spinner 
+              size="sm" 
+              mr={2}
+              aria-label="読み込み中"
+            />
             {loadingText || children}
           </>
         ) : (
@@ -124,3 +140,5 @@ export const Button = forwardRef<HTMLButtonElement, CustomButtonProps>(
     );
   }
 );
+
+Button.displayName = "Button";
