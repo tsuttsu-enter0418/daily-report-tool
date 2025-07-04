@@ -48,16 +48,16 @@ const getVariantStyles = (variant: CustomButtonProps["variant"]) => {
         bg: "white",
         color: "gray.700",
         border: "2px solid",
-        borderColor: "gray.300",
+        borderColor: "orange.200",
         _hover: { 
-          bg: "gray.50",
-          borderColor: "gray.400",
+          bg: "orange.50",
+          borderColor: "orange.300",
           transform: "translateY(-1px)",
           boxShadow: "sm"
         },
         _active: { 
-          bg: "gray.100",
-          borderColor: "gray.500",
+          bg: "orange.100",
+          borderColor: "orange.400",
           transform: "translateY(0)"
         },
       };
