@@ -69,6 +69,11 @@ public class AuthService {
         // 認証成功: JWTトークン生成
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
         
+        // 表示名の決定: displayNameがある場合はそれを使用、ない場合はusernameをフォールバック
+        String responseDisplayName = (user.getDisplayName() != null && !user.getDisplayName().trim().isEmpty()) 
+            ? user.getDisplayName() 
+            : user.getUsername();
+        
         // Lombokの@Builderを使用してレスポンス作成
         return LoginResponse.builder()
                 .token(token)
@@ -76,7 +81,7 @@ public class AuthService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole())
-                .displayName(user.getUsername()) // 表示名はユーザー名をデフォルトとする
+                .displayName(responseDisplayName)
                 .build();
     }
 }

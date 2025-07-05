@@ -4,6 +4,8 @@ import com.example.dailyreport.dto.DailyReportRequest;
 import com.example.dailyreport.dto.DailyReportResponse;
 import com.example.dailyreport.dto.DailyReportListResponse;
 import com.example.dailyreport.service.DailyReportService;
+import com.example.dailyreport.repository.UserRepository;
+import com.example.dailyreport.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,6 +52,7 @@ import java.util.Optional;
 public class DailyReportController {
 
     private final DailyReportService dailyReportService;
+    private final UserRepository userRepository;
 
     /**
      * 日報作成
@@ -243,20 +246,33 @@ public class DailyReportController {
 
     /**
      * 認証情報からユーザーIDを取得
-     * @param authentication 認証情報
+     * 
+     * 処理フロー:
+     * 1. JWT認証からusernameを取得
+     * 2. usernameでUserエンティティを検索
+     * 3. 見つかったUserのIDを返却
+     * 
+     * @param authentication Spring Security認証情報（JWTから生成）
      * @return ユーザーID
+     * @throws IllegalArgumentException 認証情報が無効、またはユーザーが見つからない場合
      */
     private Long getUserIdFromAuth(Authentication authentication) {
         try {
-            // JWTトークンからユーザーIDを取得
-            // 現在の認証実装では、usernameからUserエンティティを検索してIDを取得する必要がある
+            // JWT認証からusernameを取得
             String username = authentication.getName();
-            // TODO: UserServiceまたはUserRepositoryを注入してユーザーID取得処理を実装
-            // 暫定的にusernameをLongとして解析（実際の実装では適切に修正する）
-            return Long.parseLong(username);
+            log.debug("認証ユーザー名取得: username={}", username);
+            
+            // usernameでUserエンティティを検索してIDを取得
+            User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("ユーザーが見つかりません: " + username));
+            
+            log.debug("ユーザーID取得成功: username={}, userId={}", username, user.getId());
+            return user.getId();
+            
         } catch (Exception e) {
-            log.error("ユーザーID取得エラー: {}", e.getMessage());
-            throw new IllegalArgumentException("認証情報が無効です");
+            log.error("ユーザーID取得エラー: username={}, error={}", 
+                authentication != null ? authentication.getName() : "null", e.getMessage());
+            throw new IllegalArgumentException("認証情報が無効です: " + e.getMessage());
         }
     }
 }
