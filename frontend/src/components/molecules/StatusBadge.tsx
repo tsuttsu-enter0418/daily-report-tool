@@ -47,6 +47,10 @@ const getColorScheme = (status: StatusBadgeType) => {
       return "yellow";
     case "error":
       return "red";
+    case "draft":
+      return "gray";
+    case "submitted":
+      return "blue";
     default:
       return "orange";
   }
@@ -69,6 +73,10 @@ const getStatusDescription = (status: StatusBadgeType): string => {
       return "警告ステータス";
     case "error":
       return "エラーステータス";
+    case "draft":
+      return "下書きステータス";
+    case "submitted":
+      return "提出済みステータス";
     default:
       return "ステータス情報";
   }

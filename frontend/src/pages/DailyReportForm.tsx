@@ -8,6 +8,9 @@ import {
   Card,
   Field,
   Stack,
+  Input,
+  Spinner,
+  Center,
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -15,10 +18,10 @@ import * as yup from "yup";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "../components/atoms";
 import { StatusBadge } from "../components/molecules";
-import { useAuth } from "../hooks";
-import { useErrorHandler } from "../hooks";
+import { useAuth, useDailyReports, useToast } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
-import { useState, useCallback, useMemo, memo } from "react";
+import { useState, useCallback, useMemo, memo, useEffect } from "react";
+import type { DailyReportCreateRequest, DailyReportResponse } from "../types";
 
 /**
  * 日報作成・編集フォームページ (Organism)
@@ -34,29 +37,41 @@ import { useState, useCallback, useMemo, memo } from "react";
  * - 日報作成が必要なすべてのユーザー
  *
  * バリデーション:
+ * - タイトル: 必須、200文字以内
  * - 作業内容: 必須、10文字以上、1000文字以内
+ * - 報告日: 必須、YYYY-MM-DD形式
  */
 
 type DailyReportFormData = {
+  title: string;
   workContent: string;
+  reportDate: string;
 };
 
 type DailyReportFormProps = {
   /** 編集モード（true: 編集, false: 新規作成） */
   isEditMode?: boolean;
   /** 編集対象の日報ID（編集モードの場合） */
-  reportId?: string;
+  reportId?: number;
   /** 初期値（編集モードの場合） */
   initialData?: Partial<DailyReportFormData>;
 };
 
 // バリデーションスキーマ
 const validationSchema = yup.object({
+  title: yup
+    .string()
+    .required("タイトルは必須です")
+    .max(200, "タイトルは200文字以内で入力してください"),
   workContent: yup
     .string()
     .required(MessageConst.REPORT.WORK_CONTENT_REQUIRED)
     .min(10, MessageConst.REPORT.WORK_CONTENT_MIN_LENGTH(10))
     .max(1000, MessageConst.REPORT.WORK_CONTENT_MAX_LENGTH(1000)),
+  reportDate: yup
+    .string()
+    .required("報告日は必須です")
+    .matches(/^\d{4}-\d{2}-\d{2}$/, "日付はYYYY-MM-DD形式で入力してください"),
 });
 
 const DailyReportFormComponent = ({
@@ -64,11 +79,23 @@ const DailyReportFormComponent = ({
   initialData,
 }: Omit<DailyReportFormProps, "reportId">) => {
   const { user } = useAuth();
-  const { handleError, showSuccess, showInfo } = useErrorHandler();
-  const { id: reportId } = useParams<{ id: string }>();
+  const { id: reportIdParam } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const toast = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDraftSaving, setIsDraftSaving] = useState(false);
+  const [currentReport, setCurrentReport] =
+    useState<DailyReportResponse | null>(null);
+  const [isLoadingReport, setIsLoadingReport] = useState(false);
+
+  // 日報データ管理フック
+  const { createReport, updateReport, getReport } = useDailyReports(
+    undefined,
+    false,
+  );
+
+  // reportIdをnumberに変換
+  const reportId = reportIdParam ? parseInt(reportIdParam, 10) : undefined;
 
   // 開発モード表示判定（メモ化）
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);
@@ -77,69 +104,175 @@ const DailyReportFormComponent = ({
     [],
   );
 
+  // 今日の日付をYYYY-MM-DD形式で取得
+  const getTodayDate = useCallback(() => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  }, []);
+
   // React Hook Form セットアップ
   const {
     register,
     handleSubmit,
     formState: { errors, isValid },
     watch,
+    reset,
   } = useForm<DailyReportFormData>({
     resolver: yupResolver(validationSchema),
     defaultValues: {
+      title: initialData?.title || "",
       workContent: initialData?.workContent || "",
+      reportDate: initialData?.reportDate || getTodayDate(),
     },
     mode: "onChange",
   });
 
   // フォーム値の監視（文字数カウント用）
   const workContent = watch("workContent");
+  const title = watch("title");
+
+  // 編集モード時の既存データ読み込み
+  useEffect(() => {
+    const loadReportData = async () => {
+      if (isEditMode && reportId) {
+        setIsLoadingReport(true);
+        try {
+          console.log("📖 既存日報データ読み込み開始:", reportId);
+          const report = await getReport(reportId);
+
+          if (report) {
+            setCurrentReport(report);
+            // フォームに既存データを設定
+            reset({
+              title: report.title,
+              workContent: report.workContent,
+              reportDate: report.reportDate,
+            });
+            console.log("✅ 既存日報データ読み込み完了:", report.title);
+          } else {
+            console.warn("📄 指定された日報が見つかりません:", reportId);
+            navigate("/reports");
+          }
+        } catch (error) {
+          console.error("❌ 既存日報データ読み込み失敗:", error);
+          navigate("/reports");
+        } finally {
+          setIsLoadingReport(false);
+        }
+      }
+    };
+
+    loadReportData();
+  }, [isEditMode, reportId, getReport, reset, navigate]);
 
   // 提出処理（メモ化）
   const onSubmit = useCallback(
     async (data: DailyReportFormData) => {
       setIsSubmitting(true);
       try {
-        console.log("日報提出:", { ...data, reportId, isEditMode });
-        // TODO: 実際のAPI呼び出し実装
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // モック遅延
+        console.log("📝 日報提出開始:", { ...data, reportId, isEditMode });
 
-        if (isEditMode) {
-          showSuccess(MessageConst.REPORT.UPDATE_SUCCESS);
-          showInfo("日報が更新されました。");
+        const reportData: DailyReportCreateRequest = {
+          title: data.title,
+          workContent: data.workContent,
+          reportDate: data.reportDate,
+          status: "submitted", // 正式提出
+        };
+
+        let result: DailyReportResponse | null = null;
+
+        if (isEditMode && reportId) {
+          // 更新処理
+          result = await updateReport(reportId, reportData);
         } else {
-          showSuccess(MessageConst.REPORT.CREATE_SUCCESS);
-          showInfo("日報が作成されました。");
+          // 新規作成処理
+          result = await createReport(reportData);
         }
 
-        // 成功時のリダイレクト
-        setTimeout(() => {
-          navigate("/home");
-        }, 1000);
+        if (result) {
+          console.log("✅ 日報提出成功:", result.title);
+
+          // 成功Toast表示
+          if (isEditMode) {
+            toast.updated("日報");
+          } else {
+            toast.submitted("日報");
+          }
+
+          // 成功時のリダイレクト
+          setTimeout(() => {
+            navigate("/reports");
+          }, 1000);
+        }
       } catch (error) {
-        handleError(error, "日報提出処理");
+        console.error("❌ 日報提出失敗:", error);
+
+        // エラーToast表示
+        if (isEditMode) {
+          toast.updateError("日報", "更新処理中にエラーが発生しました");
+        } else {
+          toast.createError("日報", "提出処理中にエラーが発生しました");
+        }
       } finally {
         setIsSubmitting(false);
       }
     },
-    [reportId, isEditMode, handleError, showSuccess, showInfo, navigate],
+    [reportId, isEditMode, createReport, updateReport, navigate],
   );
 
   // 下書き保存処理（メモ化）
   const handleSaveDraft = useCallback(async () => {
+    // フォームの現在値を取得
+    const currentValues = watch();
+
+    // 必須フィールドのチェック（下書きの場合は緩めに）
+    if (!currentValues.title?.trim()) {
+      console.warn("タイトルが入力されていません");
+      return;
+    }
+
     setIsDraftSaving(true);
     try {
-      const currentData = { workContent };
-      console.log("下書き保存:", currentData);
-      // TODO: 実際のAPI呼び出し実装
-      await new Promise((resolve) => setTimeout(resolve, 500)); // モック遅延
+      console.log("💾 下書き保存開始:", currentValues);
 
-      showSuccess("下書きが保存されました。");
+      const reportData: DailyReportCreateRequest = {
+        title: currentValues.title,
+        workContent: currentValues.workContent || "",
+        reportDate: currentValues.reportDate,
+        status: "draft", // 下書き
+      };
+
+      let result: DailyReportResponse | null = null;
+
+      if (isEditMode && reportId) {
+        // 更新処理
+        result = await updateReport(reportId, reportData);
+      } else {
+        // 新規作成処理
+        result = await createReport(reportData);
+      }
+
+      if (result) {
+        console.log("✅ 下書き保存成功:", result.title);
+        setCurrentReport(result);
+
+        // 成功Toast表示
+        toast.savedAsDraft("日報");
+
+        // 新規作成から編集モードに切り替え
+        if (!isEditMode) {
+          navigate(`/report/edit/${result.id}`, { replace: true });
+        }
+      }
     } catch (error) {
-      handleError(error, "下書き保存処理");
+      console.error("❌ 下書き保存失敗:", error);
+
+      // エラーToast表示
+      toast.updateError("日報", "下書き保存中にエラーが発生しました");
     } finally {
       setIsDraftSaving(false);
     }
-  }, [workContent, handleError, showSuccess]);
+  }, [watch, isEditMode, reportId, createReport, updateReport, navigate]);
 
   // 戻る処理（メモ化）
   const handleBack = useCallback(() => {
@@ -209,119 +342,205 @@ const DailyReportFormComponent = ({
             </Box>
           )}
 
+          {/* ローディング表示（編集モード時のデータ読み込み） */}
+          {isLoadingReport && (
+            <Center py={20}>
+              <VStack gap={4}>
+                <Spinner size="xl" color="orange.500" />
+                <Text color="gray.600" fontSize="lg">
+                  日報データを読み込み中...
+                </Text>
+              </VStack>
+            </Center>
+          )}
+
           {/* メインフォーム */}
-          <Card.Root
-            variant="elevated"
-            bg="rgba(255, 251, 235, 0.9)"
-            borderRadius="xl"
-            boxShadow="0 4px 20px rgba(251, 146, 60, 0.15)"
-            border="2px"
-            borderColor="orange.200"
-          >
-            <Card.Body p={8}>
-              <form onSubmit={handleSubmit(onSubmit)}>
-                <VStack gap={6} align="stretch">
-                  {/* 作業内容入力 */}
-                  <Field.Root invalid={!!errors.workContent}>
-                    <Field.Label
-                      color="gray.800"
-                      fontSize="lg"
-                      fontWeight="semibold"
+          {!isLoadingReport && (
+            <Card.Root
+              variant="elevated"
+              bg="rgba(255, 251, 235, 0.9)"
+              borderRadius="xl"
+              boxShadow="0 4px 20px rgba(251, 146, 60, 0.15)"
+              border="2px"
+              borderColor="orange.200"
+            >
+              <Card.Body p={8}>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <VStack gap={6} align="stretch">
+                    {/* タイトル入力 */}
+                    <Field.Root invalid={!!errors.title}>
+                      <Field.Label
+                        fontSize="md"
+                        fontWeight="semibold"
+                        color="gray.800"
+                      >
+                        日報タイトル
+                        <Text as="span" color="red.500" ml={1}>
+                          *
+                        </Text>
+                      </Field.Label>
+                      <Input
+                        {...register("title")}
+                        placeholder="例: 2024年1月15日の日報"
+                        bg="white"
+                        borderRadius="md"
+                        borderColor="orange.200"
+                        _focus={{
+                          borderColor: "orange.400",
+                          boxShadow: "0 0 0 1px rgb(251, 146, 60)",
+                        }}
+                      />
+                      {errors.title && (
+                        <Field.ErrorText color="red.500" fontSize="sm">
+                          {errors.title.message}
+                        </Field.ErrorText>
+                      )}
+                      <Field.HelperText color="gray.600" fontSize="sm">
+                        最大200文字まで入力できます（現在: {title?.length || 0}
+                        /200文字）
+                      </Field.HelperText>
+                    </Field.Root>
+
+                    {/* 報告日入力 */}
+                    <Field.Root invalid={!!errors.reportDate}>
+                      <Field.Label
+                        fontSize="md"
+                        fontWeight="semibold"
+                        color="gray.800"
+                      >
+                        報告日
+                        <Text as="span" color="red.500" ml={1}>
+                          *
+                        </Text>
+                      </Field.Label>
+                      <Input
+                        {...register("reportDate")}
+                        type="date"
+                        bg="white"
+                        borderRadius="md"
+                        borderColor="orange.200"
+                        _focus={{
+                          borderColor: "orange.400",
+                          boxShadow: "0 0 0 1px rgb(251, 146, 60)",
+                        }}
+                      />
+                      {errors.reportDate && (
+                        <Field.ErrorText color="red.500" fontSize="sm">
+                          {errors.reportDate.message}
+                        </Field.ErrorText>
+                      )}
+                      <Field.HelperText color="gray.600" fontSize="sm">
+                        日報の対象日を選択してください
+                      </Field.HelperText>
+                    </Field.Root>
+
+                    {/* 作業内容入力 */}
+                    <Field.Root invalid={!!errors.workContent}>
+                      <Field.Label
+                        fontSize="md"
+                        fontWeight="semibold"
+                        color="gray.800"
+                      >
+                        {MessageConst.REPORT.WORK_CONTENT_LABEL}
+                        <Text as="span" color="red.500" ml={1}>
+                          *
+                        </Text>
+                      </Field.Label>
+
+                      <Textarea
+                        {...register("workContent")}
+                        placeholder={
+                          MessageConst.REPORT.WORK_CONTENT_PLACEHOLDER
+                        }
+                        rows={10}
+                        resize="vertical"
+                        bg="white"
+                        borderColor="orange.200"
+                        borderWidth="2px"
+                        borderRadius="lg"
+                        _hover={{
+                          borderColor: "orange.300",
+                        }}
+                        _focus={{
+                          borderColor: "orange.400",
+                          boxShadow: "0 0 0 1px rgba(251, 146, 60, 0.3)",
+                        }}
+                        fontSize="md"
+                        color="gray.700"
+                      />
+
+                      {/* 文字数カウント */}
+                      <HStack justify="space-between" mt={2}>
+                        <Box>
+                          {errors.workContent && (
+                            <Field.ErrorText color="red.500">
+                              {errors.workContent.message}
+                            </Field.ErrorText>
+                          )}
+                        </Box>
+                        <Text fontSize="sm" color="gray.600">
+                          {workContent?.length || 0} / 1000文字
+                        </Text>
+                      </HStack>
+                    </Field.Root>
+
+                    {/* 自動保存説明 */}
+                    <Box
+                      p={3}
+                      bg="amber.500"
+                      borderRadius="md"
+                      borderLeftWidth="3px"
+                      borderRightWidth="3px"
+                      borderLeftColor="amber.400"
                     >
-                      {MessageConst.REPORT.WORK_CONTENT_LABEL}
-                    </Field.Label>
-
-                    <Textarea
-                      {...register("workContent")}
-                      placeholder={MessageConst.REPORT.WORK_CONTENT_PLACEHOLDER}
-                      rows={10}
-                      resize="vertical"
-                      bg="white"
-                      borderColor="orange.200"
-                      borderWidth="2px"
-                      borderRadius="lg"
-                      _hover={{
-                        borderColor: "orange.300",
-                      }}
-                      _focus={{
-                        borderColor: "orange.400",
-                        boxShadow: "0 0 0 1px rgba(251, 146, 60, 0.3)",
-                      }}
-                      fontSize="md"
-                      color="gray.700"
-                    />
-
-                    {/* 文字数カウント */}
-                    <HStack justify="space-between" mt={2}>
-                      <Box>
-                        {errors.workContent && (
-                          <Field.ErrorText color="red.500">
-                            {errors.workContent.message}
-                          </Field.ErrorText>
-                        )}
-                      </Box>
-                      <Text fontSize="sm" color="gray.600">
-                        {workContent?.length || 0} / 1000文字
+                      <Text fontSize="sm" color="gray.700">
+                        💡 {MessageConst.REPORT.DRAFT_AUTO_SAVE}
                       </Text>
-                    </HStack>
-                  </Field.Root>
+                    </Box>
 
-                  {/* 自動保存説明 */}
-                  <Box
-                    p={3}
-                    bg="amber.500"
-                    borderRadius="md"
-                    borderLeftWidth="3px"
-                    borderRightWidth="3px"
-                    borderLeftColor="amber.400"
-                  >
-                    <Text fontSize="sm" color="gray.700">
-                      💡 {MessageConst.REPORT.DRAFT_AUTO_SAVE}
-                    </Text>
-                  </Box>
+                    {/* アクションボタン */}
+                    <Stack
+                      direction={{ base: "column", md: "row" }}
+                      gap={4}
+                      justify="space-between"
+                    >
+                      <HStack gap={3}>
+                        <Button variant="secondary" onClick={handleBack}>
+                          {MessageConst.ACTION.BACK}
+                        </Button>
 
-                  {/* アクションボタン */}
-                  <Stack
-                    direction={{ base: "column", md: "row" }}
-                    gap={4}
-                    justify="space-between"
-                  >
-                    <HStack gap={3}>
-                      <Button variant="secondary" onClick={handleBack}>
-                        {MessageConst.ACTION.BACK}
-                      </Button>
+                        <Button
+                          variant="secondary"
+                          onClick={handleSaveDraft}
+                          loading={isDraftSaving}
+                          loadingText={MessageConst.SYSTEM.SAVING}
+                        >
+                          {MessageConst.REPORT.SAVE_DRAFT}
+                        </Button>
+                      </HStack>
 
                       <Button
-                        variant="secondary"
-                        onClick={handleSaveDraft}
-                        loading={isDraftSaving}
-                        loadingText={MessageConst.SYSTEM.SAVING}
+                        type="submit"
+                        variant="primary"
+                        loading={isSubmitting}
+                        loadingText={
+                          isEditMode
+                            ? MessageConst.SYSTEM.SAVING
+                            : MessageConst.SYSTEM.PROCESSING
+                        }
+                        disabled={!isValid}
+                        size="lg"
                       >
-                        {MessageConst.REPORT.SAVE_DRAFT}
+                        {isEditMode
+                          ? MessageConst.ACTION.UPDATE
+                          : MessageConst.REPORT.SUBMIT_REPORT}
                       </Button>
-                    </HStack>
-
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      loading={isSubmitting}
-                      loadingText={
-                        isEditMode
-                          ? MessageConst.SYSTEM.SAVING
-                          : MessageConst.SYSTEM.PROCESSING
-                      }
-                      disabled={!isValid}
-                      size="lg"
-                    >
-                      {isEditMode
-                        ? MessageConst.ACTION.UPDATE
-                        : MessageConst.REPORT.SUBMIT_REPORT}
-                    </Button>
-                  </Stack>
-                </VStack>
-              </form>
-            </Card.Body>
-          </Card.Root>
+                    </Stack>
+                  </VStack>
+                </form>
+              </Card.Body>
+            </Card.Root>
+          )}
         </VStack>
       </Box>
     </Box>

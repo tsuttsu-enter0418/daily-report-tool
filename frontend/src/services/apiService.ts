@@ -1,7 +1,7 @@
 import { mockApi } from "./mockApi";
-import type { 
-  LoginRequest, 
-  LoginResponse, 
+import type {
+  LoginRequest,
+  LoginResponse,
   UserInfo,
   DailyReportCreateRequest,
   DailyReportUpdateRequest,
@@ -46,11 +46,11 @@ const getAuthToken = (): string | null => {
  */
 const createApiRequest = async (
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<Response> => {
   const url = `${API_BASE_URL}${endpoint}`;
   const token = getAuthToken();
-  
+
   const defaultHeaders: HeadersInit = {
     "Content-Type": "application/json",
   };
@@ -68,17 +68,21 @@ const createApiRequest = async (
     },
   };
 
-  console.log(`🌐 API リクエスト: ${options.method || "GET"} ${url}`);
-  
+  if (isDevelopment) {
+    console.log(`🌐 API リクエスト: ${options.method || "GET"} ${url}`);
+  }
+
   const response = await fetch(url, requestOptions);
-  
+
   // レスポンスステータスのログ出力
   if (response.ok) {
-    console.log(`✅ API成功: ${response.status} ${response.statusText}`);
+    if (isDevelopment) {
+      console.log(`✅ API成功: ${response.status} ${response.statusText}`);
+    }
   } else {
     console.error(`❌ API失敗: ${response.status} ${response.statusText}`);
   }
-  
+
   return response;
 };
 
@@ -87,7 +91,7 @@ const createApiRequest = async (
  */
 const handleApiError = async (response: Response): Promise<never> => {
   let errorMessage = "APIエラーが発生しました";
-  
+
   try {
     const errorData = await response.json();
     errorMessage = errorData.message || errorData.error || errorMessage;
@@ -108,7 +112,8 @@ const handleApiError = async (response: Response): Promise<never> => {
       errorMessage = "リクエストされたリソースが見つかりません。";
       break;
     case 500:
-      errorMessage = "サーバーエラーが発生しました。しばらく後に再試行してください。";
+      errorMessage =
+        "サーバーエラーが発生しました。しばらく後に再試行してください。";
       break;
   }
 
@@ -136,13 +141,15 @@ const realApi = {
       }
 
       const data = await response.json();
-      
+
       // レスポンス型検証
       if (!data.token || !data.username) {
         throw new Error("ログインレスポンスの形式が正しくありません");
       }
 
-      console.log("🔐 ログイン成功:", data.username);
+      if (isDevelopment) {
+        console.log("🔐 ログイン成功:", data.username);
+      }
       return data;
     } catch (error) {
       console.error("🚨 ログインエラー:", error);
@@ -163,9 +170,11 @@ const realApi = {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       const isValid = response.ok;
-      console.log(`🔍 トークン検証結果: ${isValid ? "有効" : "無効"}`);
+      if (isDevelopment) {
+        console.log(`🔍 トークン検証結果: ${isValid ? "有効" : "無効"}`);
+      }
       return isValid;
     } catch (error) {
       console.error("🚨 トークン検証エラー:", error);
@@ -192,7 +201,9 @@ const realApi = {
       }
 
       const userInfo = await response.json();
-      console.log("👤 ユーザー情報取得成功:", userInfo.username);
+      if (isDevelopment) {
+        console.log("👤 ユーザー情報取得成功:", userInfo.username);
+      }
       return userInfo;
     } catch (error) {
       console.error("🚨 ユーザー情報取得エラー:", error);
@@ -205,7 +216,9 @@ const realApi = {
    * @param reportData 日報作成データ
    * @returns 作成された日報
    */
-  async createDailyReport(reportData: DailyReportCreateRequest): Promise<DailyReportResponse> {
+  async createDailyReport(
+    reportData: DailyReportCreateRequest,
+  ): Promise<DailyReportResponse> {
     try {
       const response = await createApiRequest("/api/daily-reports", {
         method: "POST",
@@ -217,7 +230,9 @@ const realApi = {
       }
 
       const data = await response.json();
-      console.log("📝 日報作成成功:", data.title);
+      if (isDevelopment) {
+        console.log("📝 日報作成成功:", data.title);
+      }
       return data;
     } catch (error) {
       console.error("🚨 日報作成エラー:", error);
@@ -231,7 +246,10 @@ const realApi = {
    * @param reportData 日報更新データ
    * @returns 更新された日報
    */
-  async updateDailyReport(id: number, reportData: DailyReportUpdateRequest): Promise<DailyReportResponse> {
+  async updateDailyReport(
+    id: number,
+    reportData: DailyReportUpdateRequest,
+  ): Promise<DailyReportResponse> {
     try {
       const response = await createApiRequest(`/api/daily-reports/${id}`, {
         method: "PUT",
@@ -243,7 +261,9 @@ const realApi = {
       }
 
       const data = await response.json();
-      console.log("✏️ 日報更新成功:", data.title);
+      if (isDevelopment) {
+        console.log("✏️ 日報更新成功:", data.title);
+      }
       return data;
     } catch (error) {
       console.error("🚨 日報更新エラー:", error);
@@ -264,14 +284,18 @@ const realApi = {
 
       if (!response.ok) {
         if (response.status === 404) {
-          console.warn("📄 日報が見つかりません:", id);
+          if (isDevelopment) {
+            console.warn("📄 日報が見つかりません:", id);
+          }
           return null;
         }
         await handleApiError(response);
       }
 
       const data = await response.json();
-      console.log("📖 日報取得成功:", data.title);
+      if (isDevelopment) {
+        console.log("📖 日報取得成功:", data.title);
+      }
       return data;
     } catch (error) {
       console.error("🚨 日報取得エラー:", error);
@@ -284,11 +308,15 @@ const realApi = {
    * @param params 検索パラメータ
    * @returns 日報一覧
    */
-  async getDailyReports(params?: DailyReportListParams): Promise<DailyReportResponse[]> {
+  async getDailyReports(
+    params?: DailyReportListParams,
+  ): Promise<DailyReportResponse[]> {
     try {
       const searchParams = new URLSearchParams();
-      if (params?.page !== undefined) searchParams.append("page", params.page.toString());
-      if (params?.size !== undefined) searchParams.append("size", params.size.toString());
+      if (params?.page !== undefined)
+        searchParams.append("page", params.page.toString());
+      if (params?.size !== undefined)
+        searchParams.append("size", params.size.toString());
       if (params?.status) searchParams.append("status", params.status);
       if (params?.yearMonth) searchParams.append("yearMonth", params.yearMonth);
 
@@ -302,7 +330,9 @@ const realApi = {
       }
 
       const data = await response.json();
-      console.log("📋 日報一覧取得成功:", data.length, "件");
+      if (isDevelopment) {
+        console.log("📋 日報一覧取得成功:", data.length, "件");
+      }
       return data;
     } catch (error) {
       console.error("🚨 日報一覧取得エラー:", error);
@@ -324,7 +354,9 @@ const realApi = {
         await handleApiError(response);
       }
 
-      console.log("🗑️ 日報削除成功:", id);
+      if (isDevelopment) {
+        console.log("🗑️ 日報削除成功:", id);
+      }
     } catch (error) {
       console.error("🚨 日報削除エラー:", error);
       throw error;
@@ -345,11 +377,15 @@ export const apiService = {
   async login(loginData: LoginRequest): Promise<LoginResponse> {
     // 開発環境でかつ実際のAPIを使用しない場合はモックを使用
     if (isDevelopment && !useRealAPI) {
-      console.log("🔧 開発モード: モックAPIを使用中");
+      if (isDevelopment) {
+        console.log("🔧 開発モード: モックAPIを使用中");
+      }
       return mockApi.login(loginData);
     }
 
-    console.log("🌐 本番モード: 実際のAPIを使用中");
+    if (isDevelopment) {
+      console.log("🌐 本番モード: 実際のAPIを使用中");
+    }
     return realApi.login(loginData);
   },
 
@@ -360,11 +396,15 @@ export const apiService = {
    */
   async validateToken(token: string): Promise<boolean> {
     if (isDevelopment && !useRealAPI) {
-      console.log("🔧 開発モード: モックAPI使用中（トークン検証）");
+      if (isDevelopment) {
+        console.log("🔧 開発モード: モックAPI使用中（トークン検証）");
+      }
       return mockApi.validateToken(token);
     }
 
-    console.log("🌐 本番モード: 実際のAPI使用中（トークン検証）");
+    if (isDevelopment) {
+      console.log("🌐 本番モード: 実際のAPI使用中（トークン検証）");
+    }
     return realApi.validateToken(token);
   },
 
@@ -375,11 +415,15 @@ export const apiService = {
    */
   async getUserInfo(token: string): Promise<UserInfo | null> {
     if (isDevelopment && !useRealAPI) {
-      console.log("🔧 開発モード: モックAPI使用中（ユーザー情報取得）");
+      if (isDevelopment) {
+        console.log("🔧 開発モード: モックAPI使用中（ユーザー情報取得）");
+      }
       return mockApi.getUserInfo(token);
     }
 
-    console.log("🌐 本番モード: 実際のAPI使用中（ユーザー情報取得）");
+    if (isDevelopment) {
+      console.log("🌐 本番モード: 実際のAPI使用中（ユーザー情報取得）");
+    }
     return realApi.getUserInfo(token);
   },
 
@@ -389,7 +433,9 @@ export const apiService = {
    */
   setAuthToken(token: string): void {
     localStorage.setItem("authToken", token);
-    console.log("💾 JWT トークンが保存されました");
+    if (isDevelopment) {
+      console.log("💾 JWT トークンが保存されました");
+    }
   },
 
   /**
@@ -405,7 +451,9 @@ export const apiService = {
    */
   removeAuthToken(): void {
     localStorage.removeItem("authToken");
-    console.log("🗑️ JWT トークンが削除されました");
+    if (isDevelopment) {
+      console.log("🗑️ JWT トークンが削除されました");
+    }
   },
 
   /**
@@ -413,14 +461,20 @@ export const apiService = {
    * @param reportData 日報作成データ
    * @returns 作成された日報
    */
-  async createDailyReport(reportData: DailyReportCreateRequest): Promise<DailyReportResponse> {
+  async createDailyReport(
+    reportData: DailyReportCreateRequest,
+  ): Promise<DailyReportResponse> {
     if (isDevelopment && !useRealAPI) {
-      console.log("🔧 開発モード: モックAPI使用中（日報作成）");
+      if (isDevelopment) {
+        console.log("🔧 開発モード: モックAPI使用中（日報作成）");
+      }
       // TODO: モックAPIに日報作成メソッドを追加
       throw new Error("モック日報作成機能は未実装です");
     }
 
-    console.log("🌐 本番モード: 実際のAPI使用中（日報作成）");
+    if (isDevelopment) {
+      console.log("🌐 本番モード: 実際のAPI使用中（日報作成）");
+    }
     return realApi.createDailyReport(reportData);
   },
 
@@ -430,14 +484,21 @@ export const apiService = {
    * @param reportData 日報更新データ
    * @returns 更新された日報
    */
-  async updateDailyReport(id: number, reportData: DailyReportUpdateRequest): Promise<DailyReportResponse> {
+  async updateDailyReport(
+    id: number,
+    reportData: DailyReportUpdateRequest,
+  ): Promise<DailyReportResponse> {
     if (isDevelopment && !useRealAPI) {
-      console.log("🔧 開発モード: モックAPI使用中（日報更新）");
+      if (isDevelopment) {
+        console.log("🔧 開発モード: モックAPI使用中（日報更新）");
+      }
       // TODO: モックAPIに日報更新メソッドを追加
       throw new Error("モック日報更新機能は未実装です");
     }
 
-    console.log("🌐 本番モード: 実際のAPI使用中（日報更新）");
+    if (isDevelopment) {
+      console.log("🌐 本番モード: 実際のAPI使用中（日報更新）");
+    }
     return realApi.updateDailyReport(id, reportData);
   },
 
@@ -448,12 +509,16 @@ export const apiService = {
    */
   async getDailyReport(id: number): Promise<DailyReportResponse | null> {
     if (isDevelopment && !useRealAPI) {
-      console.log("🔧 開発モード: モックAPI使用中（日報取得）");
+      if (isDevelopment) {
+        console.log("🔧 開発モード: モックAPI使用中（日報取得）");
+      }
       // TODO: モックAPIに日報取得メソッドを追加
       throw new Error("モック日報取得機能は未実装です");
     }
 
-    console.log("🌐 本番モード: 実際のAPI使用中（日報取得）");
+    if (isDevelopment) {
+      console.log("🌐 本番モード: 実際のAPI使用中（日報取得）");
+    }
     return realApi.getDailyReport(id);
   },
 
@@ -462,14 +527,20 @@ export const apiService = {
    * @param params 検索パラメータ
    * @returns 日報一覧
    */
-  async getDailyReports(params?: DailyReportListParams): Promise<DailyReportResponse[]> {
+  async getDailyReports(
+    params?: DailyReportListParams,
+  ): Promise<DailyReportResponse[]> {
     if (isDevelopment && !useRealAPI) {
-      console.log("🔧 開発モード: モックAPI使用中（日報一覧）");
+      if (isDevelopment) {
+        console.log("🔧 開発モード: モックAPI使用中（日報一覧）");
+      }
       // TODO: モックAPIに日報一覧メソッドを追加
       throw new Error("モック日報一覧機能は未実装です");
     }
 
-    console.log("🌐 本番モード: 実際のAPI使用中（日報一覧）");
+    if (isDevelopment) {
+      console.log("🌐 本番モード: 実際のAPI使用中（日報一覧）");
+    }
     return realApi.getDailyReports(params);
   },
 
@@ -479,12 +550,16 @@ export const apiService = {
    */
   async deleteDailyReport(id: number): Promise<void> {
     if (isDevelopment && !useRealAPI) {
-      console.log("🔧 開発モード: モックAPI使用中（日報削除）");
+      if (isDevelopment) {
+        console.log("🔧 開発モード: モックAPI使用中（日報削除）");
+      }
       // TODO: モックAPIに日報削除メソッドを追加
       throw new Error("モック日報削除機能は未実装です");
     }
 
-    console.log("🌐 本番モード: 実際のAPI使用中（日報削除）");
+    if (isDevelopment) {
+      console.log("🌐 本番モード: 実際のAPI使用中（日報削除）");
+    }
     return realApi.deleteDailyReport(id);
   },
 };

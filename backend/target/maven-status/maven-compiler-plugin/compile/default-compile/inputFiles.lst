@@ -15,3 +15,4 @@
 /Users/tsutsuikouhei/Desktop/Portfolio/daily-report-tool/backend/src/main/java/com/example/dailyreport/config/OpenApiConfig.java
 /Users/tsutsuikouhei/Desktop/Portfolio/daily-report-tool/backend/src/main/java/com/example/dailyreport/controller/AuthController.java
 /Users/tsutsuikouhei/Desktop/Portfolio/daily-report-tool/backend/src/main/java/com/example/dailyreport/dto/LoginRequest.java
+/Users/tsutsuikouhei/Desktop/Portfolio/daily-report-tool/backend/src/main/java/com/example/dailyreport/security/JwtAuthenticationFilter.java

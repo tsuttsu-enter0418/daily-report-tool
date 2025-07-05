@@ -12,8 +12,13 @@ import {
 import { useState, useCallback, useMemo, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/atoms";
-import { StatusBadge } from "../components/molecules";
-import { useAuth, useMyDailyReports } from "../hooks";
+import {
+  StatusBadge,
+  SearchForm,
+  DeleteConfirmDialog,
+} from "../components/molecules";
+import type { SearchCriteria } from "../components/molecules/SearchForm";
+import { useAuth, useMyDailyReports, useToast } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 import type { DailyReportStatus, DailyReportResponse } from "../types";
 
@@ -43,21 +48,23 @@ type FilterType = "all" | DailyReportStatus;
  */
 type PersonalReportCardProps = {
   report: DailyReportResponse;
+  onView: (reportId: number) => void;
   onEdit: (reportId: number) => void;
   onDelete: (reportId: number) => void;
 };
 
 const PersonalReportCardComponent = ({
   report,
+  onView,
   onEdit,
   onDelete,
 }: PersonalReportCardProps) => {
   const statusColor = useMemo(() => {
     switch (report.status) {
       case "submitted":
-        return "success";
+        return "submitted";
       case "draft":
-        return "warning";
+        return "draft";
       default:
         return "error";
     }
@@ -114,7 +121,9 @@ const PersonalReportCardComponent = ({
     return {
       reportDate: formatDate(report.reportDate),
       createdAt: formatDateTime(report.createdAt),
-      submittedAt: report.submittedAt ? formatDateTime(report.submittedAt) : null,
+      submittedAt: report.submittedAt
+        ? formatDateTime(report.submittedAt)
+        : null,
     };
   }, [report.reportDate, report.createdAt, report.submittedAt]);
 
@@ -172,6 +181,13 @@ const PersonalReportCardComponent = ({
           {/* アクションボタン */}
           <HStack gap={2} justify="flex-end">
             <Button
+              variant="primary"
+              size="sm"
+              onClick={() => onView(report.id)}
+            >
+              詳細
+            </Button>
+            <Button
               variant="secondary"
               size="sm"
               onClick={() => onEdit(report.id)}
@@ -198,10 +214,31 @@ const PersonalReportCard = memo(PersonalReportCardComponent);
 const DailyReportListComponent = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
   const [currentFilter, setCurrentFilter] = useState<FilterType>("all");
-  
+  const [searchCriteria, setSearchCriteria] = useState<SearchCriteria>({
+    title: "",
+    content: "",
+    startDate: "",
+    endDate: "",
+  });
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    reportId: number | null;
+    reportTitle: string;
+    isDeleting: boolean;
+    errorMessage: string;
+  }>({
+    isOpen: false,
+    reportId: null,
+    reportTitle: "",
+    isDeleting: false,
+    errorMessage: "",
+  });
+
   // 日報データ取得
-  const { reports, isLoading, error, deleteReport, refetch } = useMyDailyReports();
+  const { reports, isLoading, error, deleteReport, refetch } =
+    useMyDailyReports();
 
   // 開発モード表示判定（メモ化）
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);
@@ -214,22 +251,68 @@ const DailyReportListComponent = () => {
   const filteredReports = useMemo(
     () =>
       reports.filter((report) => {
+        // ステータスフィルター
         switch (currentFilter) {
           case "submitted":
-            return report.status === "submitted";
+            if (report.status !== "submitted") return false;
+            break;
           case "draft":
-            return report.status === "draft";
-          default:
-            return true;
+            if (report.status !== "draft") return false;
+            break;
         }
+
+        // 検索フィルター
+        const { title, content, startDate, endDate } = searchCriteria;
+
+        // タイトル検索
+        if (
+          title &&
+          !report.title.toLowerCase().includes(title.toLowerCase())
+        ) {
+          return false;
+        }
+
+        // 内容検索
+        if (
+          content &&
+          !report.workContent.toLowerCase().includes(content.toLowerCase())
+        ) {
+          return false;
+        }
+
+        // 日付範囲検索
+        if (startDate) {
+          const reportDate = new Date(report.reportDate);
+          const searchStartDate = new Date(startDate);
+          if (reportDate < searchStartDate) {
+            return false;
+          }
+        }
+
+        if (endDate) {
+          const reportDate = new Date(report.reportDate);
+          const searchEndDate = new Date(endDate);
+          if (reportDate > searchEndDate) {
+            return false;
+          }
+        }
+
+        return true;
       }),
-    [reports, currentFilter],
+    [reports, currentFilter, searchCriteria],
   );
 
   // ハンドラー関数（メモ化）
   const handleCreateNew = useCallback(() => {
     navigate("/report/create");
   }, [navigate]);
+
+  const handleView = useCallback(
+    (reportId: number) => {
+      navigate(`/report/detail/${reportId}`);
+    },
+    [navigate],
+  );
 
   const handleEdit = useCallback(
     (reportId: number) => {
@@ -239,28 +322,98 @@ const DailyReportListComponent = () => {
   );
 
   const handleDelete = useCallback(
-    async (reportId: number) => {
-      try {
-        // 削除確認ダイアログ
-        const confirmed = window.confirm("日報を削除しますか？");
-        if (!confirmed) return;
+    (reportId: number) => {
+      const targetReport = reports.find((r) => r.id === reportId);
+      if (!targetReport) return;
 
-        console.log(`日報削除: ${reportId}`);
-        const success = await deleteReport(reportId);
-        
-        if (success) {
-          // 削除成功の場合は自動的にリストから除去される（useDailyReportsフック内で処理）
-          console.log("✅ 日報削除完了");
-        }
-      } catch (error) {
-        console.error("❌ 日報削除処理エラー:", error);
-      }
+      // 削除ダイアログを開く
+      setDeleteDialog({
+        isOpen: true,
+        reportId,
+        reportTitle: targetReport.title,
+        isDeleting: false,
+        errorMessage: "",
+      });
     },
-    [deleteReport],
+    [reports],
   );
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deleteDialog.reportId) return;
+
+    setDeleteDialog((prev) => ({
+      ...prev,
+      isDeleting: true,
+      errorMessage: "",
+    }));
+
+    try {
+      console.log(`日報削除: ${deleteDialog.reportId}`);
+      const success = await deleteReport(deleteDialog.reportId);
+
+      if (success) {
+        console.log("✅ 日報削除完了");
+
+        // 成功Toast表示
+        toast.deleted("日報");
+
+        // 削除成功時はダイアログを閉じる
+        setDeleteDialog({
+          isOpen: false,
+          reportId: null,
+          reportTitle: "",
+          isDeleting: false,
+          errorMessage: "",
+        });
+      } else {
+        // エラーToast表示
+        toast.deleteError("日報", "削除に失敗しました");
+
+        setDeleteDialog((prev) => ({
+          ...prev,
+          isDeleting: false,
+          errorMessage: "削除に失敗しました。もう一度お試しください。",
+        }));
+      }
+    } catch (error) {
+      console.error("❌ 日報削除処理エラー:", error);
+
+      // エラーToast表示
+      toast.deleteError("日報", "削除処理中にエラーが発生しました");
+
+      setDeleteDialog((prev) => ({
+        ...prev,
+        isDeleting: false,
+        errorMessage: "削除処理中にエラーが発生しました。",
+      }));
+    }
+  }, [deleteDialog.reportId, deleteReport]);
+
+  const handleDeleteCancel = useCallback(() => {
+    setDeleteDialog({
+      isOpen: false,
+      reportId: null,
+      reportTitle: "",
+      isDeleting: false,
+      errorMessage: "",
+    });
+  }, []);
 
   const handleFilterChange = useCallback((filter: FilterType) => {
     setCurrentFilter(filter);
+  }, []);
+
+  const handleSearchChange = useCallback((criteria: SearchCriteria) => {
+    setSearchCriteria(criteria);
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchCriteria({
+      title: "",
+      content: "",
+      startDate: "",
+      endDate: "",
+    });
   }, []);
 
   return (
@@ -333,6 +486,13 @@ const DailyReportListComponent = () => {
             </Button>
           </HStack>
 
+          {/* 検索フォーム */}
+          <SearchForm
+            onSearchChange={handleSearchChange}
+            onClearSearch={handleClearSearch}
+            initialCriteria={searchCriteria}
+          />
+
           {/* 開発モード時の説明 */}
           {isDevelopment && !useRealAPI && (
             <Box
@@ -351,6 +511,22 @@ const DailyReportListComponent = () => {
                 </Text>
               </VStack>
             </Box>
+          )}
+
+          {/* 検索結果件数表示 */}
+          {!isLoading && !error && (
+            <HStack justify="space-between" align="center">
+              <Text color="gray.600" fontSize="md">
+                {filteredReports.length > 0
+                  ? `${filteredReports.length} 件の日報が見つかりました`
+                  : "条件に一致する日報はありません"}
+              </Text>
+              {filteredReports.length !== reports.length && (
+                <Text color="gray.500" fontSize="sm">
+                  全 {reports.length} 件中
+                </Text>
+              )}
+            </HStack>
           )}
 
           {/* 日報一覧 */}
@@ -383,6 +559,7 @@ const DailyReportListComponent = () => {
                 <PersonalReportCard
                   key={report.id}
                   report={report}
+                  onView={handleView}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                 />
@@ -408,6 +585,17 @@ const DailyReportListComponent = () => {
           )}
         </VStack>
       </Box>
+
+      {/* 削除確認ダイアログ */}
+      <DeleteConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title={deleteDialog.reportTitle}
+        description="削除された日報は復元できません。"
+        isDeleting={deleteDialog.isDeleting}
+        errorMessage={deleteDialog.errorMessage}
+      />
     </Box>
   );
 };

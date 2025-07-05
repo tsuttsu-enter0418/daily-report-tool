@@ -30,6 +30,11 @@ const DailyReportList = lazy(() =>
     default: module.DailyReportList,
   })),
 );
+const DailyReportDetail = lazy(() =>
+  import("./pages/DailyReportDetail").then((module) => ({
+    default: module.DailyReportDetail,
+  })),
+);
 
 // ローディングコンポーネント
 const PageLoader = () => (
@@ -81,6 +86,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <DailyReportForm isEditMode />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/report/detail/:id"
+            element={
+              <ProtectedRoute>
+                <DailyReportDetail />
               </ProtectedRoute>
             }
           />

@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { apiService } from "../services/apiService";
 import { useErrorHandler } from "./useErrorHandler";
-import type { 
-  DailyReportResponse, 
+import type {
+  DailyReportResponse,
   DailyReportCreateRequest,
   DailyReportUpdateRequest,
-  DailyReportListParams 
+  DailyReportListParams,
 } from "../types";
 
 /**
@@ -34,9 +34,14 @@ export type UseDailyReportsReturn = {
   /** 日報一覧の再取得 */
   refetch: () => Promise<void>;
   /** 日報作成 */
-  createReport: (data: DailyReportCreateRequest) => Promise<DailyReportResponse | null>;
+  createReport: (
+    data: DailyReportCreateRequest,
+  ) => Promise<DailyReportResponse | null>;
   /** 日報更新 */
-  updateReport: (id: number, data: DailyReportUpdateRequest) => Promise<DailyReportResponse | null>;
+  updateReport: (
+    id: number,
+    data: DailyReportUpdateRequest,
+  ) => Promise<DailyReportResponse | null>;
   /** 日報削除 */
   deleteReport: (id: number) => Promise<boolean>;
   /** 単一日報取得 */
@@ -52,7 +57,7 @@ export type UseDailyReportsReturn = {
  */
 export const useDailyReports = (
   params?: DailyReportListParams,
-  autoFetch: boolean = true
+  autoFetch: boolean = true,
 ): UseDailyReportsReturn => {
   const [reports, setReports] = useState<DailyReportResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -62,24 +67,28 @@ export const useDailyReports = (
   /**
    * 日報一覧取得
    */
-  const fetchReports = useCallback(async (searchParams?: DailyReportListParams): Promise<void> => {
-    setIsLoading(true);
-    setError(null);
+  const fetchReports = useCallback(
+    async (searchParams?: DailyReportListParams): Promise<void> => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      console.log("📋 日報一覧取得開始", searchParams);
-      const data = await apiService.getDailyReports(searchParams);
-      setReports(data);
-      console.log("✅ 日報一覧取得成功:", data.length, "件");
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "日報一覧の取得に失敗しました";
-      setError(errorMessage);
-      handleError(err, "日報一覧取得");
-      console.error("❌ 日報一覧取得失敗:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [handleError]);
+      try {
+        console.log("📋 日報一覧取得開始", searchParams);
+        const data = await apiService.getDailyReports(searchParams);
+        setReports(data);
+        console.log("✅ 日報一覧取得成功:", data.length, "件");
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "日報一覧の取得に失敗しました";
+        setError(errorMessage);
+        handleError(err, "日報一覧取得");
+        console.error("❌ 日報一覧取得失敗:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [handleError],
+  );
 
   /**
    * 日報一覧の再取得
@@ -91,98 +100,110 @@ export const useDailyReports = (
   /**
    * 日報作成
    */
-  const createReport = useCallback(async (
-    data: DailyReportCreateRequest
-  ): Promise<DailyReportResponse | null> => {
-    try {
-      console.log("📝 日報作成開始", data.title);
-      const newReport = await apiService.createDailyReport(data);
-      
-      // 作成された日報をリストに追加
-      setReports(prevReports => [newReport, ...prevReports]);
-      
-      showSuccess("日報が正常に作成されました");
-      console.log("✅ 日報作成成功:", newReport.title);
-      return newReport;
-    } catch (err) {
-      handleError(err, "日報作成");
-      console.error("❌ 日報作成失敗:", err);
-      return null;
-    }
-  }, [handleError, showSuccess]);
+  const createReport = useCallback(
+    async (
+      data: DailyReportCreateRequest,
+    ): Promise<DailyReportResponse | null> => {
+      try {
+        console.log("📝 日報作成開始", data.title);
+        const newReport = await apiService.createDailyReport(data);
+
+        // 作成された日報をリストに追加
+        setReports((prevReports) => [newReport, ...prevReports]);
+
+        showSuccess("日報が正常に作成されました");
+        console.log("✅ 日報作成成功:", newReport.title);
+        return newReport;
+      } catch (err) {
+        handleError(err, "日報作成");
+        console.error("❌ 日報作成失敗:", err);
+        return null;
+      }
+    },
+    [handleError, showSuccess],
+  );
 
   /**
    * 日報更新
    */
-  const updateReport = useCallback(async (
-    id: number,
-    data: DailyReportUpdateRequest
-  ): Promise<DailyReportResponse | null> => {
-    try {
-      console.log("✏️ 日報更新開始", id, data.title);
-      const updatedReport = await apiService.updateDailyReport(id, data);
-      
-      // 更新された日報をリストに反映
-      setReports(prevReports =>
-        prevReports.map(report =>
-          report.id === id ? updatedReport : report
-        )
-      );
-      
-      showSuccess("日報が正常に更新されました");
-      console.log("✅ 日報更新成功:", updatedReport.title);
-      return updatedReport;
-    } catch (err) {
-      handleError(err, "日報更新");
-      console.error("❌ 日報更新失敗:", err);
-      return null;
-    }
-  }, [handleError, showSuccess]);
+  const updateReport = useCallback(
+    async (
+      id: number,
+      data: DailyReportUpdateRequest,
+    ): Promise<DailyReportResponse | null> => {
+      try {
+        console.log("✏️ 日報更新開始", id, data.title);
+        const updatedReport = await apiService.updateDailyReport(id, data);
+
+        // 更新された日報をリストに反映
+        setReports((prevReports) =>
+          prevReports.map((report) =>
+            report.id === id ? updatedReport : report,
+          ),
+        );
+
+        showSuccess("日報が正常に更新されました");
+        console.log("✅ 日報更新成功:", updatedReport.title);
+        return updatedReport;
+      } catch (err) {
+        handleError(err, "日報更新");
+        console.error("❌ 日報更新失敗:", err);
+        return null;
+      }
+    },
+    [handleError, showSuccess],
+  );
 
   /**
    * 日報削除
    */
-  const deleteReport = useCallback(async (id: number): Promise<boolean> => {
-    try {
-      console.log("🗑️ 日報削除開始", id);
-      await apiService.deleteDailyReport(id);
-      
-      // 削除された日報をリストから除去
-      setReports(prevReports =>
-        prevReports.filter(report => report.id !== id)
-      );
-      
-      showSuccess("日報が正常に削除されました");
-      console.log("✅ 日報削除成功:", id);
-      return true;
-    } catch (err) {
-      handleError(err, "日報削除");
-      console.error("❌ 日報削除失敗:", err);
-      return false;
-    }
-  }, [handleError, showSuccess]);
+  const deleteReport = useCallback(
+    async (id: number): Promise<boolean> => {
+      try {
+        console.log("🗑️ 日報削除開始", id);
+        await apiService.deleteDailyReport(id);
+
+        // 削除された日報をリストから除去
+        setReports((prevReports) =>
+          prevReports.filter((report) => report.id !== id),
+        );
+
+        showSuccess("日報が正常に削除されました");
+        console.log("✅ 日報削除成功:", id);
+        return true;
+      } catch (err) {
+        handleError(err, "日報削除");
+        console.error("❌ 日報削除失敗:", err);
+        return false;
+      }
+    },
+    [handleError, showSuccess],
+  );
 
   /**
    * 単一日報取得
    */
-  const getReport = useCallback(async (id: number): Promise<DailyReportResponse | null> => {
-    try {
-      console.log("📖 日報詳細取得開始", id);
-      const report = await apiService.getDailyReport(id);
-      
-      if (report) {
-        console.log("✅ 日報詳細取得成功:", report.title);
-      } else {
-        console.warn("📄 指定された日報が見つかりません:", id);
+  const getReport = useCallback(
+    async (id: number): Promise<DailyReportResponse | null> => {
+      try {
+        console.log("📖 日報詳細取得開始", id);
+        const report = await apiService.getDailyReport(id);
+
+        if (report) {
+          console.log("✅ 日報詳細取得成功:", report.title);
+        } else {
+          console.warn("📄 指定された日報が見つかりません:", id);
+        }
+
+        return report;
+      } catch (err) {
+        handleError(err, "日報詳細取得");
+        console.error("❌ 日報詳細取得失敗:", err);
+        return null;
       }
-      
-      return report;
-    } catch (err) {
-      handleError(err, "日報詳細取得");
-      console.error("❌ 日報詳細取得失敗:", err);
-      return null;
-    }
-  }, [handleError]);
+    },
+    [handleError],
+  );
 
   // 初期データ取得
   useEffect(() => {

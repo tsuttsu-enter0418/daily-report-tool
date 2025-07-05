@@ -56,7 +56,9 @@ export type StatusBadgeType =
   | "production"
   | "success"
   | "warning"
-  | "error";
+  | "error"
+  | "draft"
+  | "submitted";
 
 /**
  * 入力フィールドのバリデーション状態（型安全性向上）
