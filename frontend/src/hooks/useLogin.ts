@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSetAtom } from "jotai";
-import Cookies from "js-cookie";
 import { apiService } from "../services/apiService";
 import { MessageConst } from "../constants/MessageConst";
 import { loginAtom } from "../stores";
@@ -51,7 +50,7 @@ export const useLogin = (): UseLoginReturn => {
    * 処理フロー:
    * 1. ローディング状態をONに設定
    * 2. APIサービス経由でログイン認証
-   * 3. 成功時: JWT トークンをCookieに保存
+   * 3. 成功時: JWT トークンをlocalStorageに保存
    * 4. 成功時: ユーザー情報をJotai状態管理に保存
    * 5. 成功Toast表示後、ホーム画面へリダイレクト
    * 6. 失敗時: エラーToastを表示（画面遷移なし）
@@ -63,10 +62,11 @@ export const useLogin = (): UseLoginReturn => {
     setIsLoading(true);
 
     try {
+      console.log("🔑 ログイン開始:", data.username);
       const result = await apiService.login(data);
 
-      // JWT トークンをCookieに保存（1日間有効）
-      Cookies.set("authToken", result.token, { expires: 1 });
+      // JWT トークンをlocalStorageに保存
+      apiService.setAuthToken(result.token);
 
       // ユーザー情報をJotai状態管理に保存
       login({
@@ -83,11 +83,14 @@ export const useLogin = (): UseLoginReturn => {
       // 成功時のToast表示
       showSuccess(MessageConst.AUTH.LOGIN_SUCCESS_DESCRIPTION(result.username));
 
+      console.log("✅ ログイン完了:", result.username);
+
       // Toastを見せるために少し遅れてリダイレクト
       setTimeout(() => {
         navigate("/home");
       }, 500);
     } catch (err) {
+      console.error("❌ ログイン失敗:", err);
       // エラーハンドリング
       handleError(err, "ログイン処理");
     } finally {

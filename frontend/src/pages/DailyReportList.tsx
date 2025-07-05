@@ -6,14 +6,16 @@ import {
   Text,
   SimpleGrid,
   Card,
+  Spinner,
+  Center,
 } from "@chakra-ui/react";
 import { useState, useCallback, useMemo, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/atoms";
 import { StatusBadge } from "../components/molecules";
-import { useAuth } from "../hooks";
-import { useErrorHandler } from "../hooks";
+import { useAuth, useMyDailyReports } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
+import type { DailyReportStatus, DailyReportResponse } from "../types";
 
 /**
  * 個人日報一覧ページ (Organism)
@@ -34,62 +36,15 @@ import { MessageConst } from "../constants/MessageConst";
  * - アクションボタン（編集・削除）
  */
 
-type FilterType = "all" | "submitted" | "draft";
-
-type PersonalReport = {
-  id: string;
-  title: string;
-  workContent: string;
-  status: "submitted" | "draft";
-  createdAt: string;
-  submittedAt?: string;
-};
-
-// モックデータ
-const mockPersonalReports: PersonalReport[] = [
-  {
-    id: "my-1",
-    title: "2024年1月15日の日報",
-    workContent:
-      "プロジェクトXの要件定義を実施しました。クライアントとのミーティングで詳細な仕様を確認し、技術スタックの選定を行いました。React + TypeScriptでの開発方針が決定し、来週からプロトタイプ開発に着手予定です。",
-    status: "submitted",
-    createdAt: "2024-01-15",
-    submittedAt: "2024-01-15 18:30",
-  },
-  {
-    id: "my-2",
-    title: "2024年1月16日の日報",
-    workContent:
-      "UI/UXデザインのプロトタイプ作成を開始。Figmaでワイヤーフレームを作成し、カラーパレットとコンポーネント設計を検討しました。",
-    status: "draft",
-    createdAt: "2024-01-16",
-  },
-  {
-    id: "my-3",
-    title: "2024年1月17日の日報",
-    workContent:
-      "フロントエンド開発環境のセットアップを完了。Vite + React + TypeScript + ChakraUIの構成で開発環境を構築しました。ESLintとPrettierの設定も完了し、開発準備が整いました。",
-    status: "submitted",
-    createdAt: "2024-01-17",
-    submittedAt: "2024-01-17 17:45",
-  },
-  {
-    id: "my-4",
-    title: "2024年1月18日の日報",
-    workContent:
-      "認証システムの実装に着手。JWT認証とBCryptパスワードハッシュ化を実装しました。",
-    status: "draft",
-    createdAt: "2024-01-18",
-  },
-];
+type FilterType = "all" | DailyReportStatus;
 
 /**
  * 個人日報カードコンポーネント (Molecule)
  */
 type PersonalReportCardProps = {
-  report: PersonalReport;
-  onEdit: (reportId: string) => void;
-  onDelete: (reportId: string) => void;
+  report: DailyReportResponse;
+  onEdit: (reportId: number) => void;
+  onDelete: (reportId: number) => void;
 };
 
 const PersonalReportCardComponent = ({
@@ -128,6 +83,41 @@ const PersonalReportCardComponent = ({
     [report.workContent],
   );
 
+  // 日付フォーマット（メモ化）
+  const formattedDates = useMemo(() => {
+    const formatDate = (dateString: string) => {
+      try {
+        return new Date(dateString).toLocaleDateString("ja-JP", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        });
+      } catch {
+        return dateString;
+      }
+    };
+
+    const formatDateTime = (dateString: string) => {
+      try {
+        return new Date(dateString).toLocaleString("ja-JP", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      } catch {
+        return dateString;
+      }
+    };
+
+    return {
+      reportDate: formatDate(report.reportDate),
+      createdAt: formatDateTime(report.createdAt),
+      submittedAt: report.submittedAt ? formatDateTime(report.submittedAt) : null,
+    };
+  }, [report.reportDate, report.createdAt, report.submittedAt]);
+
   return (
     <Card.Root
       variant="elevated"
@@ -152,11 +142,14 @@ const PersonalReportCardComponent = ({
                 {report.title}
               </Heading>
               <Text fontSize="sm" color="gray.600">
-                作成日: {report.createdAt}
+                対象日: {formattedDates.reportDate}
               </Text>
-              {report.submittedAt && (
+              <Text fontSize="sm" color="gray.500">
+                作成: {formattedDates.createdAt}
+              </Text>
+              {formattedDates.submittedAt && (
                 <Text fontSize="sm" color="teal.600">
-                  提出日: {report.submittedAt}
+                  提出: {formattedDates.submittedAt}
                 </Text>
               )}
             </VStack>
@@ -204,9 +197,11 @@ const PersonalReportCard = memo(PersonalReportCardComponent);
 
 const DailyReportListComponent = () => {
   const { user } = useAuth();
-  const { handleError, showSuccess, showInfo } = useErrorHandler();
   const navigate = useNavigate();
   const [currentFilter, setCurrentFilter] = useState<FilterType>("all");
+  
+  // 日報データ取得
+  const { reports, isLoading, error, deleteReport, refetch } = useMyDailyReports();
 
   // 開発モード表示判定（メモ化）
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);
@@ -218,7 +213,7 @@ const DailyReportListComponent = () => {
   // フィルタリング処理（メモ化）
   const filteredReports = useMemo(
     () =>
-      mockPersonalReports.filter((report) => {
+      reports.filter((report) => {
         switch (currentFilter) {
           case "submitted":
             return report.status === "submitted";
@@ -228,7 +223,7 @@ const DailyReportListComponent = () => {
             return true;
         }
       }),
-    [currentFilter],
+    [reports, currentFilter],
   );
 
   // ハンドラー関数（メモ化）
@@ -237,30 +232,31 @@ const DailyReportListComponent = () => {
   }, [navigate]);
 
   const handleEdit = useCallback(
-    (reportId: string) => {
+    (reportId: number) => {
       navigate(`/report/edit/${reportId}`);
     },
     [navigate],
   );
 
   const handleDelete = useCallback(
-    async (reportId: string) => {
+    async (reportId: number) => {
       try {
-        // TODO: 削除確認ダイアログの実装
+        // 削除確認ダイアログ
         const confirmed = window.confirm("日報を削除しますか？");
         if (!confirmed) return;
 
         console.log(`日報削除: ${reportId}`);
-        // TODO: 実際のAPI呼び出し実装
-        await new Promise((resolve) => setTimeout(resolve, 500)); // モック遅延
-
-        showSuccess("日報が削除されました。");
-        showInfo("ページをリロードして更新された一覧を表示します。");
+        const success = await deleteReport(reportId);
+        
+        if (success) {
+          // 削除成功の場合は自動的にリストから除去される（useDailyReportsフック内で処理）
+          console.log("✅ 日報削除完了");
+        }
       } catch (error) {
-        handleError(error, "日報削除処理");
+        console.error("❌ 日報削除処理エラー:", error);
       }
     },
-    [handleError, showSuccess, showInfo],
+    [deleteReport],
   );
 
   const handleFilterChange = useCallback((filter: FilterType) => {
@@ -358,7 +354,30 @@ const DailyReportListComponent = () => {
           )}
 
           {/* 日報一覧 */}
-          {filteredReports.length > 0 ? (
+          {isLoading ? (
+            <Center py={20}>
+              <VStack gap={4}>
+                <Spinner size="xl" color="orange.500" />
+                <Text color="gray.600" fontSize="lg">
+                  日報データを読み込み中...
+                </Text>
+              </VStack>
+            </Center>
+          ) : error ? (
+            <Center py={20}>
+              <VStack gap={4}>
+                <Text color="red.500" fontSize="lg" fontWeight="medium">
+                  データの読み込みに失敗しました
+                </Text>
+                <Text color="gray.600" fontSize="md">
+                  {error}
+                </Text>
+                <Button variant="primary" onClick={refetch}>
+                  再試行
+                </Button>
+              </VStack>
+            </Center>
+          ) : filteredReports.length > 0 ? (
             <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6} w="full">
               {filteredReports.map((report) => (
                 <PersonalReportCard

@@ -81,6 +81,75 @@ export type UserInfo = {
 };
 
 /**
+ * 日報ステータスの型定義
+ */
+export type DailyReportStatus = "draft" | "submitted";
+
+/**
+ * 日報作成リクエストの型定義
+ * バックエンドのDailyReportRequestと対応
+ */
+export type DailyReportCreateRequest = {
+  /** 日報タイトル（必須） */
+  title: string;
+  /** 作業内容（必須、10-1000文字） */
+  workContent: string;
+  /** 対象日（必須、YYYY-MM-DD形式） */
+  reportDate: string;
+  /** ステータス（必須） */
+  status: DailyReportStatus;
+};
+
+/**
+ * 日報更新リクエストの型定義
+ * 作成リクエストと同じ構造
+ */
+export type DailyReportUpdateRequest = DailyReportCreateRequest;
+
+/**
+ * 日報レスポンスの型定義
+ * バックエンドのDailyReportResponseと対応
+ */
+export type DailyReportResponse = {
+  /** 日報ID */
+  readonly id: number;
+  /** 作成者ID */
+  readonly userId: number;
+  /** 作成者ユーザー名 */
+  readonly username: string;
+  /** 作成者表示名 */
+  readonly displayName?: string;
+  /** 日報タイトル */
+  title: string;
+  /** 作業内容 */
+  workContent: string;
+  /** ステータス */
+  status: DailyReportStatus;
+  /** 対象日 */
+  reportDate: string;
+  /** 提出日時 */
+  readonly submittedAt?: string;
+  /** 作成日時 */
+  readonly createdAt: string;
+  /** 更新日時 */
+  readonly updatedAt: string;
+};
+
+/**
+ * 日報一覧取得パラメータの型定義
+ */
+export type DailyReportListParams = {
+  /** ページ番号（0ベース） */
+  page?: number;
+  /** 1ページあたりの件数 */
+  size?: number;
+  /** ステータスフィルター */
+  status?: DailyReportStatus;
+  /** 対象年月（YYYY-MM形式） */
+  yearMonth?: string;
+};
+
+/**
  * 型ガード：ログインレスポンスの検証
  */
 export const isLoginResponse = (obj: unknown): obj is LoginResponse => {

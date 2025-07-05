@@ -28,6 +28,11 @@ export type {
   ApiError,
   UserInfo,
   UserRole,
+  DailyReportStatus,
+  DailyReportCreateRequest,
+  DailyReportUpdateRequest,
+  DailyReportResponse,
+  DailyReportListParams,
 } from "./api";
 
 // API型ガード

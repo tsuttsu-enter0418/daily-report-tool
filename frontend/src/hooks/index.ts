@@ -17,3 +17,6 @@ export { useAuth } from "./useAuth";
 export type { UseAuthReturn } from "./useAuth";
 
 export { useErrorHandler } from "./useErrorHandler";
+
+export { useDailyReports, useMyDailyReports, useSubordinateReports } from "./useDailyReports";
+export type { UseDailyReportsReturn } from "./useDailyReports";

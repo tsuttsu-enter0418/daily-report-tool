@@ -1,12 +1,12 @@
 import { useAtomValue, useSetAtom } from "jotai";
 import { useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
 import {
   userAtom,
   isAuthenticatedAtom,
   tokenAtom,
   logoutAtom,
 } from "../stores";
+import { apiService } from "../services/apiService";
 import { Toast } from "../components/atoms";
 import { MessageConst } from "../constants/MessageConst";
 
@@ -53,14 +53,16 @@ export const useAuth = (): UseAuthReturn => {
    * ログアウト処理
    *
    * 処理フロー:
-   * 1. Cookieから認証トークンを削除
+   * 1. localStorageから認証トークンを削除
    * 2. Jotai状態管理から認証情報をクリア
    * 3. ログアウト成功のToast表示
    * 4. ログイン画面にリダイレクト
    */
   const logout = (): void => {
-    // Cookieから認証トークンを削除
-    Cookies.remove("authToken");
+    console.log("🚪 ログアウト開始");
+
+    // localStorageから認証トークンを削除
+    apiService.removeAuthToken();
 
     // Jotai状態管理から認証情報をクリア
     performLogout();
@@ -70,6 +72,8 @@ export const useAuth = (): UseAuthReturn => {
       title: MessageConst.AUTH.LOGOUT_SUCCESS,
       duration: 2000,
     });
+
+    console.log("✅ ログアウト完了");
 
     // ログイン画面にリダイレクト
     navigate("/login");
