@@ -1,6 +1,7 @@
-# テスト機能ガイド 📋
+# 📋 React テストコード完全学習ガイド
 
-このプロジェクトで使用されているテスト機能について、初心者向けに分かりやすく説明します。
+React + TypeScript プロジェクトでのテストコード作成方法を**初心者向け**に詳しく解説します。
+実際のコード例とともに、テストの考え方から実装まで段階的に学べます。
 
 ## 🤔 なぜテストが必要なの？
 
@@ -193,6 +194,203 @@ Test Files  1 passed (1)
   at Login.test.tsx:45:23
 ```
 
+## 📝 初心者向け：テストの書き方完全ガイド
+
+### Step 1: テスト対象を分析する
+
+テストを書く前に、以下を明確にします：
+
+```typescript
+// 例: useToast フック
+const useToast = () => {
+  return {
+    showSuccess: (title: string, description?: string) => void,
+    showError: (title: string, description?: string) => void,
+    showWarning: (title: string, description?: string) => void,
+  };
+};
+```
+
+**分析項目：**
+- 🔍 **入力（引数）**: 何を受け取るか？
+- 🎯 **出力（戻り値）**: 何を返すか？
+- ⚡ **副作用**: Toast表示、API呼び出し等の見えない処理
+- 🚫 **エッジケース**: エラー、空文字、null等の特殊ケース
+
+### Step 2: テストケースを洗い出す
+
+```typescript
+// useToast のテストケース例
+describe('useToast', () => {
+  describe('showSuccess', () => {
+    // ✅ 正常系（基本動作）
+    it('タイトルのみでToastを表示する');
+    it('タイトル + 説明でToastを表示する');
+    
+    // ⚠️ エッジケース（境界値・特殊値）
+    it('空文字のタイトルでもエラーにならない');
+    it('非常に長いメッセージを適切に処理する');
+    
+    // 🚫 異常系（エラーハンドリング）
+    it('undefined を渡してもエラーにならない');
+  });
+});
+```
+
+### Step 3: describe と it の正しい使い分け
+
+```typescript
+describe('useToast', () => {              // 📦 テスト対象の名前
+  describe('基本機能', () => {            // 📂 機能・カテゴリでグループ化
+    it('フックが正しい関数を返す', () => {
+      // 🔬 具体的なテストケース
+    });
+  });
+  
+  describe('showSuccess', () => {          // 📂 メソッドごとにグループ化
+    it('成功メッセージを正しく表示する', () => {
+      // 🔬 具体的なテストケース
+    });
+  });
+});
+```
+
+### Step 4: モックを設定する
+
+外部依存関係をモック化して、テスト対象のみを検証します：
+
+```typescript
+// 🎭 Toaster のモック（ChakraUI依存を排除）
+const mockToasterCreate = vi.fn();
+vi.mock('@/components/ui/toaster', () => ({
+  toaster: {
+    create: mockToasterCreate,
+  },
+}));
+
+// 🔄 テスト前にモックをリセット
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+```
+
+### Step 5: AAA パターンでテストを実装
+
+```typescript
+it('成功メッセージを正しく表示する', () => {
+  // 🏗️ Arrange: テストデータとフックを準備
+  const { result } = renderHook(() => useToast());
+  const title = '保存完了';
+  const description = 'データが保存されました';
+  
+  // ⚡ Act: 実際の処理を実行
+  act(() => {
+    result.current.showSuccess(title, description);
+  });
+  
+  // ✅ Assert: 期待する結果を検証
+  expect(mockToasterCreate).toHaveBeenCalledWith({
+    title: '保存完了',
+    description: 'データが保存されました',
+    type: 'success',
+    duration: 5000,
+    closable: true,
+  });
+  
+  // 📊 呼び出し回数も確認
+  expect(mockToasterCreate).toHaveBeenCalledTimes(1);
+});
+```
+
+## 🎨 コンポーネントテストの考え方
+
+### ❌ 実装詳細をテストしない
+
+```typescript
+// ダメな例：内部state を直接テスト
+expect(component.state.isLoading).toBe(true);
+expect(component.find('.loading-spinner')).toHaveLength(1);
+```
+
+### ✅ ユーザー視点でテストする
+
+```typescript
+// 良い例：ユーザーが見る結果をテスト
+expect(screen.getByText('読み込み中...')).toBeInTheDocument();
+expect(screen.getByRole('progressbar')).toBeInTheDocument();
+```
+
+### 🎯 アクセシビリティを重視したセレクター
+
+**優先順位の高い順：**
+
+1. **Role**: `getByRole('button', { name: '保存' })`
+2. **Label**: `getByLabelText('パスワード')`
+3. **Text**: `getByText('ログイン')`
+4. **TestId**: `getByTestId('submit-button')` （最後の手段）
+
+```typescript
+// 良い例：role を使用
+await user.click(screen.getByRole('button', { name: '保存' }));
+
+// 悪い例：class名を使用
+await user.click(screen.getByClassName('btn-save'));
+```
+
+## 🔧 カスタムフックテストの特徴
+
+### renderHook を使用
+
+```typescript
+import { renderHook, act } from '@testing-library/react';
+
+it('useToast フックが正しい関数を返す', () => {
+  const { result } = renderHook(() => useToast());
+  
+  // 🔍 戻り値の型チェック
+  expect(typeof result.current.showSuccess).toBe('function');
+  expect(typeof result.current.showError).toBe('function');
+  expect(typeof result.current.showWarning).toBe('function');
+});
+```
+
+### act() で状態変更をラップ
+
+```typescript
+// 🎭 状態変更を伴う処理は act() でラップ
+act(() => {
+  result.current.showSuccess('メッセージ');
+});
+
+// 🔄 非同期処理の場合
+await act(async () => {
+  await result.current.submitForm(data);
+});
+```
+
+## 🧩 統合テストのアプローチ
+
+### コンポーネント間の連携をテスト
+
+```typescript
+it('日報作成フォームが正しく動作する', async () => {
+  const user = userEvent.setup();
+  
+  // 🖼️ コンポーネントをレンダリング
+  render(<DailyReportForm />);
+  
+  // ⌨️ ユーザー操作をシミュレート
+  await user.type(screen.getByLabelText('タイトル'), '今日の作業');
+  await user.type(screen.getByLabelText('内容'), 'React開発を行いました');
+  
+  // 🖱️ ボタンクリック
+  await user.click(screen.getByRole('button', { name: '保存' }));
+  
+  // ✅ 結果を確認（非同期処理のため findBy を使用）
+  expect(await screen.findByText('日報が保存されました')).toBeInTheDocument();
+});
+```
+
 ## 🔧 テストを書くときのコツ
 
 ### 1. 「何をテストするか」を明確にする
@@ -275,18 +473,89 @@ apiService.ts       |   92.3  |   88.9   |  100.0  |  92.3
 - 余計な機能を作らなくなる
 - リファクタリングが安全になる
 
+## 📋 テスト作成チェックリスト
+
+### ✅ 単体テスト
+
+- [ ] **正常系**のテストケース（基本動作）
+- [ ] **異常系**（エラー）のテストケース
+- [ ] **エッジケース**（境界値・特殊値）のテストケース
+- [ ] **モック**が適切に設定されている
+- [ ] **テスト名**が何をテストしているか明確
+- [ ] **AAA パターン**で構造化されている
+
+### ✅ コンポーネントテスト
+
+- [ ] **初期表示**が正しい
+- [ ] **プロパティ**が正しく反映される
+- [ ] **ユーザーインタラクション**が動作する
+- [ ] **条件分岐**がすべてテストされている
+- [ ] **アクセシビリティ**を考慮したセレクター使用
+- [ ] **ローディング状態**の表示確認
+
+### ✅ 統合テスト
+
+- [ ] **ユーザーの操作フロー**をテスト
+- [ ] **コンポーネント間の連携**をテスト
+- [ ] **状態管理**との連携をテスト
+- [ ] **API通信**との連携をテスト（モック使用）
+
+## 🚀 実践的なテスト戦略
+
+### 1. 重要度順にテストを書く
+
+```
+🔥 高優先度（必須）
+├── カスタムフック（useToast, useDailyReports）
+├── 重要なコンポーネント（削除確認ダイアログ）
+└── 複雑なページ（日報詳細画面）
+
+⚡ 中優先度（推奨）
+├── 基本コンポーネント（StatusBadge, SearchForm）
+└── ユーティリティ関数
+
+💡 低優先度（余裕があれば）
+└── 静的なコンポーネント（レイアウト等）
+```
+
+### 2. テストファースト vs テストラスト
+
+**テストファースト（TDD）:**
+- テスト → 実装 → リファクタリング
+- 設計が明確になる
+- 上級者向け
+
+**テストラスト（初心者推奨）:**
+- 実装 → テスト → リファクタリング
+- 動作するものから始められる
+- 理解しやすい
+
+### 3. カバレッジの目標
+
+```bash
+# カバレッジ確認
+npm run test:coverage
+```
+
+**推奨カバレッジ:**
+- **80%以上**: 十分な品質
+- **100%**: 理想的だが時間とのバランスを考慮
+- **重要な部分は100%**: カスタムフック、ビジネスロジック
+
 ## 🎯 このプロジェクトでのテスト戦略
 
 ### 現在のテスト状況
 - ✅ ログイン機能の単体・統合テスト
 - ✅ APIサービスのモックテスト
-- ✅ カスタムフックのテスト
-- ✅ UIコンポーネントのテスト
+- ✅ カスタムフックのテスト（useLogin, useAuth）
+- ✅ UIコンポーネントのテスト（StatusBadge, InputField）
 
-### 今後追加予定
-- [ ] E2Eテスト（Playwright）
-- [ ] バックエンドAPIテスト
-- [ ] パフォーマンステスト
+### 📈 次期追加予定（優先順）
+1. **useToast.test.ts** - 新作カスタムフック・Toast通知機能
+2. **DeleteConfirmDialog.test.tsx** - 重要な操作確認コンポーネント
+3. **useDailyReports.test.ts** - 主要ビジネスロジック・API連携
+4. **DailyReportDetail.test.tsx** - 複雑なページコンポーネント
+5. **E2Eテスト（Playwright）** - エンドツーエンドテスト
 
 ## 🔍 トラブルシューティング
 
@@ -319,7 +588,57 @@ screen.debug();
 
 ---
 
+## 🎓 学習リソース
+
+### 📚 公式ドキュメント
+
+- [Vitest](https://vitest.dev/) - 高速テストランナー
+- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) - Reactコンポーネントテスト
+- [Jest DOM](https://github.com/testing-library/jest-dom) - DOM要素のアサーション
+
+### 💡 実践のコツ
+
+1. **小さく始める**: 簡単なコンポーネントからスタート
+2. **継続する**: 毎日少しずつテストを追加
+3. **リファクタリング**: テストがあるから安心してコード改善
+4. **チーム共有**: テストの書き方をチームで統一
+5. **失敗を恐れない**: 最初は完璧でなくても OK
+
+### 🌟 初心者が陥りがちな罠と対策
+
+#### ❌ 避けるべきこと
+- 実装詳細（内部state、private method）をテスト
+- テスト名が何をテストしているか不明確
+- モックを使いすぎて何をテストしているか分からない
+- E2Eテストばかり書いて実行時間が長くなる
+
+#### ✅ 心がけること
+- ユーザーの視点でテスト（見える結果・操作）
+- テスト名で仕様を明確に表現
+- 必要最小限のモックで依存関係を排除
+- テストピラミッド（単体多め・統合適度・E2E少数）
+
+---
+
+## 🚀 次のステップ
+
+このガイドを読んだ後は、以下の順序で実践しましょう：
+
+1. **📖 サンプルコードを読む**: `useToast.test.ts` で実際のテスト実装を確認
+2. **✏️ 簡単なテストを書く**: StatusBadge等の既存コンポーネントを参考に
+3. **🔄 テストを実行する**: `npm run test` でテストの動作を確認
+4. **📈 徐々に複雑に**: カスタムフック→統合テスト→E2Eテストへ
+
 **💡 覚えておきたいポイント**
 - テストは「未来の自分への贈り物」
-- 小さなテストから始めて、徐々に覚えていく
+- 小さなテストから始めて、徐々に覚えていく  
 - 100%完璧である必要はない、まずは書いてみることが大切
+- **実際に手を動かすことが最も重要な学習方法**
+
+---
+
+**🎯 目標設定の例**
+- 📅 **1週目**: useToast のテストを完成させる
+- 📅 **2週目**: コンポーネントテストを2つ追加
+- 📅 **3週目**: 統合テストに挑戦
+- 📅 **4週目**: カバレッジ80%を目指す
