@@ -61,8 +61,13 @@ export const useAuth = (): UseAuthReturn => {
   const logout = (): void => {
     console.log("🚪 ログアウト開始");
 
-    // localStorageから認証トークンを削除
-    apiService.removeAuthToken();
+    try {
+      // localStorageから認証トークンを削除
+      apiService.removeAuthToken();
+    } catch (error) {
+      // ストレージエラーが発生してもログアウト処理を継続
+      console.warn("⚠️ トークン削除エラー:", error);
+    }
 
     // Jotai状態管理から認証情報をクリア
     performLogout();

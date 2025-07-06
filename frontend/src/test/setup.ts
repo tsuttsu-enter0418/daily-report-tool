@@ -8,7 +8,32 @@
  */
 
 import "@testing-library/jest-dom";
-import { beforeAll, afterAll } from "vitest";
+import { beforeAll, afterAll, vi } from "vitest";
+
+// matchMediaのモック設定（ChakraUI対応）
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  value: vi.fn().mockImplementation((query) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
+
+// ResizeObserverのモック設定（ChakraUI対応）
+Object.defineProperty(window, "ResizeObserver", {
+  writable: true,
+  value: vi.fn().mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  })),
+});
 
 // 環境変数のモック設定
 Object.defineProperty(import.meta, "env", {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSetAtom } from "jotai";
 import { apiService } from "../services/apiService";
@@ -66,7 +66,12 @@ export const useLogin = (): UseLoginReturn => {
       const result = await apiService.login(data);
 
       // JWT トークンをlocalStorageに保存
-      apiService.setAuthToken(result.token);
+      try {
+        apiService.setAuthToken(result.token);
+      } catch (tokenError) {
+        console.warn("⚠️ トークン保存エラー:", tokenError);
+        // トークン保存に失敗してもログイン処理を継続
+      }
 
       // ユーザー情報をJotai状態管理に保存
       login({
@@ -98,8 +103,11 @@ export const useLogin = (): UseLoginReturn => {
     }
   };
 
+  // useCallbackで関数参照の安定性を保つ
+  const stableLogin = useCallback(performLogin, [navigate, login, handleError, showSuccess]);
+
   return {
     isLoading,
-    login: performLogin,
+    login: stableLogin,
   };
 };
