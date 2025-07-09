@@ -30,15 +30,20 @@ describe("mockApi", () => {
         password: "password",
       };
 
+      // const result = await mockApi.login(loginData);
+      const loginPromise = mockApi.login(loginData);
+
       // APIの遅延をスキップ
-      vi.advanceTimersByTime(1000);
+      vi.runAllTimers();
 
-      const result = await mockApi.login(loginData);
-
+      const result = await loginPromise;
       expect(result).toEqual({
         token: expect.stringContaining("mock-jwt-token-1-"),
         username: "admin",
         role: "管理者",
+        email: "admin@example.com",
+        id: "1",
+        displayName: "admin",
       });
     });
 
@@ -48,10 +53,12 @@ describe("mockApi", () => {
         password: "password",
       };
 
-      vi.advanceTimersByTime(1000);
+      const loginPromise = mockApi.login(loginData);
+      // APIの遅延をスキップ
+      vi.runAllTimers();
 
-      await expect(mockApi.login(loginData)).rejects.toThrow(
-        "ユーザー名またはパスワードが正しくありません",
+      await expect(loginPromise).rejects.toThrow(
+        "ユーザー名またはパスワードが正しくありません"
       );
     });
 
@@ -61,10 +68,12 @@ describe("mockApi", () => {
         password: "wrongpassword",
       };
 
-      vi.advanceTimersByTime(1000);
+      const loginPromise = mockApi.login(loginData);
+      // APIの遅延をスキップ
+      vi.runAllTimers();
 
-      await expect(mockApi.login(loginData)).rejects.toThrow(
-        "ユーザー名またはパスワードが正しくありません",
+      await expect(loginPromise).rejects.toThrow(
+        "ユーザー名またはパスワードが正しくありません"
       );
     });
 
@@ -76,12 +85,14 @@ describe("mockApi", () => {
       ];
 
       for (const testCase of testCases) {
-        vi.advanceTimersByTime(1000);
-
-        const result = await mockApi.login({
+        const loginPromise = mockApi.login({
           username: testCase.username,
           password: "password",
         });
+
+        vi.runAllTimers();
+
+        const result = await loginPromise;
 
         expect(result.role).toBe(testCase.expectedRole);
         expect(result.username).toBe(testCase.username);
@@ -92,10 +103,11 @@ describe("mockApi", () => {
   describe("validateToken", () => {
     it("有効なモックトークンの検証が成功する", async () => {
       const validToken = "mock-jwt-token-1-12345";
+      const loginPromise = mockApi.validateToken(validToken);
 
-      vi.advanceTimersByTime(300);
+      vi.advanceTimersByTime(250);
 
-      const isValid = await mockApi.validateToken(validToken);
+      const isValid = await loginPromise;
 
       expect(isValid).toBe(true);
     });
@@ -103,9 +115,11 @@ describe("mockApi", () => {
     it("無効なトークンの検証が失敗する", async () => {
       const invalidToken = "invalid-token";
 
-      vi.advanceTimersByTime(300);
+      const loginPromise = mockApi.validateToken(invalidToken);
 
-      const isValid = await mockApi.validateToken(invalidToken);
+      vi.advanceTimersByTime(250);
+
+      const isValid = await loginPromise;
 
       expect(isValid).toBe(false);
     });
@@ -113,9 +127,11 @@ describe("mockApi", () => {
     it("空文字トークンの検証が失敗する", async () => {
       const emptyToken = "";
 
-      vi.advanceTimersByTime(300);
+      const loginPromise = mockApi.validateToken(emptyToken);
 
-      const isValid = await mockApi.validateToken(emptyToken);
+      vi.advanceTimersByTime(250);
+
+      const isValid = await loginPromise;
 
       expect(isValid).toBe(false);
     });
@@ -124,13 +140,14 @@ describe("mockApi", () => {
   describe("getUserInfo", () => {
     it("有効なトークンでユーザー情報を取得できる", async () => {
       const validToken = "mock-jwt-token-1-12345";
+      const loginPromise = mockApi.getUserInfo(validToken);
 
-      vi.advanceTimersByTime(300);
+      vi.advanceTimersByTime(250);
 
-      const userInfo = await mockApi.getUserInfo(validToken);
+      const userInfo = await loginPromise;
 
       expect(userInfo).toEqual({
-        id: 1,
+        id: "1",
         username: "admin",
         email: "admin@example.com",
         role: "管理者",
@@ -140,9 +157,11 @@ describe("mockApi", () => {
     it("無効なトークンでユーザー情報取得がnullを返す", async () => {
       const invalidToken = "invalid-token";
 
-      vi.advanceTimersByTime(300);
+      const loginPromise = mockApi.getUserInfo(invalidToken);
 
-      const userInfo = await mockApi.getUserInfo(invalidToken);
+      vi.advanceTimersByTime(250);
+
+      const userInfo = await loginPromise;
 
       expect(userInfo).toBeNull();
     });
@@ -150,9 +169,11 @@ describe("mockApi", () => {
     it("存在しないユーザーIDのトークンでnullを返す", async () => {
       const tokenWithInvalidUserId = "mock-jwt-token-999-12345";
 
-      vi.advanceTimersByTime(300);
+      const loginPromise = mockApi.getUserInfo(tokenWithInvalidUserId);
 
-      const userInfo = await mockApi.getUserInfo(tokenWithInvalidUserId);
+      vi.advanceTimersByTime(250);
+
+      const userInfo = await loginPromise;
 
       expect(userInfo).toBeNull();
     });
