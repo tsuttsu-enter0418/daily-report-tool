@@ -35,6 +35,18 @@ vi.mock("@/services/apiService", () => ({
   },
 }));
 
+// Jotai状態管理のモック
+const mockIsAuthenticated = { value: false };
+const mockPerformLogout = vi.fn();
+vi.mock("jotai", async () => {
+  const actual = await vi.importActual("jotai");
+  return {
+    ...actual,
+    useAtomValue: vi.fn(() => mockIsAuthenticated.value),
+    useSetAtom: vi.fn(() => mockPerformLogout),
+  };
+});
+
 import { apiService } from "@/services/apiService";
 const mockApiService = vi.mocked(apiService);
 
@@ -43,6 +55,7 @@ describe("ProtectedRoute", () => {
     vi.clearAllMocks();
     vi.clearAllTimers();
     vi.useFakeTimers();
+    mockIsAuthenticated.value = false;
   });
 
   afterEach(() => {
@@ -58,7 +71,7 @@ describe("ProtectedRoute", () => {
     render(
       <ProtectedRoute>
         <TestChild />
-      </ProtectedRoute>,
+      </ProtectedRoute>
     );
 
     expect(mockNavigate).toHaveBeenCalledWith("/login");
@@ -68,13 +81,13 @@ describe("ProtectedRoute", () => {
   it("トークン検証中はローディング画面を表示する", async () => {
     mockCookies.get.mockReturnValue("valid-token" as any);
     mockApiService.validateToken.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve(true), 1000)),
+      () => new Promise((resolve) => setTimeout(() => resolve(true), 1000))
     );
 
     render(
       <ProtectedRoute>
         <TestChild />
-      </ProtectedRoute>,
+      </ProtectedRoute>
     );
 
     expect(screen.getByText("認証確認中...")).toBeInTheDocument();
@@ -83,19 +96,19 @@ describe("ProtectedRoute", () => {
   });
 
   it("有効なトークンの場合、子コンポーネントを表示する", async () => {
+    // 既に認証済みの状態に設定
+    mockIsAuthenticated.value = true;
     mockCookies.get.mockReturnValue("valid-token" as any);
     mockApiService.validateToken.mockResolvedValue(true);
 
     render(
       <ProtectedRoute>
         <TestChild />
-      </ProtectedRoute>,
+      </ProtectedRoute>
     );
 
-    await waitFor(() => {
-      expect(screen.getByText("保護されたコンテンツ")).toBeInTheDocument();
-    });
-
+    // 既に認証済みの場合、即座に子コンポーネントが表示される
+    expect(screen.getByText("保護されたコンテンツ")).toBeInTheDocument();
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
@@ -106,7 +119,7 @@ describe("ProtectedRoute", () => {
     render(
       <ProtectedRoute>
         <TestChild />
-      </ProtectedRoute>,
+      </ProtectedRoute>
     );
 
     await waitFor(() => {
@@ -126,7 +139,7 @@ describe("ProtectedRoute", () => {
     render(
       <ProtectedRoute>
         <TestChild />
-      </ProtectedRoute>,
+      </ProtectedRoute>
     );
 
     await waitFor(() => {
@@ -143,7 +156,7 @@ describe("ProtectedRoute", () => {
   it("認証が完了するまで子コンポーネントが表示されない", async () => {
     mockCookies.get.mockReturnValue("valid-token" as any);
 
-    let resolveValidation: (value: boolean) => void;
+    let resolveValidation: (value: boolean) => void = () => {};
     mockApiService.validateToken.mockImplementation(
       () =>
         new Promise((resolve) => {
@@ -154,7 +167,7 @@ describe("ProtectedRoute", () => {
     render(
       <ProtectedRoute>
         <TestChild />
-      </ProtectedRoute>,
+      </ProtectedRoute>
     );
 
     // 検証完了前
@@ -162,7 +175,7 @@ describe("ProtectedRoute", () => {
     expect(screen.queryByText("保護されたコンテンツ")).not.toBeInTheDocument();
 
     // 検証完了後
-    resolveValidation!(true);
+    resolveValidation(true);
 
     await waitFor(() => {
       expect(screen.getByText("保護されたコンテンツ")).toBeInTheDocument();
