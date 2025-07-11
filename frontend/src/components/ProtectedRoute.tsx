@@ -4,7 +4,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import Cookies from "js-cookie";
 import { apiService } from "../services/apiService";
 import { Box, Spinner, Text } from "@chakra-ui/react";
-import { isAuthenticatedAtom, logoutAtom } from "../stores";
+import { isAuthenticatedAtom, logoutAtom, authStateAtom } from "../stores";
 
 /**
  * 認証保護ルートコンポーネント (Organism)
@@ -30,6 +30,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const navigate = useNavigate();
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   const performLogout = useSetAtom(logoutAtom);
+  const setAuthState = useSetAtom(authStateAtom);
   const [isValidating, setIsValidating] = useState(true);
 
   useEffect(() => {
@@ -65,6 +66,13 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           Cookies.remove("authToken");
           performLogout();
           navigate("/login");
+        } else {
+          // 有効なトークンの場合、認証状態を更新
+          setAuthState(prev => ({
+            ...prev,
+            isAuthenticated: true,
+            token,
+          }));
         }
       } catch (error) {
         console.error("認証エラー:", error);
@@ -77,7 +85,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     };
 
     validateAuth();
-  }, [navigate, isAuthenticated, performLogout]);
+  }, [navigate, isAuthenticated, performLogout, setAuthState]);
 
   if (isValidating) {
     return (
@@ -103,6 +111,5 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   if (!isAuthenticated) {
     return null;
   }
-
   return <>{children}</>;
 };
