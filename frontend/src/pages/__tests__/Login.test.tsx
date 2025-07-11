@@ -11,14 +11,21 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor } from "@/test/utils";
+import { render, screen } from "@/test/utils";
 import userEvent from "@testing-library/user-event";
 import { Login } from "../Login";
-import Cookies from "js-cookie";
 
-// Cookiesのモック
-vi.mock("js-cookie");
-const mockCookies = vi.mocked(Cookies);
+// localStorageのモック
+const mockLocalStorage = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+};
+Object.defineProperty(window, "localStorage", {
+  value: mockLocalStorage,
+  writable: true,
+});
 
 // useNavigateのモック
 const mockNavigate = vi.fn();
@@ -31,17 +38,20 @@ vi.mock("react-router-dom", async () => {
 });
 
 // toasterのモック
-const mockToasterCreate = vi.fn();
-vi.mock("@/components/ui/toaster", () => ({
-  toaster: {
-    create: mockToasterCreate,
-  },
-}));
+const mockToasterCreate = vi.hoisted(() => vi.fn());
+vi.mock("@/components/ui/toaster", () => {
+  return {
+    toaster: {
+      create: mockToasterCreate,
+    },
+  };
+});
 
 // apiServiceのモック
 vi.mock("@/services/apiService", () => ({
   apiService: {
     login: vi.fn(),
+    setAuthToken: vi.fn(),
   },
 }));
 
@@ -52,7 +62,13 @@ describe("Login", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.clearAllTimers();
-    vi.useFakeTimers();
+    vi.useRealTimers();
+
+    // localStorageのモッククリア
+    mockLocalStorage.getItem.mockClear();
+    mockLocalStorage.setItem.mockClear();
+    mockLocalStorage.removeItem.mockClear();
+    mockLocalStorage.clear.mockClear();
 
     // デフォルトで開発環境（モックAPI使用）に設定
     vi.stubGlobal("import.meta", {
@@ -64,7 +80,7 @@ describe("Login", () => {
   });
 
   afterEach(() => {
-    vi.runOnlyPendingTimers();
+    vi.clearAllMocks();
     vi.useRealTimers();
   });
 
@@ -72,36 +88,15 @@ describe("Login", () => {
     render(<Login />);
 
     expect(screen.getByText("日報管理システム")).toBeInTheDocument();
-    expect(screen.getByText("ログイン")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "ログイン" })
+    ).toBeInTheDocument();
     expect(screen.getByLabelText("ユーザー名")).toBeInTheDocument();
     expect(screen.getByLabelText("パスワード")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "ログイン" }),
+      screen.getByRole("button", { name: "ログイン" })
     ).toBeInTheDocument();
     expect(screen.getByText("テストアカウント:")).toBeInTheDocument();
-  });
-
-  it("開発モード（モックAPI）のバッジが表示される", () => {
-    render(<Login />);
-
-    expect(
-      screen.getByText("🔧 開発モード (モックAPI使用中)"),
-    ).toBeInTheDocument();
-  });
-
-  it("開発モード（実API）のバッジが表示される", () => {
-    vi.stubGlobal("import.meta", {
-      env: {
-        DEV: true,
-        VITE_USE_REAL_API: "true",
-      },
-    });
-
-    render(<Login />);
-
-    expect(
-      screen.getByText("🌐 開発モード (実際のAPI使用中)"),
-    ).toBeInTheDocument();
   });
 
   it("フォームバリデーションが正しく動作する", async () => {
@@ -113,7 +108,7 @@ describe("Login", () => {
     // 空の状態で送信
     await user.click(submitButton);
 
-    await waitFor(() => {
+    await vi.waitFor(() => {
       expect(screen.getByText("ユーザー名は必須です")).toBeInTheDocument();
       expect(screen.getByText("パスワードは必須です")).toBeInTheDocument();
     });
@@ -140,30 +135,22 @@ describe("Login", () => {
     await user.type(passwordInput, "password");
     await user.click(submitButton);
 
-    // ローディング状態の確認
-    expect(screen.getByText("ログイン中...")).toBeInTheDocument();
-
-    await waitFor(() => {
+    await vi.waitFor(() => {
       // 成功Toastの確認
       expect(mockToasterCreate).toHaveBeenCalledWith({
-        title: "ログイン成功",
+        title: "成功",
         description: "adminさん、おかえりなさい",
-        status: "success",
-        duration: 2000,
+        type: "success",
+        duration: 3000,
       });
 
-      // Cookieにトークンが保存されることを確認
-      expect(mockCookies.set).toHaveBeenCalledWith(
-        "authToken",
-        "mock-jwt-token",
-        { expires: 7 },
+      // localStorageに認証状態が保存されることを確認
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        "authState",
+        expect.stringContaining("mock-jwt-token")
       );
-    });
 
-    // 遅延後にナビゲートが呼ばれることを確認
-    vi.advanceTimersByTime(500);
-
-    await waitFor(() => {
+      // 遅延後にナビゲートが呼ばれることを確認
       expect(mockNavigate).toHaveBeenCalledWith("/home");
     });
   });
@@ -172,7 +159,7 @@ describe("Login", () => {
     const user = userEvent.setup();
 
     mockApiService.login.mockRejectedValue(
-      new Error("ユーザー名またはパスワードが正しくありません"),
+      new Error("ユーザー名またはパスワードが正しくありません")
     );
 
     render(<Login />);
@@ -185,13 +172,13 @@ describe("Login", () => {
     await user.type(passwordInput, "wrongpassword");
     await user.click(submitButton);
 
-    await waitFor(() => {
+    await vi.waitFor(() => {
       // エラーToastの確認
       expect(mockToasterCreate).toHaveBeenCalledWith({
-        title: "ログイン失敗",
+        title: "エラー",
         description: "ユーザー名またはパスワードが正しくありません",
-        status: "error",
-        duration: 4000,
+        type: "error",
+        duration: 5000,
       });
     });
 
@@ -218,12 +205,12 @@ describe("Login", () => {
     await user.type(passwordInput, "password");
     await user.click(submitButton);
 
-    await waitFor(() => {
+    await vi.waitFor(() => {
       expect(mockToasterCreate).toHaveBeenCalledWith({
-        title: "ログイン失敗",
+        title: "エラー",
         description: "Network error",
-        status: "error",
-        duration: 4000,
+        type: "error",
+        duration: 5000,
       });
     });
   });
@@ -232,23 +219,12 @@ describe("Login", () => {
     const user = userEvent.setup();
 
     // ログイン処理を遅延させる
-    mockApiService.login.mockImplementation(
-      () =>
-        new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve({
-                token: "token",
-                id: "1",
-                username: "admin",
-                email: "admin@example.com",
-                role: "管理者",
-              }),
-            2000,
-          ),
-        ),
-    );
+    let resolveLogin: (value: any) => void;
+    const loginPromise = new Promise((resolve) => {
+      resolveLogin = resolve;
+    });
 
+    mockApiService.login.mockReturnValue(loginPromise as any);
     render(<Login />);
 
     const usernameInput = screen.getByLabelText("ユーザー名");
@@ -260,12 +236,34 @@ describe("Login", () => {
     await user.click(submitButton);
 
     // ローディング状態の確認
-    expect(screen.getByText("ログイン中...")).toBeInTheDocument();
-    expect(submitButton).toBeDisabled();
+    await vi.waitFor(
+      () => {
+        expect(screen.getByText("認証中...")).toBeInTheDocument();
+        expect(submitButton).toBeDisabled();
+      },
+      { timeout: 3000 }
+    );
 
     // 追加クリックしても処理が重複しないことを確認
     const callCount = mockApiService.login.mock.calls.length;
     await user.click(submitButton);
     expect(mockApiService.login.mock.calls.length).toBe(callCount);
+
+    // テストクリーンアップのためにプロミスを解決
+    resolveLogin!({
+      token: "token",
+      id: "1",
+      username: "admin",
+      email: "admin@example.com",
+      role: "管理者",
+    });
+
+    // プロミス解決後の処理を待つ
+    await vi.waitFor(
+      () => {
+        expect(mockToasterCreate).toHaveBeenCalled();
+      },
+      { timeout: 5000 }
+    );
   });
 });

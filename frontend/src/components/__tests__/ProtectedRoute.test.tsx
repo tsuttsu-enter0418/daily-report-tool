@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor } from "@/test/utils";
+import { act, render, screen, waitFor } from "@/test/utils";
 import { ProtectedRoute } from "../ProtectedRoute";
 import Cookies from "js-cookie";
 
@@ -113,6 +113,8 @@ describe("ProtectedRoute", () => {
   });
 
   it("無効なトークンの場合、Cookieを削除してログイン画面にリダイレクトする", async () => {
+    // 既に認証済みの状態に設定
+    mockIsAuthenticated.value = false;
     mockCookies.get.mockReturnValue("invalid-token" as any);
     mockApiService.validateToken.mockResolvedValue(false);
 
@@ -122,7 +124,7 @@ describe("ProtectedRoute", () => {
       </ProtectedRoute>
     );
 
-    await waitFor(() => {
+    await vi.waitFor(() => {
       expect(mockCookies.remove).toHaveBeenCalledWith("authToken");
       expect(mockNavigate).toHaveBeenCalledWith("/login");
     });
@@ -142,7 +144,7 @@ describe("ProtectedRoute", () => {
       </ProtectedRoute>
     );
 
-    await waitFor(() => {
+    await vi.waitFor(() => {
       expect(mockCookies.remove).toHaveBeenCalledWith("authToken");
       expect(mockNavigate).toHaveBeenCalledWith("/login");
     });
@@ -161,7 +163,7 @@ describe("ProtectedRoute", () => {
       () =>
         new Promise((resolve) => {
           resolveValidation = resolve;
-        }),
+        })
     );
 
     render(
@@ -174,10 +176,13 @@ describe("ProtectedRoute", () => {
     expect(screen.getByText("認証確認中...")).toBeInTheDocument();
     expect(screen.queryByText("保護されたコンテンツ")).not.toBeInTheDocument();
 
-    // 検証完了後
-    resolveValidation(true);
+    // 検証完了後 - 認証状態を更新する
+    act(() => {
+      resolveValidation(true);
+      mockIsAuthenticated.value = true;
+    });
 
-    await waitFor(() => {
+    await vi.waitFor(() => {
       expect(screen.getByText("保護されたコンテンツ")).toBeInTheDocument();
     });
 

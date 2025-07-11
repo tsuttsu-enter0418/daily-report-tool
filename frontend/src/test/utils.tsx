@@ -11,7 +11,6 @@ import { type ReactElement } from "react";
 import { render, type RenderOptions } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "@/components/ui/provider";
-import { Toaster } from "@/components/ui/toaster";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 /**
@@ -31,7 +30,6 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           {children}
-          <Toaster />
         </BrowserRouter>
       </QueryClientProvider>
     </Provider>
@@ -68,7 +66,6 @@ const renderWithoutRouter = (
       <Provider>
         <QueryClientProvider client={queryClient}>
           {children}
-          <Toaster />
         </QueryClientProvider>
       </Provider>
     );
