@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -49,10 +50,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Daily Reports", description = "日報管理API")
-public class DailyReportController {
+public class DailyReportController extends BaseController {
 
     private final DailyReportService dailyReportService;
-    private final UserRepository userRepository;
 
     /**
      * 日報作成
@@ -244,35 +244,5 @@ public class DailyReportController {
         return ResponseEntity.ok(exists);
     }
 
-    /**
-     * 認証情報からユーザーIDを取得
-     * 
-     * 処理フロー:
-     * 1. JWT認証からusernameを取得
-     * 2. usernameでUserエンティティを検索
-     * 3. 見つかったUserのIDを返却
-     * 
-     * @param authentication Spring Security認証情報（JWTから生成）
-     * @return ユーザーID
-     * @throws IllegalArgumentException 認証情報が無効、またはユーザーが見つからない場合
-     */
-    private Long getUserIdFromAuth(Authentication authentication) {
-        try {
-            // JWT認証からusernameを取得
-            String username = authentication.getName();
-            log.debug("認証ユーザー名取得: username={}", username);
-            
-            // usernameでUserエンティティを検索してIDを取得
-            User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("ユーザーが見つかりません: " + username));
-            
-            log.debug("ユーザーID取得成功: username={}, userId={}", username, user.getId());
-            return user.getId();
-            
-        } catch (Exception e) {
-            log.error("ユーザーID取得エラー: username={}, error={}", 
-                authentication != null ? authentication.getName() : "null", e.getMessage());
-            throw new IllegalArgumentException("認証情報が無効です: " + e.getMessage());
-        }
-    }
+    // getUserIdFromAuth メソッドはBaseControllerから継承
 }

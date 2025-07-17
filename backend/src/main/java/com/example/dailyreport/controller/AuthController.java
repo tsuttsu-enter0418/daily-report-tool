@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "認証 API", description = "ユーザー認証に関するAPIエンドポイント")
-public class AuthController {
+public class AuthController extends BaseController {
 
     @Autowired
     private AuthService authService;
