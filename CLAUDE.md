@@ -54,6 +54,26 @@ cd backend
 docker-compose up             # Starts database, backend, and frontend
 docker-compose up frontend    # Start frontend container only
 docker-compose up backend     # Start backend and database only
+docker-compose up pgadmin     # Start pgAdmin (PostgreSQL GUI) only
+
+# Database management
+docker-compose up database pgadmin  # Start PostgreSQL + pgAdmin for DB management
+```
+
+#### pgAdmin 接続設定
+
+```bash
+# pgAdmin アクセス
+# URL: http://localhost:5050
+# Email: admin@example.com
+# Password: admin123
+
+# PostgreSQL サーバー登録
+# Host: database          # Docker内部ネットワーク名
+# Port: 5432
+# Database: daily_report_tool
+# Username: admin
+# Password: reportAdmin
 ```
 
 ## Project Structure
@@ -206,6 +226,41 @@ src/types/
 - Maven wrapper included for consistent builds
 - Docker-ready with multi-stage build optimization
 - Lombok を導入し、model クラスは簡潔な内容にする
+- **BaseController 実装**: 共通認証処理・デバッグモード対応基底クラス
+- **デバッグモード対応**: JWT認証の有効/無効制御でトークンレス開発環境
+- **pgAdmin 統合**: PostgreSQL データベースのGUI管理ツール
+
+#### BaseController 設計
+
+```java
+public abstract class BaseController {
+    // 共通認証処理
+    protected Long getUserIdFromAuth(Authentication authentication);
+    protected User getUserFromAuth(Authentication authentication);
+    protected String getCurrentUserRole(Authentication authentication);
+    
+    // 権限判定
+    protected boolean isAdmin(Authentication authentication);
+    protected boolean isSupervisor(Authentication authentication);
+    
+    // デバッグモード対応
+    protected boolean isDebugMode();
+}
+```
+
+#### デバッグモード機能
+
+- **設定**: `jwt.auth.enabled=false` で認証無効化
+- **デフォルトユーザー**: `debug.default.user.username=user1`
+- **動作**: 全APIがトークンなしでアクセス可能
+- **用途**: IDEデバッグ・API直接テスト・開発効率向上
+
+#### pgAdmin データベース管理
+
+- **アクセス**: http://localhost:5050
+- **ログイン**: admin@example.com / admin123
+- **PostgreSQL接続**: Host=`database` (Docker内部ネットワーク)
+- **機能**: テーブル管理・SQLクエリ実行・データ編集
 
 ### Database Schema
 
@@ -286,6 +341,9 @@ src/components/**/__tests__/
 ✅ **テスト品質大幅向上**: APIサービステスト改善・ChakraProviderエラー修正・実APIテスト完全実装
 ✅ **アクセシビリティ強化**: Spinnerコンポーネントのaria-label追加・WCAG準拠向上
 ✅ **テスト安定性向上**: ProtectedRouteテストタイムアウト問題修正・テストユーティリティ改善
+✅ **BaseController 実装**: 共通認証処理基底クラス・デバッグモード対応・コード重複削減完了
+✅ **デバッグモード対応**: JWT認証無効化機能・トークンレス開発環境・IDE デバッグ効率向上
+✅ **pgAdmin 統合**: PostgreSQL GUI管理ツール・Docker 環境統合・データベース管理効率化
 
 ## 📋 次期実装計画 (Next Implementation Plan)
 
@@ -371,9 +429,12 @@ src/components/**/__tests__/
 4. ✅ **実APIテスト完全実装**: realApi.test.ts による包括的API機能テスト完了
 5. ✅ **テスト安定性向上**: ProtectedRouteテストタイムアウト解決・非同期処理最適化完了
 6. ✅ **アクセシビリティ強化**: Spinnerコンポーネントaria-label追加・WCAG準拠向上完了
-7. **エラーバウンダリ**: 予期しないエラーのグレースフル処理
-8. **ローディング状態統一**: 全 API 呼び出しでのローディング UX 統一
-9. **E2E テスト実装**: Playwright による完全統合テスト
+7. ✅ **BaseController実装**: 共通認証処理基底クラス・デバッグモード対応・コード重複削減完了
+8. ✅ **デバッグモード対応**: JWT認証無効化・トークンレス開発環境・IDE デバッグ効率向上完了
+9. ✅ **pgAdmin統合**: PostgreSQL GUI管理ツール・Docker統合・データベース管理効率化完了
+10. **エラーバウンダリ**: 予期しないエラーのグレースフル処理
+11. **ローディング状態統一**: 全 API 呼び出しでのローディング UX 統一
+12. **E2E テスト実装**: Playwright による完全統合テスト
 
 **将来的な機能拡張 (低優先)**:
 

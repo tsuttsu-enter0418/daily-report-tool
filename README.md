@@ -106,12 +106,14 @@ docker-compose up    # 全サービス起動（推奨：完全動作確認）
 ### バックエンド  
 - **Spring Boot 3.2** + **Java 17**
 - **Spring Security** + **JWT認証**
+- **BaseController** (共通認証処理・デバッグモード対応)
 - **JPA/Hibernate** (ORM)
 - **Lombok** (ボイラープレート削減)
 - **SpringDoc OpenAPI** (API仕様書生成)
 
 ### データベース・インフラ
 - **PostgreSQL 15**
+- **pgAdmin 4** (PostgreSQL GUI管理ツール)
 - **Docker Compose** (コンテナ管理)
 - **Maven** (依存関係管理)
 
@@ -147,6 +149,9 @@ daily-report-tool/
 ├── backend/                   # Spring Boot アプリケーション
 │   ├── src/main/java/com/example/dailyreport/
 │   │   ├── controller/        # REST API コントローラー
+│   │   │   ├── BaseController.java      # 共通認証処理基底クラス
+│   │   │   ├── AuthController.java      # 認証API
+│   │   │   └── DailyReportController.java # 日報管理API
 │   │   ├── service/           # ビジネスロジック
 │   │   ├── entity/            # JPA エンティティ (Lombok使用)
 │   │   ├── dto/               # データ転送オブジェクト
@@ -188,19 +193,64 @@ cd backend
 # http://localhost:8080/swagger-ui.html
 ```
 
+### デバッグモード（JWT認証無効化）
+APIのデバッグ時にトークン検証を無効化する場合：
+
+```bash
+# 1. JWT認証を無効化
+# backend/src/main/resources/application.properties を編集
+jwt.auth.enabled=false
+
+# 2. DBのみDocker起動
+docker-compose up database
+
+# 3. Javaをローカル起動
+cd backend
+./mvnw spring-boot:run
+
+# 4. 認証なしでAPI直接テスト
+curl http://localhost:8080/api/daily-reports/my
+curl http://localhost:8080/swagger-ui.html
+```
+
+**注意**：
+- デバッグ後は `jwt.auth.enabled=true` に戻してください
+- デバッグモードでは**全API**がトークンなしでアクセス可能
+- 本番環境では必ず認証を有効化してください
+
+**BaseController対応**：
+- 全Controllerで共通の認証処理を使用
+- デバッグモード時は自動的にデフォルトユーザー（user1）を使用
+- 権限判定メソッド（isAdmin、isSupervisor）が利用可能
+
 ### Docker
 ```bash
 docker-compose up             # 全サービス起動
 docker-compose up frontend    # フロントエンドのみ
 docker-compose up backend     # バックエンド + DB
+docker-compose up pgadmin     # pgAdmin（PostgreSQL GUI）のみ
+docker-compose up database pgadmin  # DB管理環境（PostgreSQL + pgAdmin）
 ```
 
 ## 🔐 認証情報
 
+### アプリケーション
 テスト用アカウント:
 - **管理者**: admin / password
 - **上長**: manager / password  
 - **部下**: employee1 / password
+
+### pgAdmin（データベース管理）
+- **URL**: http://localhost:5050
+- **Email**: admin@example.com
+- **Password**: admin123
+
+### PostgreSQL（データベース）
+- **Host**: localhost（外部接続）/ database（Docker内部）
+- **Port**: 5432
+- **Database**: daily_report_tool
+- **Username**: admin
+- **Password**: reportAdmin
 
 ## 🏗 開発モード
 
@@ -224,6 +274,16 @@ npm run dev:api
 全サービス連携:
 ```bash
 docker-compose up
+```
+
+### 4. データベース管理モード
+PostgreSQL + pgAdmin でデータベース管理:
+```bash
+docker-compose up database pgadmin
+
+# pgAdmin アクセス: http://localhost:5050
+# Email: admin@example.com / Password: admin123
+# PostgreSQL接続: Host=database, Port=5432, DB=daily_report_tool, User=admin, Pass=reportAdmin
 ```
 
 ## 📝 開発状況・今後の予定
@@ -276,6 +336,9 @@ docker-compose up
 - [x] 包括的エラーハンドリング実装
 - [x] Toast通知システム統一
 - [x] 権限制御強化
+- [x] **BaseController実装**（共通認証処理・デバッグモード対応・コード重複削減）
+- [x] **デバッグモード対応**（JWT認証無効化・トークンレス開発環境・IDE デバッグ効率向上）
+- [x] **pgAdmin統合**（PostgreSQL GUI管理ツール・Docker統合・データベース管理効率化）
 - [x] **ESLintエラー97%削減**（232→3エラー・型安全性強化・本番環境最適化）
 - [x] **TypeScript型安全性向上**（useToast, color-mode, main.tsx修正完了）
 - [x] **本番環境ログ最適化**（console.log開発環境限定・パフォーマンス向上）
