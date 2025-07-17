@@ -87,10 +87,10 @@ CREATE TRIGGER update_teams_updated_at BEFORE UPDATE ON teams
 
 -- 初期データ投入 (パスワードは全て"password"のBCryptハッシュ)
 INSERT INTO users (username, email, password, role, display_name) VALUES 
-('admin', 'admin@example.com', '$2a$10$fBWb/XKtxOGFrNj4NXQL5OLWYGJeUf4zAD7yPHaQcLSDMbMKKfHGW', '管理者', '管理者'),
-('manager', 'manager@example.com', '$2a$10$fBWb/XKtxOGFrNj4NXQL5OLWYGJeUf4zAD7yPHaQcLSDMbMKKfHGW', '上長', '田中 佐智子'),
-('employee1', 'emp1@example.com', '$2a$10$fBWb/XKtxOGFrNj4NXQL5OLWYGJeUf4zAD7yPHaQcLSDMbMKKfHGW', '部下', '佐藤 大輔'),
-('employee2', 'emp2@example.com', '$2a$10$fBWb/XKtxOGFrNj4NXQL5OLWYGJeUf4zAD7yPHaQcLSDMbMKKfHGW', '部下', '鈴木 美穂')
+('admin', 'admin@example.com', '$2a$10$Hw39vRyt7.Fegc29QKjhAOwbpuYQsolQ1PMTydVOP.hG..ts1ihXy', '管理者', '管理者'),
+('manager', 'manager@example.com', '$2a$10$Hw39vRyt7.Fegc29QKjhAOwbpuYQsolQ1PMTydVOP.hG..ts1ihXy', '上長', '田中 佐智子'),
+('employee1', 'emp1@example.com', '$2a$10$Hw39vRyt7.Fegc29QKjhAOwbpuYQsolQ1PMTydVOP.hG..ts1ihXy', '部下', '佐藤 大輔'),
+('employee2', 'emp2@example.com', '$2a$10$Hw39vRyt7.Fegc29QKjhAOwbpuYQsolQ1PMTydVOP.hG..ts1ihXy', '部下', '鈴木 美穂')
 ON CONFLICT (username) DO NOTHING;
 
 -- 上司-部下関係設定
