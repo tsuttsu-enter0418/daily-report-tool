@@ -8,28 +8,20 @@
  * - トークン管理
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { apiService } from "../apiService";
+import { setupCommonMocks, clearCommonMocks } from "@/test/utils";
 
-// fetch のモック
-global.fetch = vi.fn();
-
-// localStorage のモック
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-};
-global.localStorage = localStorageMock as any;
+// 共通モック設定
+const { fetch: mockFetch, localStorage: localStorageMock } = setupCommonMocks();
 
 describe("apiService", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    clearCommonMocks();
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    clearCommonMocks();
   });
 
   describe("authToken management", () => {

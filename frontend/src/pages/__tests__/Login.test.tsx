@@ -14,18 +14,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@/test/utils";
 import userEvent from "@testing-library/user-event";
 import { Login } from "../Login";
+import { setupCommonMocks, clearCommonMocks } from "@/test/utils";
 
-// localStorageのモック
-const mockLocalStorage = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-};
-Object.defineProperty(window, "localStorage", {
-  value: mockLocalStorage,
-  writable: true,
-});
+// 共通モック設定
+const { localStorage: mockLocalStorage } = setupCommonMocks();
 
 // useNavigateのモック
 const mockNavigate = vi.fn();
@@ -60,15 +52,9 @@ const mockApiService = vi.mocked(apiService);
 
 describe("Login", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    clearCommonMocks();
     vi.clearAllTimers();
     vi.useRealTimers();
-
-    // localStorageのモッククリア
-    mockLocalStorage.getItem.mockClear();
-    mockLocalStorage.setItem.mockClear();
-    mockLocalStorage.removeItem.mockClear();
-    mockLocalStorage.clear.mockClear();
 
     // デフォルトで開発環境（モックAPI使用）に設定
     vi.stubGlobal("import.meta", {
@@ -80,7 +66,7 @@ describe("Login", () => {
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    clearCommonMocks();
     vi.useRealTimers();
   });
 
