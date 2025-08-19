@@ -7,10 +7,10 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 import { useCallback, useMemo, memo } from "react";
-import { Button } from "../components/atoms";
+import { useNavigate } from "react-router-dom";
+import { Button, HomeButton } from "../components/atoms";
 import { StatusBadge, ReportCard } from "../components/molecules";
-import { useAuth } from "../hooks";
-import { useErrorHandler } from "../hooks";
+import { useAuth, useErrorHandler } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 import { type ReportCardData, type FilterType } from "../types";
 
@@ -97,6 +97,7 @@ const mockReports: MockReport[] = [
 const SupervisorDashboardComponent = () => {
   const { user } = useAuth();
   const { handleError, showInfo } = useErrorHandler();
+  const navigate = useNavigate();
 
   // 開発モード表示判定（メモ化）
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);
@@ -131,32 +132,32 @@ const SupervisorDashboardComponent = () => {
     [handleError, showInfo],
   );
 
+
   return (
-    <Box
-      w="100vw"
-      minH="100vh"
-      background="linear-gradient(135deg, #FFF7ED 0%, #FED7AA 30%, #FECACA 70%, #FEF3C7 100%)"
-    >
+    <Box w="100vw" minH="100vh" bg="#F9FAFB">
       <Box maxW="7xl" mx="auto" px={{ base: 4, md: 8 }} py={8}>
         <VStack gap={8} align="stretch">
           {/* ヘッダー */}
           <Box w="full">
             <VStack align="start" gap={4}>
-              <HStack wrap="wrap" gap={4}>
-                <Heading size="xl" color="gray.800">
-                  {MessageConst.DASHBOARD.TEAM_REPORTS_TITLE}
-                </Heading>
-                {/* 開発モード表示 */}
-                {isDevelopment && !useRealAPI && (
-                  <StatusBadge status="dev-mock">
-                    {MessageConst.DEV.MOCK_API_MODE}
-                  </StatusBadge>
-                )}
-                {isDevelopment && useRealAPI && (
-                  <StatusBadge status="dev-api">
-                    {MessageConst.DEV.REAL_API_MODE}
-                  </StatusBadge>
-                )}
+              <HStack justify="space-between" w="full">
+                <HStack wrap="wrap" gap={4}>
+                  <Heading size="xl" color="gray.800">
+                    {MessageConst.DASHBOARD.TEAM_REPORTS_TITLE}
+                  </Heading>
+                  {/* 開発モード表示 */}
+                  {isDevelopment && !useRealAPI && (
+                    <StatusBadge status="dev-mock">
+                      {MessageConst.DEV.MOCK_API_MODE}
+                    </StatusBadge>
+                  )}
+                  {isDevelopment && useRealAPI && (
+                    <StatusBadge status="dev-api">
+                      {MessageConst.DEV.REAL_API_MODE}
+                    </StatusBadge>
+                  )}
+                </HStack>
+                <HomeButton />
               </HStack>
               {user && (
                 <Text color="gray.700" fontSize="lg" fontWeight="medium">

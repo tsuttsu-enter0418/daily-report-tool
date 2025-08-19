@@ -13,7 +13,7 @@ import {
 } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback, useMemo, memo } from "react";
-import { Button } from "../components/atoms";
+import { Button, HomeButton } from "../components/atoms";
 import {
   StatusBadge,
   DeleteConfirmDialog,
@@ -274,17 +274,14 @@ const DailyReportDetailComponent = () => {
     navigate(-1);
   }, [navigate]);
 
+
   // ローディング表示
   if (isLoading) {
     return (
-      <Box
-        w="100vw"
-        minH="100vh"
-        background="linear-gradient(135deg, #FFF7ED 0%, #FED7AA 30%, #FECACA 70%, #FEF3C7 100%)"
-      >
+      <Box w="100vw" minH="100vh" bg="#F9FAFB">
         <Center py={20}>
           <VStack gap={4}>
-            <Spinner size="xl" color="orange.500" />
+            <Spinner size="xl" color="blue.500" />
             <Text color="gray.600" fontSize="lg">
               日報データを読み込み中...
             </Text>
@@ -297,11 +294,7 @@ const DailyReportDetailComponent = () => {
   // エラー表示
   if (error) {
     return (
-      <Box
-        w="100vw"
-        minH="100vh"
-        background="linear-gradient(135deg, #FFF7ED 0%, #FED7AA 30%, #FECACA 70%, #FEF3C7 100%)"
-      >
+      <Box w="100vw" minH="100vh" bg="#F9FAFB">
         <Box maxW="4xl" mx="auto" px={{ base: 4, md: 8 }} py={8}>
           <VStack gap={6}>
             <Alert status="error" borderRadius="md">
@@ -320,11 +313,7 @@ const DailyReportDetailComponent = () => {
   // 日報が見つからない場合
   if (!report) {
     return (
-      <Box
-        w="100vw"
-        minH="100vh"
-        background="linear-gradient(135deg, #FFF7ED 0%, #FED7AA 30%, #FECACA 70%, #FEF3C7 100%)"
-      >
+      <Box w="100vw" minH="100vh" bg="#F9FAFB">
         <Box maxW="4xl" mx="auto" px={{ base: 4, md: 8 }} py={8}>
           <VStack gap={6}>
             <Text fontSize="lg" color="gray.600">
@@ -340,32 +329,31 @@ const DailyReportDetailComponent = () => {
   }
 
   return (
-    <Box
-      w="100vw"
-      minH="100vh"
-      background="linear-gradient(135deg, #FFF7ED 0%, #FED7AA 30%, #FECACA 70%, #FEF3C7 100%)"
-    >
+    <Box w="100vw" minH="100vh" bg="#F9FAFB">
       <Box maxW="4xl" mx="auto" px={{ base: 4, md: 8 }} py={8}>
         <VStack gap={8} align="stretch">
           {/* ヘッダー */}
           <Box w="full">
             <VStack align="start" gap={4}>
-              <HStack wrap="wrap" gap={4}>
-                <Heading size="xl" color="gray.800">
-                  日報詳細
-                </Heading>
+              <HStack justify="space-between" w="full">
+                <HStack wrap="wrap" gap={4}>
+                  <Heading size="xl" color="gray.800">
+                    日報詳細
+                  </Heading>
 
-                {/* 開発モード表示 */}
-                {isDevelopment && !useRealAPI && (
-                  <StatusBadge status="dev-mock">
-                    {MessageConst.DEV.MOCK_API_MODE}
-                  </StatusBadge>
-                )}
-                {isDevelopment && useRealAPI && (
-                  <StatusBadge status="dev-api">
-                    {MessageConst.DEV.REAL_API_MODE}
-                  </StatusBadge>
-                )}
+                  {/* 開発モード表示 */}
+                  {isDevelopment && !useRealAPI && (
+                    <StatusBadge status="dev-mock">
+                      {MessageConst.DEV.MOCK_API_MODE}
+                    </StatusBadge>
+                  )}
+                  {isDevelopment && useRealAPI && (
+                    <StatusBadge status="dev-api">
+                      {MessageConst.DEV.REAL_API_MODE}
+                    </StatusBadge>
+                  )}
+                </HStack>
+                <HomeButton />
               </HStack>
             </VStack>
           </Box>
@@ -373,11 +361,11 @@ const DailyReportDetailComponent = () => {
           {/* 日報詳細カード */}
           <Card.Root
             variant="elevated"
-            bg="rgba(255, 251, 235, 0.9)"
-            borderRadius="xl"
-            boxShadow="0 4px 20px rgba(251, 146, 60, 0.15)"
-            border="2px"
-            borderColor="orange.200"
+            bg="white"
+            borderRadius="lg"
+            boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
+            border="1px"
+            borderColor="gray.200"
           >
             <Card.Body p={8}>
               <VStack gap={6} align="stretch">
@@ -430,14 +418,14 @@ const DailyReportDetailComponent = () => {
                   </Text>
                   <Box
                     p={4}
-                    bg="white"
+                    bg="gray.50"
                     borderRadius="md"
-                    borderColor="orange.200"
-                    borderWidth="2px"
+                    borderColor="gray.200"
+                    borderWidth="1px"
                     minH="200px"
                     whiteSpace="pre-wrap"
                     fontSize="md"
-                    color="gray.700"
+                    color="gray.800"
                     lineHeight="1.6"
                   >
                     {report.workContent || "作業内容が入力されていません"}

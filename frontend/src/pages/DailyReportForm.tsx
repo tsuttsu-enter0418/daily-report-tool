@@ -1,22 +1,10 @@
-import {
-  Box,
-  Heading,
-  VStack,
-  HStack,
-  Text,
-  Textarea,
-  Card,
-  Field,
-  Stack,
-  Input,
-  Spinner,
-  Center,
-} from "@chakra-ui/react";
+/* eslint-disable max-lines */
+import { Box, Heading, VStack, HStack, Text, Textarea, Card, Field, Stack, Input, Spinner, Center } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button } from "../components/atoms";
+import { Button, HomeButton } from "../components/atoms";
 import { StatusBadge } from "../components/molecules";
 import { useAuth, useDailyReports, useToast } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
@@ -59,49 +47,40 @@ type DailyReportFormProps = {
 
 // バリデーションスキーマ
 const validationSchema = yup.object({
-  title: yup
-    .string()
-    .required("タイトルは必須です")
-    .max(200, "タイトルは200文字以内で入力してください"),
-  workContent: yup
-    .string()
-    .required(MessageConst.REPORT.WORK_CONTENT_REQUIRED)
-    .min(10, MessageConst.REPORT.WORK_CONTENT_MIN_LENGTH(10))
-    .max(1000, MessageConst.REPORT.WORK_CONTENT_MAX_LENGTH(1000)),
+  title: yup.string().required("タイトルは必須です").max(200, "タイトルは200文字以内で入力してください"),
+  workContent: yup.string().required(MessageConst.REPORT.WORK_CONTENT_REQUIRED).min(10, MessageConst.REPORT.WORK_CONTENT_MIN_LENGTH(10)).max(1000, MessageConst.REPORT.WORK_CONTENT_MAX_LENGTH(1000)),
   reportDate: yup
     .string()
     .required("報告日は必須です")
     .matches(/^\d{4}-\d{2}-\d{2}$/, "日付はYYYY-MM-DD形式で入力してください"),
 });
 
-const DailyReportFormComponent = ({
-  isEditMode = false,
-  initialData,
-}: Omit<DailyReportFormProps, "reportId">) => {
+// eslint-disable-next-line complexity
+const DailyReportFormComponent = ({ isEditMode = false, initialData }: Omit<DailyReportFormProps, "reportId">) => {
   const { user } = useAuth();
   const { id: reportIdParam } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDraftSaving, setIsDraftSaving] = useState(false);
-  const [currentReport, setCurrentReport] =
-    useState<DailyReportResponse | null>(null);
+  const [currentReport, setCurrentReport] = useState<DailyReportResponse | null>(null);
   const [isLoadingReport, setIsLoadingReport] = useState(false);
 
   // 日報データ管理フック
-  const { createReport, updateReport, getReport } = useDailyReports(
-    undefined,
-    false,
-  );
+  const { createReport, updateReport, getReport } = useDailyReports(undefined, false);
 
   // reportIdをnumberに変換
   const reportId = reportIdParam ? parseInt(reportIdParam, 10) : undefined;
 
   // 開発モード表示判定（メモ化）
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);
-  const useRealAPI = useMemo(
-    () => import.meta.env.VITE_USE_REAL_API === "true",
-    [],
+  const useRealAPI = useMemo(() => import.meta.env.VITE_USE_REAL_API === "true", []);
+
+  const handleEdit = useCallback(
+    (reportId: number) => {
+      navigate(`/report/edit/${reportId}`);
+    },
+    [navigate]
   );
 
   // 今日の日付をYYYY-MM-DD形式で取得
@@ -200,9 +179,7 @@ const DailyReportFormComponent = ({
           }
 
           // 成功時のリダイレクト
-          setTimeout(() => {
-            navigate("/reports");
-          }, 1000);
+          handleEdit(result.id);
         }
       } catch (error) {
         console.error("❌ 日報提出失敗:", error);
@@ -217,7 +194,7 @@ const DailyReportFormComponent = ({
         setIsSubmitting(false);
       }
     },
-    [reportId, isEditMode, createReport, updateReport, navigate],
+    [reportId, isEditMode, updateReport, createReport, toast, navigate]
   );
 
   // 下書き保存処理（メモ化）
@@ -280,34 +257,23 @@ const DailyReportFormComponent = ({
   }, [navigate]);
 
   return (
-    <Box
-      w="100vw"
-      minH="100vh"
-      background="linear-gradient(135deg, #FFF7ED 0%, #FED7AA 30%, #FECACA 70%, #FEF3C7 100%)"
-    >
+    <Box w="100vw" minH="100vh" bg="#F9FAFB">
       <Box maxW="4xl" mx="auto" px={{ base: 4, md: 8 }} py={8}>
         <VStack gap={8} align="stretch">
           {/* ヘッダー */}
           <Box w="full">
             <VStack align="start" gap={4}>
-              <HStack wrap="wrap" gap={4}>
-                <Heading size="xl" color="gray.800">
-                  {isEditMode
-                    ? MessageConst.REPORT.EDIT_FORM_TITLE
-                    : MessageConst.REPORT.CREATE_FORM_TITLE}
-                </Heading>
+              <HStack justify="space-between" w="full">
+                <HStack wrap="wrap" gap={4}>
+                  <Heading size="xl" color="gray.800">
+                    {isEditMode ? MessageConst.REPORT.EDIT_FORM_TITLE : MessageConst.REPORT.CREATE_FORM_TITLE}
+                  </Heading>
 
-                {/* 開発モード表示 */}
-                {isDevelopment && !useRealAPI && (
-                  <StatusBadge status="dev-mock">
-                    {MessageConst.DEV.MOCK_API_MODE}
-                  </StatusBadge>
-                )}
-                {isDevelopment && useRealAPI && (
-                  <StatusBadge status="dev-api">
-                    {MessageConst.DEV.REAL_API_MODE}
-                  </StatusBadge>
-                )}
+                  {/* 開発モード表示 */}
+                  {isDevelopment && !useRealAPI && <StatusBadge status="dev-mock">{MessageConst.DEV.MOCK_API_MODE}</StatusBadge>}
+                  {isDevelopment && useRealAPI && <StatusBadge status="dev-api">{MessageConst.DEV.REAL_API_MODE}</StatusBadge>}
+                </HStack>
+                <HomeButton />
               </HStack>
 
               {user && (
@@ -324,13 +290,7 @@ const DailyReportFormComponent = ({
 
           {/* 開発モード時の説明 */}
           {isDevelopment && !useRealAPI && (
-            <Box
-              p={4}
-              bg="blue.50"
-              borderRadius="md"
-              borderLeftWidth="4px"
-              borderLeftColor="blue.400"
-            >
+            <Box p={4} bg="blue.50" borderRadius="md" borderLeftWidth="4px" borderLeftColor="blue.400">
               <VStack align="start" gap={1}>
                 <Text fontSize="sm" color="blue.700">
                   <strong>{MessageConst.DEV.MOCK_API_DESCRIPTION}</strong>
@@ -346,7 +306,7 @@ const DailyReportFormComponent = ({
           {isLoadingReport && (
             <Center py={20}>
               <VStack gap={4}>
-                <Spinner size="xl" color="orange.500" />
+                <Spinner size="xl" color="blue.500" />
                 <Text color="gray.600" fontSize="lg">
                   日報データを読み込み中...
                 </Text>
@@ -356,24 +316,13 @@ const DailyReportFormComponent = ({
 
           {/* メインフォーム */}
           {!isLoadingReport && (
-            <Card.Root
-              variant="elevated"
-              bg="rgba(255, 251, 235, 0.9)"
-              borderRadius="xl"
-              boxShadow="0 4px 20px rgba(251, 146, 60, 0.15)"
-              border="2px"
-              borderColor="orange.200"
-            >
+            <Card.Root variant="elevated" bg="white" borderRadius="lg" boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)" border="1px" borderColor="gray.200">
               <Card.Body p={8}>
                 <form onSubmit={handleSubmit(onSubmit)}>
                   <VStack gap={6} align="stretch">
                     {/* タイトル入力 */}
                     <Field.Root invalid={!!errors.title}>
-                      <Field.Label
-                        fontSize="md"
-                        fontWeight="semibold"
-                        color="gray.800"
-                      >
+                      <Field.Label fontSize="md" fontWeight="semibold" color="gray.800">
                         日報タイトル
                         <Text as="span" color="red.500" ml={1}>
                           *
@@ -384,10 +333,14 @@ const DailyReportFormComponent = ({
                         placeholder="例: 2024年1月15日の日報"
                         bg="white"
                         borderRadius="md"
-                        borderColor="orange.200"
+                        borderColor="gray.300"
+                        color="gray.800"
+                        _hover={{
+                          borderColor: "gray.400",
+                        }}
                         _focus={{
-                          borderColor: "orange.400",
-                          boxShadow: "0 0 0 1px rgb(251, 146, 60)",
+                          borderColor: "blue.500",
+                          boxShadow: "0 0 0 1px #3B82F6",
                         }}
                       />
                       {errors.title && (
@@ -403,11 +356,7 @@ const DailyReportFormComponent = ({
 
                     {/* 報告日入力 */}
                     <Field.Root invalid={!!errors.reportDate}>
-                      <Field.Label
-                        fontSize="md"
-                        fontWeight="semibold"
-                        color="gray.800"
-                      >
+                      <Field.Label fontSize="md" fontWeight="semibold" color="gray.800">
                         報告日
                         <Text as="span" color="red.500" ml={1}>
                           *
@@ -418,10 +367,14 @@ const DailyReportFormComponent = ({
                         type="date"
                         bg="white"
                         borderRadius="md"
-                        borderColor="orange.200"
+                        borderColor="gray.300"
+                        color="gray.800"
+                        _hover={{
+                          borderColor: "gray.400",
+                        }}
                         _focus={{
-                          borderColor: "orange.400",
-                          boxShadow: "0 0 0 1px rgb(251, 146, 60)",
+                          borderColor: "blue.500",
+                          boxShadow: "0 0 0 1px #3B82F6",
                         }}
                       />
                       {errors.reportDate && (
@@ -436,11 +389,7 @@ const DailyReportFormComponent = ({
 
                     {/* 作業内容入力 */}
                     <Field.Root invalid={!!errors.workContent}>
-                      <Field.Label
-                        fontSize="md"
-                        fontWeight="semibold"
-                        color="gray.800"
-                      >
+                      <Field.Label fontSize="md" fontWeight="semibold" color="gray.800">
                         {MessageConst.REPORT.WORK_CONTENT_LABEL}
                         <Text as="span" color="red.500" ml={1}>
                           *
@@ -449,35 +398,27 @@ const DailyReportFormComponent = ({
 
                       <Textarea
                         {...register("workContent")}
-                        placeholder={
-                          MessageConst.REPORT.WORK_CONTENT_PLACEHOLDER
-                        }
+                        placeholder={MessageConst.REPORT.WORK_CONTENT_PLACEHOLDER}
                         rows={10}
                         resize="vertical"
                         bg="white"
-                        borderColor="orange.200"
-                        borderWidth="2px"
-                        borderRadius="lg"
+                        borderColor="gray.300"
+                        borderWidth="1px"
+                        borderRadius="md"
                         _hover={{
-                          borderColor: "orange.300",
+                          borderColor: "gray.400",
                         }}
                         _focus={{
-                          borderColor: "orange.400",
-                          boxShadow: "0 0 0 1px rgba(251, 146, 60, 0.3)",
+                          borderColor: "blue.500",
+                          boxShadow: "0 0 0 1px #3B82F6",
                         }}
                         fontSize="md"
-                        color="gray.700"
+                        color="gray.800"
                       />
 
                       {/* 文字数カウント */}
                       <HStack justify="space-between" mt={2}>
-                        <Box>
-                          {errors.workContent && (
-                            <Field.ErrorText color="red.500">
-                              {errors.workContent.message}
-                            </Field.ErrorText>
-                          )}
-                        </Box>
+                        <Box>{errors.workContent && <Field.ErrorText color="red.500">{errors.workContent.message}</Field.ErrorText>}</Box>
                         <Text fontSize="sm" color="gray.600">
                           {workContent?.length || 0} / 1000文字
                         </Text>
@@ -485,55 +426,26 @@ const DailyReportFormComponent = ({
                     </Field.Root>
 
                     {/* 自動保存説明 */}
-                    <Box
-                      p={3}
-                      bg="amber.500"
-                      borderRadius="md"
-                      borderLeftWidth="3px"
-                      borderRightWidth="3px"
-                      borderLeftColor="amber.400"
-                    >
-                      <Text fontSize="sm" color="gray.700">
+                    <Box p={3} bg="blue.50" borderRadius="md" borderLeftWidth="4px" borderLeftColor="blue.400">
+                      <Text fontSize="sm" color="blue.700">
                         💡 {MessageConst.REPORT.DRAFT_AUTO_SAVE}
                       </Text>
                     </Box>
 
                     {/* アクションボタン */}
-                    <Stack
-                      direction={{ base: "column", md: "row" }}
-                      gap={4}
-                      justify="space-between"
-                    >
+                    <Stack direction={{ base: "column", md: "row" }} gap={4} justify="space-between">
                       <HStack gap={3}>
                         <Button variant="secondary" onClick={handleBack}>
                           {MessageConst.ACTION.BACK}
                         </Button>
 
-                        <Button
-                          variant="secondary"
-                          onClick={handleSaveDraft}
-                          loading={isDraftSaving}
-                          loadingText={MessageConst.SYSTEM.SAVING}
-                        >
+                        <Button variant="secondary" onClick={handleSaveDraft} loading={isDraftSaving} loadingText={MessageConst.SYSTEM.SAVING}>
                           {MessageConst.REPORT.SAVE_DRAFT}
                         </Button>
                       </HStack>
 
-                      <Button
-                        type="submit"
-                        variant="primary"
-                        loading={isSubmitting}
-                        loadingText={
-                          isEditMode
-                            ? MessageConst.SYSTEM.SAVING
-                            : MessageConst.SYSTEM.PROCESSING
-                        }
-                        disabled={!isValid}
-                        size="lg"
-                      >
-                        {isEditMode
-                          ? MessageConst.ACTION.UPDATE
-                          : MessageConst.REPORT.SUBMIT_REPORT}
+                      <Button type="submit" variant="primary" loading={isSubmitting} loadingText={isEditMode ? MessageConst.SYSTEM.SAVING : MessageConst.SYSTEM.PROCESSING} disabled={!isValid} size="lg">
+                        {isEditMode ? MessageConst.ACTION.UPDATE : MessageConst.REPORT.SUBMIT_REPORT}
                       </Button>
                     </Stack>
                   </VStack>
