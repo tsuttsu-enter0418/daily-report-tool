@@ -58,7 +58,7 @@ describe("mockApi", () => {
       vi.runAllTimers();
 
       await expect(loginPromise).rejects.toThrow(
-        "ユーザー名またはパスワードが正しくありません"
+        "ユーザー名またはパスワードが正しくありません",
       );
     });
 
@@ -73,7 +73,7 @@ describe("mockApi", () => {
       vi.runAllTimers();
 
       await expect(loginPromise).rejects.toThrow(
-        "ユーザー名またはパスワードが正しくありません"
+        "ユーザー名またはパスワードが正しくありません",
       );
     });
 

@@ -1,12 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { apiService } from "../services/apiService";
 import { useErrorHandler } from "./useErrorHandler";
-import type {
-  DailyReportResponse,
-  DailyReportCreateRequest,
-  DailyReportUpdateRequest,
-  DailyReportListParams,
-} from "../types";
+import type { DailyReportResponse, DailyReportCreateRequest, DailyReportUpdateRequest, DailyReportListParams } from "../types";
 
 /**
  * 日報データ管理カスタムフック
@@ -34,14 +29,9 @@ export type UseDailyReportsReturn = {
   /** 日報一覧の再取得 */
   refetch: () => Promise<void>;
   /** 日報作成 */
-  createReport: (
-    data: DailyReportCreateRequest,
-  ) => Promise<DailyReportResponse | null>;
+  createReport: (data: DailyReportCreateRequest) => Promise<DailyReportResponse | null>;
   /** 日報更新 */
-  updateReport: (
-    id: number,
-    data: DailyReportUpdateRequest,
-  ) => Promise<DailyReportResponse | null>;
+  updateReport: (id: number, data: DailyReportUpdateRequest) => Promise<DailyReportResponse | null>;
   /** 日報削除 */
   deleteReport: (id: number) => Promise<boolean>;
   /** 単一日報取得 */
@@ -55,10 +45,7 @@ export type UseDailyReportsReturn = {
  * @param autoFetch - 自動取得するかどうか（デフォルト: true）
  * @returns 日報データ管理インターフェース
  */
-export const useDailyReports = (
-  params?: DailyReportListParams,
-  autoFetch: boolean = true,
-): UseDailyReportsReturn => {
+export const useDailyReports = (params?: DailyReportListParams, autoFetch: boolean = true): UseDailyReportsReturn => {
   const [reports, setReports] = useState<DailyReportResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,8 +65,7 @@ export const useDailyReports = (
         setReports(data);
         console.log("✅ 日報一覧取得成功:", data.length, "件");
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "日報一覧の取得に失敗しました";
+        const errorMessage = err instanceof Error ? err.message : "日報一覧の取得に失敗しました";
         setError(errorMessage);
         handleError(err, "日報一覧取得");
         console.error("❌ 日報一覧取得失敗:", err);
@@ -87,7 +73,7 @@ export const useDailyReports = (
         setIsLoading(false);
       }
     },
-    [handleError],
+    [handleError]
   );
 
   /**
@@ -101,9 +87,7 @@ export const useDailyReports = (
    * 日報作成
    */
   const createReport = useCallback(
-    async (
-      data: DailyReportCreateRequest,
-    ): Promise<DailyReportResponse | null> => {
+    async (data: DailyReportCreateRequest): Promise<DailyReportResponse | null> => {
       try {
         console.log("📝 日報作成開始", data.title);
         const newReport = await apiService.createDailyReport(data);
@@ -120,27 +104,20 @@ export const useDailyReports = (
         return null;
       }
     },
-    [handleError, showSuccess],
+    [handleError, showSuccess]
   );
 
   /**
    * 日報更新
    */
   const updateReport = useCallback(
-    async (
-      id: number,
-      data: DailyReportUpdateRequest,
-    ): Promise<DailyReportResponse | null> => {
+    async (id: number, data: DailyReportUpdateRequest): Promise<DailyReportResponse | null> => {
       try {
         console.log("✏️ 日報更新開始", id, data.title);
         const updatedReport = await apiService.updateDailyReport(id, data);
 
         // 更新された日報をリストに反映
-        setReports((prevReports) =>
-          prevReports.map((report) =>
-            report.id === id ? updatedReport : report,
-          ),
-        );
+        setReports((prevReports) => prevReports.map((report) => (report.id === id ? updatedReport : report)));
 
         showSuccess("日報が正常に更新されました");
         console.log("✅ 日報更新成功:", updatedReport.title);
@@ -151,7 +128,7 @@ export const useDailyReports = (
         return null;
       }
     },
-    [handleError, showSuccess],
+    [handleError, showSuccess]
   );
 
   /**
@@ -164,9 +141,7 @@ export const useDailyReports = (
         await apiService.deleteDailyReport(id);
 
         // 削除された日報をリストから除去
-        setReports((prevReports) =>
-          prevReports.filter((report) => report.id !== id),
-        );
+        setReports((prevReports) => prevReports.filter((report) => report.id !== id));
 
         showSuccess("日報が正常に削除されました");
         console.log("✅ 日報削除成功:", id);
@@ -177,7 +152,7 @@ export const useDailyReports = (
         return false;
       }
     },
-    [handleError, showSuccess],
+    [handleError, showSuccess]
   );
 
   /**
@@ -202,7 +177,7 @@ export const useDailyReports = (
         return null;
       }
     },
-    [handleError],
+    [handleError]
   );
 
   // 初期データ取得

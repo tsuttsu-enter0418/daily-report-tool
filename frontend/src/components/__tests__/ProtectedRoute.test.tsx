@@ -71,7 +71,7 @@ describe("ProtectedRoute", () => {
     render(
       <ProtectedRoute>
         <TestChild />
-      </ProtectedRoute>
+      </ProtectedRoute>,
     );
 
     expect(mockNavigate).toHaveBeenCalledWith("/login");
@@ -81,13 +81,13 @@ describe("ProtectedRoute", () => {
   it("トークン検証中はローディング画面を表示する", async () => {
     mockCookies.get.mockReturnValue("valid-token" as any);
     mockApiService.validateToken.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve(true), 1000))
+      () => new Promise((resolve) => setTimeout(() => resolve(true), 1000)),
     );
 
     render(
       <ProtectedRoute>
         <TestChild />
-      </ProtectedRoute>
+      </ProtectedRoute>,
     );
 
     expect(screen.getByText("認証確認中...")).toBeInTheDocument();
@@ -104,7 +104,7 @@ describe("ProtectedRoute", () => {
     render(
       <ProtectedRoute>
         <TestChild />
-      </ProtectedRoute>
+      </ProtectedRoute>,
     );
 
     // 既に認証済みの場合、即座に子コンポーネントが表示される
@@ -121,7 +121,7 @@ describe("ProtectedRoute", () => {
     render(
       <ProtectedRoute>
         <TestChild />
-      </ProtectedRoute>
+      </ProtectedRoute>,
     );
 
     await vi.waitFor(() => {
@@ -141,7 +141,7 @@ describe("ProtectedRoute", () => {
     render(
       <ProtectedRoute>
         <TestChild />
-      </ProtectedRoute>
+      </ProtectedRoute>,
     );
 
     await vi.waitFor(() => {
@@ -163,13 +163,13 @@ describe("ProtectedRoute", () => {
       () =>
         new Promise((resolve) => {
           resolveValidation = resolve;
-        })
+        }),
     );
 
     render(
       <ProtectedRoute>
         <TestChild />
-      </ProtectedRoute>
+      </ProtectedRoute>,
     );
 
     // 検証完了前

@@ -88,7 +88,7 @@ describe("実API テスト", () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(loginData),
-        }
+        },
       );
     });
 
@@ -109,7 +109,7 @@ describe("実API テスト", () => {
       const { realApi } = await import("../apiService");
 
       await expect(realApi.login(loginData)).rejects.toThrow(
-        "認証に失敗しました。ログイン情報を確認してください。"
+        "認証に失敗しました。ログイン情報を確認してください。",
       );
 
       expect(fetch).toHaveBeenCalledWith(
@@ -120,7 +120,7 @@ describe("実API テスト", () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(loginData),
-        }
+        },
       );
     });
 
@@ -161,7 +161,7 @@ describe("実API テスト", () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
     });
 
@@ -186,7 +186,7 @@ describe("実API テスト", () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
     });
 
@@ -296,7 +296,7 @@ describe("実API テスト", () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(reportData),
-        }
+        },
       );
     });
 
@@ -332,7 +332,7 @@ describe("実API テスト", () => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
     });
 
@@ -386,7 +386,7 @@ describe("実API テスト", () => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
     });
 
@@ -409,7 +409,7 @@ describe("実API テスト", () => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
     });
   });

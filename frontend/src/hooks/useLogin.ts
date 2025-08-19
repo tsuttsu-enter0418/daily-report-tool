@@ -104,7 +104,12 @@ export const useLogin = (): UseLoginReturn => {
   };
 
   // useCallbackで関数参照の安定性を保つ
-  const stableLogin = useCallback(performLogin, [navigate, login, handleError, showSuccess]);
+  const stableLogin = useCallback(performLogin, [
+    navigate,
+    login,
+    handleError,
+    showSuccess,
+  ]);
 
   return {
     isLoading,

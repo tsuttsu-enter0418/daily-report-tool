@@ -89,12 +89,12 @@ describe("Login", () => {
 
     expect(screen.getByText("日報管理システム")).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "ログイン" })
+      screen.getByRole("heading", { name: "ログイン" }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText("ユーザー名")).toBeInTheDocument();
     expect(screen.getByLabelText("パスワード")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "ログイン" })
+      screen.getByRole("button", { name: "ログイン" }),
     ).toBeInTheDocument();
     expect(screen.getByText("テストアカウント:")).toBeInTheDocument();
   });
@@ -147,7 +147,7 @@ describe("Login", () => {
       // localStorageに認証状態が保存されることを確認
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
         "authState",
-        expect.stringContaining("mock-jwt-token")
+        expect.stringContaining("mock-jwt-token"),
       );
 
       // 遅延後にナビゲートが呼ばれることを確認
@@ -159,7 +159,7 @@ describe("Login", () => {
     const user = userEvent.setup();
 
     mockApiService.login.mockRejectedValue(
-      new Error("ユーザー名またはパスワードが正しくありません")
+      new Error("ユーザー名またはパスワードが正しくありません"),
     );
 
     render(<Login />);
@@ -241,7 +241,7 @@ describe("Login", () => {
         expect(screen.getByText("認証中...")).toBeInTheDocument();
         expect(submitButton).toBeDisabled();
       },
-      { timeout: 3000 }
+      { timeout: 3000 },
     );
 
     // 追加クリックしても処理が重複しないことを確認
@@ -263,7 +263,7 @@ describe("Login", () => {
       () => {
         expect(mockToasterCreate).toHaveBeenCalled();
       },
-      { timeout: 5000 }
+      { timeout: 5000 },
     );
   });
 });

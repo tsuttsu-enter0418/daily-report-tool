@@ -1,6 +1,6 @@
 /**
  * useDailyReports custom hook test file
- * 
+ *
  * Features:
  * - Daily report data management hook tests
  * - CRUD operations testing (Create, Read, Update, Delete)
@@ -8,22 +8,22 @@
  * - API integration with mock testing
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
-import { useDailyReports } from '../useDailyReports';
-import type { 
-  DailyReportResponse, 
-  DailyReportCreateRequest, 
-  DailyReportUpdateRequest 
-} from '../../types';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { renderHook, act, waitFor } from "@testing-library/react";
+import { useDailyReports } from "../useDailyReports";
+import type {
+  DailyReportResponse,
+  DailyReportCreateRequest,
+  DailyReportUpdateRequest,
+} from "../../types";
 
 // Mock API service
-vi.mock('../../services/apiService');
+vi.mock("../../services/apiService");
 
 // Mock useErrorHandler hook
-vi.mock('../useErrorHandler');
+vi.mock("../useErrorHandler");
 
-describe('useDailyReports', () => {
+describe("useDailyReports", () => {
   let mockApiService: any;
   let mockHandleError: ReturnType<typeof vi.fn>;
   let mockShowSuccess: ReturnType<typeof vi.fn>;
@@ -31,33 +31,33 @@ describe('useDailyReports', () => {
   // Sample test data
   const sampleReport: DailyReportResponse = {
     id: 1,
-    title: 'Daily Report 2025-01-15',
-    workContent: 'Implemented React testing',
-    status: 'submitted',
-    reportDate: '2025-01-15',
-    submittedAt: '2025-01-15T10:00:00Z',
+    title: "Daily Report 2025-01-15",
+    workContent: "Implemented React testing",
+    status: "submitted",
+    reportDate: "2025-01-15",
+    submittedAt: "2025-01-15T10:00:00Z",
     userId: 1,
-    username: 'test-user',
+    username: "test-user",
   };
 
   const sampleCreateRequest: DailyReportCreateRequest = {
-    title: 'New Daily Report',
-    workContent: 'Testing implementation',
-    status: 'draft',
-    reportDate: '2025-01-16',
+    title: "New Daily Report",
+    workContent: "Testing implementation",
+    status: "draft",
+    reportDate: "2025-01-16",
   };
 
   const sampleUpdateRequest: DailyReportUpdateRequest = {
-    title: 'Updated Daily Report',
-    workContent: 'Updated testing implementation',
-    status: 'submitted',
+    title: "Updated Daily Report",
+    workContent: "Updated testing implementation",
+    status: "submitted",
   };
 
   beforeEach(async () => {
     vi.clearAllMocks();
 
     // Setup API service mocks
-    const apiServiceModule = await import('../../services/apiService');
+    const apiServiceModule = await import("../../services/apiService");
     mockApiService = {
       getDailyReports: vi.fn(),
       createDailyReport: vi.fn(),
@@ -68,7 +68,7 @@ describe('useDailyReports', () => {
     apiServiceModule.apiService = mockApiService;
 
     // Setup error handler mocks
-    const errorHandlerModule = await import('../useErrorHandler');
+    const errorHandlerModule = await import("../useErrorHandler");
     mockHandleError = vi.fn();
     mockShowSuccess = vi.fn();
     errorHandlerModule.useErrorHandler = vi.fn(() => ({
@@ -77,8 +77,8 @@ describe('useDailyReports', () => {
     }));
   });
 
-  describe('initialization', () => {
-    it('initializes with empty reports and loading false when autoFetch is false', () => {
+  describe("initialization", () => {
+    it("initializes with empty reports and loading false when autoFetch is false", () => {
       // Arrange & Act: Create hook with autoFetch disabled
       const { result } = renderHook(() => useDailyReports(undefined, false));
 
@@ -86,14 +86,14 @@ describe('useDailyReports', () => {
       expect(result.current.reports).toEqual([]);
       expect(result.current.isLoading).toBe(false);
       expect(result.current.error).toBeNull();
-      expect(typeof result.current.refetch).toBe('function');
-      expect(typeof result.current.createReport).toBe('function');
-      expect(typeof result.current.updateReport).toBe('function');
-      expect(typeof result.current.deleteReport).toBe('function');
-      expect(typeof result.current.getReport).toBe('function');
+      expect(typeof result.current.refetch).toBe("function");
+      expect(typeof result.current.createReport).toBe("function");
+      expect(typeof result.current.updateReport).toBe("function");
+      expect(typeof result.current.deleteReport).toBe("function");
+      expect(typeof result.current.getReport).toBe("function");
     });
 
-    it('automatically fetches data when autoFetch is true', async () => {
+    it("automatically fetches data when autoFetch is true", async () => {
       // Arrange: Setup successful API response
       mockApiService.getDailyReports.mockResolvedValue([sampleReport]);
 
@@ -112,12 +112,12 @@ describe('useDailyReports', () => {
     });
   });
 
-  describe('fetchReports (refetch)', () => {
-    it('successfully fetches and loads reports', async () => {
+  describe("fetchReports (refetch)", () => {
+    it("successfully fetches and loads reports", async () => {
       // Arrange: Setup successful API response
       const reports = [sampleReport];
       mockApiService.getDailyReports.mockResolvedValue(reports);
-      
+
       const { result } = renderHook(() => useDailyReports(undefined, false));
 
       // Act: Fetch reports
@@ -132,11 +132,11 @@ describe('useDailyReports', () => {
       expect(mockApiService.getDailyReports).toHaveBeenCalledTimes(1);
     });
 
-    it('handles fetch error correctly', async () => {
+    it("handles fetch error correctly", async () => {
       // Arrange: Setup API error
-      const error = new Error('API Error');
+      const error = new Error("API Error");
       mockApiService.getDailyReports.mockRejectedValue(error);
-      
+
       const { result } = renderHook(() => useDailyReports(undefined, false));
 
       // Act: Attempt to fetch reports
@@ -147,16 +147,18 @@ describe('useDailyReports', () => {
       // Assert: Error is handled correctly
       expect(result.current.reports).toEqual([]);
       expect(result.current.isLoading).toBe(false);
-      expect(result.current.error).toBe('API Error');
-      expect(mockHandleError).toHaveBeenCalledWith(error, '日報一覧取得');
+      expect(result.current.error).toBe("API Error");
+      expect(mockHandleError).toHaveBeenCalledWith(error, "日報一覧取得");
     });
 
-    it('sets loading state during fetch', async () => {
+    it("sets loading state during fetch", async () => {
       // Arrange: Setup delayed API response
       let resolvePromise: (value: any) => void;
-      const promise = new Promise(resolve => { resolvePromise = resolve; });
+      const promise = new Promise((resolve) => {
+        resolvePromise = resolve;
+      });
       mockApiService.getDailyReports.mockReturnValue(promise);
-      
+
       const { result } = renderHook(() => useDailyReports(undefined, false));
 
       // Act: Start fetch
@@ -178,11 +180,11 @@ describe('useDailyReports', () => {
     });
   });
 
-  describe('createReport', () => {
-    it('successfully creates a new report', async () => {
+  describe("createReport", () => {
+    it("successfully creates a new report", async () => {
       // Arrange: Setup successful API response
       mockApiService.createDailyReport.mockResolvedValue(sampleReport);
-      
+
       const { result } = renderHook(() => useDailyReports(undefined, false));
 
       // Act: Create report
@@ -194,15 +196,19 @@ describe('useDailyReports', () => {
       // Assert: Report is created and added to list
       expect(createdReport).toEqual(sampleReport);
       expect(result.current.reports).toEqual([sampleReport]);
-      expect(mockApiService.createDailyReport).toHaveBeenCalledWith(sampleCreateRequest);
-      expect(mockShowSuccess).toHaveBeenCalledWith('日報が正常に作成されました');
+      expect(mockApiService.createDailyReport).toHaveBeenCalledWith(
+        sampleCreateRequest,
+      );
+      expect(mockShowSuccess).toHaveBeenCalledWith(
+        "日報が正常に作成されました",
+      );
     });
 
-    it('handles creation error correctly', async () => {
+    it("handles creation error correctly", async () => {
       // Arrange: Setup API error
-      const error = new Error('Creation failed');
+      const error = new Error("Creation failed");
       mockApiService.createDailyReport.mockRejectedValue(error);
-      
+
       const { result } = renderHook(() => useDailyReports(undefined, false));
 
       // Act: Attempt to create report
@@ -214,19 +220,19 @@ describe('useDailyReports', () => {
       // Assert: Error is handled, null is returned
       expect(createdReport).toBeNull();
       expect(result.current.reports).toEqual([]);
-      expect(mockHandleError).toHaveBeenCalledWith(error, '日報作成');
+      expect(mockHandleError).toHaveBeenCalledWith(error, "日報作成");
     });
   });
 
-  describe('updateReport', () => {
-    it('successfully updates an existing report', async () => {
+  describe("updateReport", () => {
+    it("successfully updates an existing report", async () => {
       // Arrange: Setup initial data and successful update
       const initialReports = [sampleReport];
-      const updatedReport = { ...sampleReport, title: 'Updated Title' };
+      const updatedReport = { ...sampleReport, title: "Updated Title" };
       mockApiService.updateDailyReport.mockResolvedValue(updatedReport);
-      
+
       const { result } = renderHook(() => useDailyReports(undefined, false));
-      
+
       // Set initial reports
       act(() => {
         result.current.reports.push(...initialReports);
@@ -235,41 +241,52 @@ describe('useDailyReports', () => {
       // Act: Update report
       let updateResult: DailyReportResponse | null = null;
       await act(async () => {
-        updateResult = await result.current.updateReport(1, sampleUpdateRequest);
+        updateResult = await result.current.updateReport(
+          1,
+          sampleUpdateRequest,
+        );
       });
 
       // Assert: Report is updated in the list
       expect(updateResult).toEqual(updatedReport);
-      expect(mockApiService.updateDailyReport).toHaveBeenCalledWith(1, sampleUpdateRequest);
-      expect(mockShowSuccess).toHaveBeenCalledWith('日報が正常に更新されました');
+      expect(mockApiService.updateDailyReport).toHaveBeenCalledWith(
+        1,
+        sampleUpdateRequest,
+      );
+      expect(mockShowSuccess).toHaveBeenCalledWith(
+        "日報が正常に更新されました",
+      );
     });
 
-    it('handles update error correctly', async () => {
+    it("handles update error correctly", async () => {
       // Arrange: Setup API error
-      const error = new Error('Update failed');
+      const error = new Error("Update failed");
       mockApiService.updateDailyReport.mockRejectedValue(error);
-      
+
       const { result } = renderHook(() => useDailyReports(undefined, false));
 
       // Act: Attempt to update report
       let updateResult: DailyReportResponse | null = null;
       await act(async () => {
-        updateResult = await result.current.updateReport(1, sampleUpdateRequest);
+        updateResult = await result.current.updateReport(
+          1,
+          sampleUpdateRequest,
+        );
       });
 
       // Assert: Error is handled, null is returned
       expect(updateResult).toBeNull();
-      expect(mockHandleError).toHaveBeenCalledWith(error, '日報更新');
+      expect(mockHandleError).toHaveBeenCalledWith(error, "日報更新");
     });
   });
 
-  describe('deleteReport', () => {
-    it('successfully deletes a report', async () => {
+  describe("deleteReport", () => {
+    it("successfully deletes a report", async () => {
       // Arrange: Setup initial data and successful deletion
       mockApiService.deleteDailyReport.mockResolvedValue(undefined);
-      
+
       const { result } = renderHook(() => useDailyReports(undefined, false));
-      
+
       // Manually set initial state with a report
       act(() => {
         result.current.reports.length = 0;
@@ -285,14 +302,16 @@ describe('useDailyReports', () => {
       // Assert: Report is deleted successfully
       expect(deleteResult).toBe(true);
       expect(mockApiService.deleteDailyReport).toHaveBeenCalledWith(1);
-      expect(mockShowSuccess).toHaveBeenCalledWith('日報が正常に削除されました');
+      expect(mockShowSuccess).toHaveBeenCalledWith(
+        "日報が正常に削除されました",
+      );
     });
 
-    it('handles deletion error correctly', async () => {
+    it("handles deletion error correctly", async () => {
       // Arrange: Setup API error
-      const error = new Error('Deletion failed');
+      const error = new Error("Deletion failed");
       mockApiService.deleteDailyReport.mockRejectedValue(error);
-      
+
       const { result } = renderHook(() => useDailyReports(undefined, false));
 
       // Act: Attempt to delete report
@@ -303,15 +322,15 @@ describe('useDailyReports', () => {
 
       // Assert: Error is handled, false is returned
       expect(deleteResult).toBe(false);
-      expect(mockHandleError).toHaveBeenCalledWith(error, '日報削除');
+      expect(mockHandleError).toHaveBeenCalledWith(error, "日報削除");
     });
   });
 
-  describe('getReport', () => {
-    it('successfully retrieves a single report', async () => {
+  describe("getReport", () => {
+    it("successfully retrieves a single report", async () => {
       // Arrange: Setup successful API response
       mockApiService.getDailyReport.mockResolvedValue(sampleReport);
-      
+
       const { result } = renderHook(() => useDailyReports(undefined, false));
 
       // Act: Get single report
@@ -325,11 +344,11 @@ describe('useDailyReports', () => {
       expect(mockApiService.getDailyReport).toHaveBeenCalledWith(1);
     });
 
-    it('handles get report error correctly', async () => {
+    it("handles get report error correctly", async () => {
       // Arrange: Setup API error
-      const error = new Error('Retrieval failed');
+      const error = new Error("Retrieval failed");
       mockApiService.getDailyReport.mockRejectedValue(error);
-      
+
       const { result } = renderHook(() => useDailyReports(undefined, false));
 
       // Act: Attempt to get report
@@ -340,13 +359,13 @@ describe('useDailyReports', () => {
 
       // Assert: Error is handled, null is returned
       expect(retrievedReport).toBeNull();
-      expect(mockHandleError).toHaveBeenCalledWith(error, '日報詳細取得');
+      expect(mockHandleError).toHaveBeenCalledWith(error, "日報詳細取得");
     });
 
-    it('handles case when report is not found', async () => {
+    it("handles case when report is not found", async () => {
       // Arrange: Setup API response with null
       mockApiService.getDailyReport.mockResolvedValue(null);
-      
+
       const { result } = renderHook(() => useDailyReports(undefined, false));
 
       // Act: Get non-existent report
@@ -361,12 +380,15 @@ describe('useDailyReports', () => {
     });
   });
 
-  describe('edge cases', () => {
-    it('handles multiple simultaneous operations correctly', async () => {
+  describe("edge cases", () => {
+    it("handles multiple simultaneous operations correctly", async () => {
       // Arrange: Setup different API responses
       mockApiService.getDailyReports.mockResolvedValue([sampleReport]);
-      mockApiService.createDailyReport.mockResolvedValue({ ...sampleReport, id: 2 });
-      
+      mockApiService.createDailyReport.mockResolvedValue({
+        ...sampleReport,
+        id: 2,
+      });
+
       const { result } = renderHook(() => useDailyReports(undefined, false));
 
       // Act: Perform multiple operations simultaneously
@@ -383,12 +405,15 @@ describe('useDailyReports', () => {
       expect(result.current.reports.length).toBeGreaterThan(0);
     });
 
-    it('maintains data integrity after multiple operations', async () => {
+    it("maintains data integrity after multiple operations", async () => {
       // Arrange: Setup successful operations
       mockApiService.createDailyReport.mockResolvedValue(sampleReport);
-      mockApiService.updateDailyReport.mockResolvedValue({ ...sampleReport, title: 'Updated' });
+      mockApiService.updateDailyReport.mockResolvedValue({
+        ...sampleReport,
+        title: "Updated",
+      });
       mockApiService.deleteDailyReport.mockResolvedValue(undefined);
-      
+
       const { result } = renderHook(() => useDailyReports(undefined, false));
 
       // Act: Perform create, update, delete sequence

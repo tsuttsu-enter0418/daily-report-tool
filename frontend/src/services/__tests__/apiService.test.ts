@@ -75,7 +75,7 @@ describe("apiService", () => {
           email: "admin@example.com",
           id: "1",
           displayName: "admin",
-        })
+        }),
       );
     });
 
@@ -86,7 +86,7 @@ describe("apiService", () => {
       };
 
       await expect(apiService.login(loginData)).rejects.toThrow(
-        "ユーザー名またはパスワードが正しくありません"
+        "ユーザー名またはパスワードが正しくありません",
       );
     });
 
@@ -97,7 +97,7 @@ describe("apiService", () => {
       };
 
       await expect(apiService.login(loginData)).rejects.toThrow(
-        "ユーザー名またはパスワードが正しくありません"
+        "ユーザー名またはパスワードが正しくありません",
       );
     });
   });

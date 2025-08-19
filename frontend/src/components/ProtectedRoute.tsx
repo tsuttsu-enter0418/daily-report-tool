@@ -68,7 +68,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           navigate("/login");
         } else {
           // 有効なトークンの場合、認証状態を更新
-          setAuthState(prev => ({
+          setAuthState((prev) => ({
             ...prev,
             isAuthenticated: true,
             token,
