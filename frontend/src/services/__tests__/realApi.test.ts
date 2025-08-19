@@ -9,18 +9,10 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { setupCommonMocks, clearCommonMocks } from "@/test/utils";
 
-// fetch のモック
-global.fetch = vi.fn();
-
-// localStorage のモック
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-};
-global.localStorage = localStorageMock as any;
+// 共通モック設定
+const { fetch: mockFetch, localStorage: localStorageMock } = setupCommonMocks();
 
 // 環境変数を実API使用に設定
 vi.stubGlobal("import.meta", {
@@ -33,11 +25,11 @@ vi.stubGlobal("import.meta", {
 
 describe("実API テスト", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    clearCommonMocks();
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    clearCommonMocks();
   });
 
   describe("実APIでのlogin", () => {
@@ -380,7 +372,7 @@ describe("実API テスト", () => {
 
       expect(result).toEqual(mockResponseData);
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:8080/api/daily-reports?page=0&size=10&status=submitted",
+        "http://localhost:8080/api/daily-reports/my?page=0&size=10&status=submitted",
         {
           method: "GET",
           headers: {
