@@ -58,7 +58,7 @@ const LoginComponent = () => {
   const onSubmit = useMemo(() => handleSubmit(login), [handleSubmit, login]);
 
   return (
-    <Box minH="100vh" w="100vw" bg="gray.50">
+    <Box minH="100vh" w="100vw" bg="#F9FAFB">
       <Box
         w="full"
         minH="100vh"
@@ -66,6 +66,7 @@ const LoginComponent = () => {
         alignItems="center"
         justifyContent="center"
         px={{ base: 4, md: 8 }}
+        bg="#F9FAFB"
       >
         <Card.Root maxW="400px" w="full" shadow="lg">
           <Card.Body p={8}>

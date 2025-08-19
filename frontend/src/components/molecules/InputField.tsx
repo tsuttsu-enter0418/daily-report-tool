@@ -84,6 +84,21 @@ const InputFieldComponent = forwardRef<HTMLInputElement, InputFieldProps>(
           aria-label={ariaLabel || label}
           aria-describedby={describedBy}
           aria-invalid={isErrorState}
+          bg="white"
+          borderColor="gray.300"
+          color="gray.800"
+          fontSize="md"
+          _hover={{
+            borderColor: "gray.400",
+          }}
+          _focus={{
+            borderColor: "blue.500",
+            boxShadow: "0 0 0 1px #3B82F6",
+          }}
+          _invalid={{
+            borderColor: "red.500",
+            boxShadow: "0 0 0 1px #EF4444",
+          }}
           {...props}
         />
         {error && (

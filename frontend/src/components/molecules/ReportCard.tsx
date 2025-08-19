@@ -86,25 +86,25 @@ const ReportCardComponent = ({ report, onClick }: ReportCardProps) => {
 
   return (
     <Box
-      p={10}
-      bg="rgba(255, 251, 235, 0.9)"
-      borderRadius="xl"
-      boxShadow="0 4px 20px rgba(251, 146, 60, 0.15)"
-      border="2px"
-      borderColor="orange.200"
+      p={6}
+      bg="white"
+      borderRadius="lg"
+      boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
+      border="1px"
+      borderColor="gray.200"
       cursor="pointer"
-      transition="all 0.3s"
+      transition="all 0.2s"
       w="full"
-      minH="200px"
+      minH="180px"
       _hover={{
-        boxShadow: "0 8px 30px rgba(251, 146, 60, 0.25)",
-        transform: "translateY(-6px)",
-        borderColor: "orange.400",
-        bg: "rgba(255, 247, 237, 1)",
+        boxShadow:
+          "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        transform: "translateY(-2px)",
+        borderColor: "gray.300",
       }}
       _focus={{
-        outline: "3px solid",
-        outlineColor: "orange.400",
+        outline: "2px solid",
+        outlineColor: "blue.500",
         outlineOffset: "2px",
       }}
       onClick={onClick}

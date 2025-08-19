@@ -50,7 +50,7 @@ const HomeComponent = () => {
   }, [navigate]);
 
   return (
-    <Box p={8}>
+    <Box p={8} minH="100vh" bg="#F9FAFB">
       <VStack gap={6} align="start">
         <HStack>
           <Heading size="lg" color="gray.800">

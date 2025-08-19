@@ -42,48 +42,48 @@ const getVariantStyles = (variant: CustomButtonProps["variant"]) => {
   switch (variant) {
     case "primary":
       return {
-        bg: "orange.500",
+        bg: "blue.600",
         color: "white",
-        _hover: { bg: "orange.600" },
-        _active: { bg: "orange.700" },
+        _hover: { bg: "blue.700" },
+        _active: { bg: "blue.800" },
       };
     case "secondary":
       return {
         bg: "white",
         color: "gray.700",
-        border: "2px solid",
-        borderColor: "orange.200",
+        border: "1px solid",
+        borderColor: "gray.300",
         _hover: {
-          bg: "orange.50",
-          borderColor: "orange.300",
+          bg: "gray.50",
+          borderColor: "gray.400",
           transform: "translateY(-1px)",
-          boxShadow: "sm",
+          boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
         },
         _active: {
-          bg: "orange.100",
-          borderColor: "orange.400",
+          bg: "gray.100",
+          borderColor: "gray.500",
           transform: "translateY(0)",
         },
       };
     case "danger":
       return {
-        bg: "red.500",
+        bg: "red.600",
         color: "white",
-        _hover: { bg: "red.600" },
-        _active: { bg: "red.700" },
+        _hover: { bg: "red.700" },
+        _active: { bg: "red.800" },
       };
     case "ghost":
       return {
         bg: "transparent",
-        _hover: { bg: "orange.50" },
-        _active: { bg: "orange.100" },
+        _hover: { bg: "gray.100" },
+        _active: { bg: "gray.200" },
       };
     default:
       return {
-        bg: "orange.500",
+        bg: "blue.600",
         color: "white",
-        _hover: { bg: "orange.600" },
-        _active: { bg: "orange.700" },
+        _hover: { bg: "blue.700" },
+        _active: { bg: "blue.800" },
       };
   }
 };
