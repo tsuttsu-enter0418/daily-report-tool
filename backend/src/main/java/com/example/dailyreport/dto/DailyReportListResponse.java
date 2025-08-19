@@ -48,7 +48,7 @@ public class DailyReportListResponse {
     private String title;
 
     /** 作業内容プレビュー（100文字以内） */
-    private String workContentPreview;
+    private String workContent;
 
     /** ステータス（draft: 下書き, submitted: 提出済み） */
     private String status;

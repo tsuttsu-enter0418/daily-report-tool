@@ -281,7 +281,7 @@ public class DailyReportService {
             .username(user != null ? user.getUsername() : null)
             .displayName(user != null ? user.getDisplayName() : null)
             .title(report.getTitle())
-            .workContentPreview(preview)
+            .workContent(preview)
             .status(report.getStatus())
             .reportDate(report.getReportDate())
             .submittedAt(report.getSubmittedAt())

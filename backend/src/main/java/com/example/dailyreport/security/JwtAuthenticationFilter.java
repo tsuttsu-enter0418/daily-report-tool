@@ -58,6 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Authorizationヘッダーからトークンを抽出
         String token = extractTokenFromRequest(request);
+        System.out.println(SecurityContextHolder.getContext().getAuthentication());
         
         if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
