@@ -37,7 +37,7 @@ describe("DeleteConfirmDialog", () => {
       // ✅ Assert: 基本要素が表示されることを確認
       expect(screen.getByText("削除の確認")).toBeInTheDocument();
       expect(
-        screen.getByText("この操作は取り消すことができません")
+        screen.getByText("この操作は取り消すことができません"),
       ).toBeInTheDocument();
       expect(screen.getByText("削除対象:")).toBeInTheDocument();
       expect(screen.getByText("日報: 2025年1月の進捗報告")).toBeInTheDocument();
@@ -51,7 +51,7 @@ describe("DeleteConfirmDialog", () => {
       // ✅ Assert: 警告メッセージが表示される
       expect(screen.getByText("本当に削除しますか？")).toBeInTheDocument();
       expect(
-        screen.getByText("削除されたデータは復元できません。")
+        screen.getByText("削除されたデータは復元できません。"),
       ).toBeInTheDocument();
     });
 
@@ -61,10 +61,10 @@ describe("DeleteConfirmDialog", () => {
 
       // ✅ Assert: ボタンが正しく表示される
       expect(
-        screen.getByRole("button", { name: "キャンセル" })
+        screen.getByRole("button", { name: "キャンセル" }),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: "削除する" })
+        screen.getByRole("button", { name: "削除する" }),
       ).toBeInTheDocument();
     });
 
@@ -101,7 +101,7 @@ describe("DeleteConfirmDialog", () => {
 
       // ✅ Assert: エラーメッセージが表示される
       expect(
-        screen.getByText("サーバーエラーが発生しました")
+        screen.getByText("サーバーエラーが発生しました"),
       ).toBeInTheDocument();
     });
 
@@ -214,7 +214,7 @@ describe("DeleteConfirmDialog", () => {
       expect(mockOnConfirm).toHaveBeenCalledTimes(1);
       expect(consoleSpy).toHaveBeenCalledWith(
         "削除処理エラー:",
-        expect.any(Error)
+        expect.any(Error),
       );
 
       // クリーンアップ
@@ -229,10 +229,10 @@ describe("DeleteConfirmDialog", () => {
 
       // ✅ Assert: ボタンのroleが正しい
       expect(
-        screen.getByRole("button", { name: "キャンセル" })
+        screen.getByRole("button", { name: "キャンセル" }),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: "削除する" })
+        screen.getByRole("button", { name: "削除する" }),
       ).toBeInTheDocument();
     });
 
@@ -251,11 +251,11 @@ describe("DeleteConfirmDialog", () => {
       // ✅ Assert: 重要なテキストがドキュメントに存在する
       expect(screen.getByText("削除の確認")).toBeInTheDocument();
       expect(
-        screen.getByText("この操作は取り消すことができません")
+        screen.getByText("この操作は取り消すことができません"),
       ).toBeInTheDocument();
       expect(screen.getByText("本当に削除しますか？")).toBeInTheDocument();
       expect(
-        screen.getByText("削除されたデータは復元できません。")
+        screen.getByText("削除されたデータは復元できません。"),
       ).toBeInTheDocument();
     });
   });

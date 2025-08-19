@@ -28,7 +28,9 @@ describe("StatusBadge", () => {
     });
 
     it("role='status'が設定されている", () => {
-      renderWithoutRouter(<StatusBadge status="submitted">提出済み</StatusBadge>);
+      renderWithoutRouter(
+        <StatusBadge status="submitted">提出済み</StatusBadge>,
+      );
 
       const badge = screen.getByRole("status");
       expect(badge).toBeInTheDocument();
@@ -153,7 +155,9 @@ describe("StatusBadge", () => {
     });
 
     it("aria-labelが自動生成される", () => {
-      renderWithoutRouter(<StatusBadge status="submitted">提出済み</StatusBadge>);
+      renderWithoutRouter(
+        <StatusBadge status="submitted">提出済み</StatusBadge>,
+      );
 
       const badge = screen.getByRole("status");
       expect(badge).toHaveAttribute("aria-label", "提出済みステータス");
@@ -214,7 +218,9 @@ describe("StatusBadge", () => {
         children: "下書き",
       };
 
-      const { rerender } = renderWithoutRouter(<StatusBadge {...initialProps} />);
+      const { rerender } = renderWithoutRouter(
+        <StatusBadge {...initialProps} />,
+      );
 
       // 最初のレンダリング結果を確認
       expect(screen.getByText("下書き")).toBeInTheDocument();
@@ -251,7 +257,9 @@ describe("StatusBadge", () => {
       );
 
       // Badgeコンポーネントが正しくレンダリングされることを確認
-      expect(mockContainer.querySelector('[role="status"]')).toBeInTheDocument();
+      expect(
+        mockContainer.querySelector('[role="status"]'),
+      ).toBeInTheDocument();
       expect(apiContainer.querySelector('[role="status"]')).toBeInTheDocument();
     });
 
@@ -263,8 +271,12 @@ describe("StatusBadge", () => {
         <StatusBadge status="success">✅ 成功</StatusBadge>,
       );
 
-      expect(prodContainer.querySelector('[role="status"]')).toBeInTheDocument();
-      expect(successContainer.querySelector('[role="status"]')).toBeInTheDocument();
+      expect(
+        prodContainer.querySelector('[role="status"]'),
+      ).toBeInTheDocument();
+      expect(
+        successContainer.querySelector('[role="status"]'),
+      ).toBeInTheDocument();
     });
 
     it("警告・エラーステータスが正しく表示される", () => {
@@ -275,8 +287,12 @@ describe("StatusBadge", () => {
         <StatusBadge status="error">❌ エラー</StatusBadge>,
       );
 
-      expect(warningContainer.querySelector('[role="status"]')).toBeInTheDocument();
-      expect(errorContainer.querySelector('[role="status"]')).toBeInTheDocument();
+      expect(
+        warningContainer.querySelector('[role="status"]'),
+      ).toBeInTheDocument();
+      expect(
+        errorContainer.querySelector('[role="status"]'),
+      ).toBeInTheDocument();
     });
 
     it("日報関連ステータスが正しく表示される", () => {
@@ -287,8 +303,12 @@ describe("StatusBadge", () => {
         <StatusBadge status="submitted">📤 提出済み</StatusBadge>,
       );
 
-      expect(draftContainer.querySelector('[role="status"]')).toBeInTheDocument();
-      expect(submittedContainer.querySelector('[role="status"]')).toBeInTheDocument();
+      expect(
+        draftContainer.querySelector('[role="status"]'),
+      ).toBeInTheDocument();
+      expect(
+        submittedContainer.querySelector('[role="status"]'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -351,7 +371,9 @@ describe("StatusBadge", () => {
     });
 
     it("デフォルトバリアント（variant未指定）が正しく動作する", () => {
-      renderWithoutRouter(<StatusBadge status="dev-mock">デフォルトバッジ</StatusBadge>);
+      renderWithoutRouter(
+        <StatusBadge status="dev-mock">デフォルトバッジ</StatusBadge>,
+      );
 
       // バッジが表示されることを確認
       expect(screen.getByText("デフォルトバッジ")).toBeInTheDocument();
