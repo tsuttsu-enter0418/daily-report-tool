@@ -328,5 +328,6 @@
     "UV_PYTHON_PREFERENCE": "managed",
     "NODE_OPTIONS": "--max-old-space-size=4096"
   },
-  "preferredNotifChannel": "terminal_bell"
+  "preferredNotifChannel": "terminal_bell",
+  "includeCoAuthoredBy": false
 }

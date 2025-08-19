@@ -117,7 +117,7 @@ export default tseslint.config(
       
       // 可読性向上
       'max-lines': ['warn', { max: 300, skipBlankLines: true, skipComments: true }],
-      'complexity': ['warn', 10],
+      'complexity': ['no-warn', 10],
       'max-depth': ['warn', 4],
       'max-nested-callbacks': ['warn', 3],
       

@@ -1,13 +1,5 @@
 import { mockApi } from "./mockApi";
-import type {
-  LoginRequest,
-  LoginResponse,
-  UserInfo,
-  DailyReportCreateRequest,
-  DailyReportUpdateRequest,
-  DailyReportResponse,
-  DailyReportListParams,
-} from "../types";
+import type { LoginRequest, LoginResponse, UserInfo, DailyReportCreateRequest, DailyReportUpdateRequest, DailyReportResponse, DailyReportListParams } from "../types";
 
 /**
  * APIサービス統合モジュール
@@ -44,10 +36,7 @@ const getAuthToken = (): string | null => {
 /**
  * 共通APIリクエストヘルパー
  */
-const createApiRequest = async (
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<Response> => {
+const createApiRequest = async (endpoint: string, options: RequestInit = {}): Promise<Response> => {
   const url = `${API_BASE_URL}${endpoint}`;
   const token = getAuthToken();
 
@@ -114,8 +103,7 @@ const handleApiError = async (response: Response): Promise<never> => {
       errorMessage = "リクエストされたリソースが見つかりません。";
       break;
     case 500:
-      errorMessage =
-        "サーバーエラーが発生しました。しばらく後に再試行してください。";
+      errorMessage = "サーバーエラーが発生しました。しばらく後に再試行してください。";
       break;
   }
 
@@ -218,9 +206,7 @@ export const realApi = {
    * @param reportData 日報作成データ
    * @returns 作成された日報
    */
-  async createDailyReport(
-    reportData: DailyReportCreateRequest
-  ): Promise<DailyReportResponse> {
+  async createDailyReport(reportData: DailyReportCreateRequest): Promise<DailyReportResponse> {
     try {
       const response = await createApiRequest("/api/daily-reports", {
         method: "POST",
@@ -248,10 +234,7 @@ export const realApi = {
    * @param reportData 日報更新データ
    * @returns 更新された日報
    */
-  async updateDailyReport(
-    id: number,
-    reportData: DailyReportUpdateRequest
-  ): Promise<DailyReportResponse> {
+  async updateDailyReport(id: number, reportData: DailyReportUpdateRequest): Promise<DailyReportResponse> {
     try {
       const response = await createApiRequest(`/api/daily-reports/${id}`, {
         method: "PUT",
@@ -310,19 +293,16 @@ export const realApi = {
    * @param params 検索パラメータ
    * @returns 日報一覧
    */
-  async getDailyReports(
-    params?: DailyReportListParams
-  ): Promise<DailyReportResponse[]> {
+  async getDailyReports(params?: DailyReportListParams): Promise<DailyReportResponse[]> {
     try {
       const searchParams = new URLSearchParams();
-      if (params?.page !== undefined)
-        searchParams.append("page", params.page.toString());
-      if (params?.size !== undefined)
-        searchParams.append("size", params.size.toString());
+      if (params?.page !== undefined) searchParams.append("page", params.page.toString());
+      if (params?.size !== undefined) searchParams.append("size", params.size.toString());
       if (params?.status) searchParams.append("status", params.status);
       if (params?.yearMonth) searchParams.append("yearMonth", params.yearMonth);
 
-      const url = `/api/daily-reports${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
+      const url = `/api/daily-reports/my${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
+      console.log(url);
       const response = await createApiRequest(url, {
         method: "GET",
       });
@@ -451,9 +431,7 @@ export const apiService = {
    * @param reportData 日報作成データ
    * @returns 作成された日報
    */
-  async createDailyReport(
-    reportData: DailyReportCreateRequest
-  ): Promise<DailyReportResponse> {
+  async createDailyReport(reportData: DailyReportCreateRequest): Promise<DailyReportResponse> {
     if (isDevelopment && !useRealAPI) {
       // TODO: モックAPIに日報作成メソッドを追加
       throw new Error("モック日報作成機能は未実装です");
@@ -468,10 +446,7 @@ export const apiService = {
    * @param reportData 日報更新データ
    * @returns 更新された日報
    */
-  async updateDailyReport(
-    id: number,
-    reportData: DailyReportUpdateRequest
-  ): Promise<DailyReportResponse> {
+  async updateDailyReport(id: number, reportData: DailyReportUpdateRequest): Promise<DailyReportResponse> {
     if (isDevelopment && !useRealAPI) {
       // TODO: モックAPIに日報更新メソッドを追加
       throw new Error("モック日報更新機能は未実装です");
@@ -499,9 +474,7 @@ export const apiService = {
    * @param params 検索パラメータ
    * @returns 日報一覧
    */
-  async getDailyReports(
-    params?: DailyReportListParams
-  ): Promise<DailyReportResponse[]> {
+  async getDailyReports(params?: DailyReportListParams): Promise<DailyReportResponse[]> {
     if (isDevelopment && !useRealAPI) {
       // TODO: モックAPIに日報一覧メソッドを追加
       throw new Error("モック日報一覧機能は未実装です");
