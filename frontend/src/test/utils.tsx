@@ -12,6 +12,33 @@ import { render, type RenderOptions } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "@/components/ui/provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { vi } from "vitest";
+
+/**
+ * 共通テストモック設定
+ */
+export const setupCommonMocks = () => {
+  // fetch のモック
+  global.fetch = vi.fn();
+
+  // localStorage のモック
+  const localStorageMock = {
+    getItem: vi.fn(),
+    setItem: vi.fn(),
+    removeItem: vi.fn(),
+    clear: vi.fn(),
+  };
+  global.localStorage = localStorageMock as any;
+
+  return { fetch: global.fetch, localStorage: localStorageMock };
+};
+
+/**
+ * 共通モッククリア
+ */
+export const clearCommonMocks = () => {
+  vi.clearAllMocks();
+};
 
 /**
  * テスト用のプロバイダーラッパー
