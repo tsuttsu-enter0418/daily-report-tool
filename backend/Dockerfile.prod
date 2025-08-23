@@ -1,0 +1,93 @@
+# SpringBoot本番環境用マルチステージビルドDockerfile
+# AWS ECS Fargate向け最適化済み
+
+# =============================================================================
+# Build Stage: Mavenビルド実行
+# =============================================================================
+FROM openjdk:17-jdk-slim AS builder
+
+WORKDIR /build
+
+# Maven Wrapper及び設定ファイルをコピー
+COPY .mvn/ ./.mvn/
+COPY mvnw pom.xml ./
+RUN chmod +x ./mvnw
+
+# 依存関係の事前ダウンロード（Docker レイヤーキャッシュ最適化）
+RUN ./mvnw dependency:go-offline -B
+
+# ソースコードをコピーしてビルド実行
+COPY src/ ./src/
+RUN ./mvnw clean package -DskipTests -B
+
+# =============================================================================
+# Runtime Stage: 本番実行環境
+# =============================================================================
+FROM eclipse-temurin:17-jre-alpine
+
+# 必要パッケージのインストール（ヘルスチェック用curl + セキュリティ更新）
+RUN apk add --no-cache \
+        curl \
+        ca-certificates
+
+# 非rootユーザーの作成とアプリケーション用ディレクトリ設定
+RUN addgroup -g 1000 -S appuser && \
+    adduser -u 1000 -S appuser -G appuser -s /bin/sh && \
+    mkdir -p /app && \
+    chown -R appuser:appuser /app
+
+# アプリケーション作業ディレクトリ
+WORKDIR /app
+
+# ビルドされたJARファイルをコピー
+COPY --from=builder --chown=appuser:appuser /build/target/*.jar app.jar
+
+# 非rootユーザーに切り替え
+USER appuser
+
+# ポート公開
+EXPOSE 8080
+
+# JVM環境変数（ECS Fargate 0.5GB制約対応）
+ENV JAVA_OPTS="-server -Xms128m -Xmx384m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication"
+
+# SpringBoot環境変数（graceful shutdown設定）
+ENV SPRING_LIFECYCLE_TIMEOUT-PER-SHUTDOWN-PHASE=30s \
+    SERVER_SHUTDOWN=graceful
+
+# JVMオプション設定（環境変数で上書き可能）
+ENV JVM_OPTS=""
+
+# ヘルスチェック設定（/actuator/health エンドポイント）
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+# SpringBoot起動コマンド
+CMD ["sh", "-c", "exec java $JAVA_OPTS $JVM_OPTS -jar app.jar"]
+
+# =============================================================================
+# イメージメタデータ
+# =============================================================================
+LABEL maintainer="daily-report-tool"
+LABEL version="1.0.0"
+LABEL description="SpringBoot Daily Report Tool - Production Image for AWS ECS Fargate"
+
+# =============================================================================
+# 使用方法:
+# 
+# ビルド:
+#   docker build -f Dockerfile.prod -t daily-report-tool:prod .
+#
+# 実行（開発環境テスト用）:
+#   docker run -p 8080:8080 \
+#     -e SPRING_PROFILES_ACTIVE=docker \
+#     -e DATABASE_URL=jdbc:postgresql://host:5432/daily_report_tool \
+#     -e DATABASE_USERNAME=admin \
+#     -e DATABASE_PASSWORD=reportAdmin \
+#     daily-report-tool:prod
+#
+# ECS Fargate環境変数例:
+#   JVM_OPTS=-XX:+PrintGCDetails -XX:+PrintGCTimeStamps
+#   SPRING_PROFILES_ACTIVE=production
+#   DATABASE_URL=jdbc:postgresql://rds-endpoint:5432/database
+# =============================================================================
