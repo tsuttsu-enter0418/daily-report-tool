@@ -2,79 +2,76 @@
 # 日報作成支援ツールのフロントエンド（React+Vite+TypeScript）のCI
 name: Frontend CI
 
-# ワークフローが実行されるタイミングを定義
 on:
-  # mainブランチにプッシュされた時
   push:
-    branches: [ main ]
+    branches: [main]
     # frontendディレクトリ内のファイルが変更された時のみ実行
+    # またはこのymlファイルが更新された時実行
     paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-ci.yml'
-  
+      - "frontend/**"
+      - ".github/workflows/frontend-ci.yml"
+
   # Pull Requestがmainブランチに作成された時（マージ前のチェック）
+  # またはこのymlファイルが更新された時実行
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-ci.yml'
+      - "frontend/**"
+      - ".github/workflows/frontend-ci.yml"
 
-# 環境変数の設定（全ジョブで共通）
-env:
-  NODE_VERSION: '18'  # Node.jsのバージョンを指定
-  WORKING_DIR: 'frontend'  # 作業ディレクトリ
-
-# 実行するジョブの定義
 jobs:
   # CIジョブ（静的解析＋テスト実行）
   ci:
+    name: ci-job
     # 実行環境（Ubuntu最新版を使用）
     runs-on: ubuntu-latest
-    
+    env:
+      NODE_VERSION: "18"
+      WORKING_DIR: "frontend"
     # ジョブ内で実行する処理のステップ
     steps:
       # 1. リポジトリのコードをチェックアウト（取得）
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+
       # 2. Node.jsの環境をセットアップ
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           # package-lock.jsonを使ってキャッシュを有効化（ビルド時間短縮）
-          cache: 'npm'
-          cache-dependency-path: '${{ env.WORKING_DIR }}/package-lock.json'
-      
+          cache: "npm"
+          cache-dependency-path: "${{ env.WORKING_DIR }}/package-lock.json"
+
       # 3. 依存関係のインストール
       - name: Install dependencies
         working-directory: ${{ env.WORKING_DIR }}
         run: |
           echo "📦 依存関係をインストール中..."
-          npm ci  # package-lock.jsonに基づく高速で確実なインストール
-      
+          npm ci
+
       # 4. 静的解析（Lint）の実行
       - name: Run ESLint
         working-directory: ${{ env.WORKING_DIR }}
         run: |
           echo "🔍 静的解析（ESLint）を実行中..."
           npm run lint 2>&1 | tee eslint-results.log
-          # teeコマンドで結果をファイルに保存しつつ標準出力にも表示
+        # teeコマンドで結果をファイルに保存しつつ標準出力にも表示
         # エラーが発生してもジョブを続行（テストも実行するため）
         continue-on-error: true
         id: eslint
-      
+
       # 5. 型チェック（TypeScript）の実行
       - name: Run TypeScript type check
         working-directory: ${{ env.WORKING_DIR }}
         run: |
           echo "📝 TypeScript型チェックを実行中..."
           npm run type-check 2>&1 | tee typecheck-results.log
-          # type-checkスクリプトが無い場合は直接tscコマンドを実行
-          # npx tsc --noEmit 2>&1 | tee typecheck-results.log
+        # type-checkスクリプトが無い場合は直接tscコマンドを実行
+        # npx tsc --noEmit 2>&1 | tee typecheck-results.log
         continue-on-error: true
         id: typecheck
-      
+
       # 6. テストの実行
       - name: Run tests
         working-directory: ${{ env.WORKING_DIR }}
@@ -83,7 +80,7 @@ jobs:
           npm run test 2>&1 | tee test-results.log
         continue-on-error: true
         id: test
-      
+
       # 7. ビルドの実行（本番環境での動作確認）
       - name: Build project
         working-directory: ${{ env.WORKING_DIR }}
@@ -92,11 +89,12 @@ jobs:
           npm run build 2>&1 | tee build-results.log
         continue-on-error: true
         id: build
-      
+
       # 8. 結果ファイルをアーティファクトとしてアップロード（ログ保存）
       - name: Upload results as artifacts
         uses: actions/upload-artifact@v4
-        if: always()  # 成功・失敗に関わらず常に実行
+        # 成功・失敗に関わらず常に実行
+        if: always()
         with:
           name: ci-results-${{ github.run_number }}
           path: |
@@ -104,8 +102,8 @@ jobs:
             ${{ env.WORKING_DIR }}/typecheck-results.log
             ${{ env.WORKING_DIR }}/test-results.log
             ${{ env.WORKING_DIR }}/build-results.log
-          retention-days: 30  # 30日間保持
-      
+          retention-days: 30 # 30日間保持
+
       # 9. 結果のサマリーをコメントに表示
       - name: Create result summary
         if: always()
@@ -113,38 +111,38 @@ jobs:
           echo "## 📊 CI実行結果サマリー" >> $GITHUB_STEP_SUMMARY
           echo "| ステップ | 結果 |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|------|" >> $GITHUB_STEP_SUMMARY
-          
+
           # ESLintの結果
           if [ "${{ steps.eslint.outcome }}" == "success" ]; then
             echo "| ESLint | ✅ 成功 |" >> $GITHUB_STEP_SUMMARY
           else
             echo "| ESLint | ❌ 失敗 |" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           # TypeScript型チェックの結果
           if [ "${{ steps.typecheck.outcome }}" == "success" ]; then
             echo "| TypeScript型チェック | ✅ 成功 |" >> $GITHUB_STEP_SUMMARY
           else
             echo "| TypeScript型チェック | ❌ 失敗 |" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           # テストの結果
           if [ "${{ steps.test.outcome }}" == "success" ]; then
             echo "| テスト | ✅ 成功 |" >> $GITHUB_STEP_SUMMARY
           else
             echo "| テスト | ❌ 失敗 |" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           # ビルドの結果
           if [ "${{ steps.build.outcome }}" == "success" ]; then
             echo "| ビルド | ✅ 成功 |" >> $GITHUB_STEP_SUMMARY
           else
             echo "| ビルド | ❌ 失敗 |" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "詳細なログは「Artifacts」からダウンロードできます。" >> $GITHUB_STEP_SUMMARY
-      
+
       # 10. 最終判定（いずれかが失敗した場合はワークフロー全体を失敗にする）
       - name: Final result check
         if: always()
