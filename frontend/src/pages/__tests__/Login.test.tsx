@@ -200,7 +200,7 @@ describe("Login", () => {
     const user = userEvent.setup();
 
     // ログイン処理を遅延させる
-    let resolveLogin: (value: any) => void;
+    let resolveLogin: (value: any) => void = () => {};
     const loginPromise = new Promise((resolve) => {
       resolveLogin = resolve;
     });
