@@ -58,10 +58,7 @@ const initialAuthState: AuthState = {
  * - 認証が必要な画面での状態確認
  * - ユーザー情報の表示
  */
-export const authStateAtom = atomWithStorage<AuthState>(
-  "authState",
-  initialAuthState,
-);
+export const authStateAtom = atomWithStorage<AuthState>("authState", initialAuthState);
 
 /**
  * ユーザー情報取得Atom（読み取り専用）
@@ -149,18 +146,15 @@ export const logoutAtom = atom(null, (_get, set) => {
  * const updateUser = useSetAtom(updateUserAtom);
  * updateUser({ displayName: "新しい表示名" });
  */
-export const updateUserAtom = atom(
-  null,
-  (get, set, userUpdate: Partial<UserInfo>) => {
-    const currentState = get(authStateAtom);
-    if (currentState.user) {
-      set(authStateAtom, {
-        ...currentState,
-        user: {
-          ...currentState.user,
-          ...userUpdate,
-        },
-      });
-    }
-  },
-);
+export const updateUserAtom = atom(null, (get, set, userUpdate: Partial<UserInfo>) => {
+  const currentState = get(authStateAtom);
+  if (currentState.user) {
+    set(authStateAtom, {
+      ...currentState,
+      user: {
+        ...currentState.user,
+        ...userUpdate,
+      },
+    });
+  }
+});

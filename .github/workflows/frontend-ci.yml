@@ -66,9 +66,7 @@ jobs:
         working-directory: ${{ env.WORKING_DIR }}
         run: |
           echo "📝 TypeScript型チェックを実行中..."
-          npm run type-check 2>&1 | tee typecheck-results.log
-        # type-checkスクリプトが無い場合は直接tscコマンドを実行
-        # npx tsc --noEmit 2>&1 | tee typecheck-results.log
+          npx tsc --noEmit 2>&1 | tee typecheck-results.log
         continue-on-error: true
         id: typecheck
 

@@ -1,8 +1,4 @@
-import {
-  Button as ChakraButton,
-  type ButtonProps,
-  Spinner,
-} from "@chakra-ui/react";
+import { Button as ChakraButton, type ButtonProps, Spinner } from "@chakra-ui/react";
 import { forwardRef, useMemo } from "react";
 import { type ButtonVariant, type CommonComponentProps } from "../../types";
 

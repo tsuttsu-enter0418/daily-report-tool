@@ -57,9 +57,7 @@ describe("mockApi", () => {
       // APIの遅延をスキップ
       vi.runAllTimers();
 
-      await expect(loginPromise).rejects.toThrow(
-        "ユーザー名またはパスワードが正しくありません",
-      );
+      await expect(loginPromise).rejects.toThrow("ユーザー名またはパスワードが正しくありません");
     });
 
     it("間違ったパスワードでログインが失敗する", async () => {
@@ -72,9 +70,7 @@ describe("mockApi", () => {
       // APIの遅延をスキップ
       vi.runAllTimers();
 
-      await expect(loginPromise).rejects.toThrow(
-        "ユーザー名またはパスワードが正しくありません",
-      );
+      await expect(loginPromise).rejects.toThrow("ユーザー名またはパスワードが正しくありません");
     });
 
     it("各ユーザーで正しい役職が返される", async () => {

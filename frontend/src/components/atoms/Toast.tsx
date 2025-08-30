@@ -100,10 +100,7 @@ export const Toast = {
   /**
    * カスタムToastを表示
    */
-  custom: (
-    type: "success" | "error" | "warning" | "info",
-    options: ToastOptions,
-  ) => {
+  custom: (type: "success" | "error" | "warning" | "info", options: ToastOptions) => {
     const defaults = getToastDefaults(type);
     toaster.create({
       type,

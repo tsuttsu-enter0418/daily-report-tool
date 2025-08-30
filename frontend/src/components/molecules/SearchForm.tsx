@@ -76,7 +76,7 @@ const SearchFormComponent = ({
   initialCriteria,
   isVisible = true,
 }: SearchFormProps) => {
-  const { isOpen, onToggle } = useDisclosure({ defaultIsOpen: false });
+  const { open: isOpen, onToggle } = useDisclosure({ defaultOpen: false });
 
   // 検索条件の状態管理
   const [criteria, setCriteria] = useState<SearchCriteria>({
@@ -86,12 +86,7 @@ const SearchFormComponent = ({
 
   // 検索条件が空かどうかの判定（メモ化）
   const isEmpty = useMemo(() => {
-    return (
-      !criteria.title &&
-      !criteria.content &&
-      !criteria.startDate &&
-      !criteria.endDate
-    );
+    return !criteria.title && !criteria.content && !criteria.startDate && !criteria.endDate;
   }, [criteria]);
 
   // 検索条件変更ハンドラー
@@ -158,11 +153,7 @@ const SearchFormComponent = ({
                 検索条件
               </Text>
 
-              <Stack
-                direction={{ base: "column", lg: "row" }}
-                gap={4}
-                align="stretch"
-              >
+              <Stack direction={{ base: "column", lg: "row" }} gap={4} align="stretch">
                 {/* タイトル検索 */}
                 <Field.Root flex={1}>
                   <Field.Label fontSize="md" color="gray.700">
@@ -171,9 +162,7 @@ const SearchFormComponent = ({
                   <Input
                     placeholder="日報タイトルで検索"
                     value={criteria.title}
-                    onChange={(e) =>
-                      handleCriteriaChange("title", e.target.value)
-                    }
+                    onChange={(e) => handleCriteriaChange("title", e.target.value)}
                     bg="white"
                     borderRadius="md"
                     borderColor="orange.200"
@@ -192,9 +181,7 @@ const SearchFormComponent = ({
                   <Input
                     placeholder="作業内容で検索"
                     value={criteria.content}
-                    onChange={(e) =>
-                      handleCriteriaChange("content", e.target.value)
-                    }
+                    onChange={(e) => handleCriteriaChange("content", e.target.value)}
                     bg="white"
                     borderRadius="md"
                     borderColor="orange.200"
@@ -206,11 +193,7 @@ const SearchFormComponent = ({
                 </Field.Root>
               </Stack>
 
-              <Stack
-                direction={{ base: "column", md: "row" }}
-                gap={4}
-                align="stretch"
-              >
+              <Stack direction={{ base: "column", md: "row" }} gap={4} align="stretch">
                 {/* 開始日 */}
                 <Field.Root flex={1}>
                   <Field.Label fontSize="md" color="gray.700">
@@ -219,9 +202,7 @@ const SearchFormComponent = ({
                   <Input
                     type="date"
                     value={criteria.startDate}
-                    onChange={(e) =>
-                      handleCriteriaChange("startDate", e.target.value)
-                    }
+                    onChange={(e) => handleCriteriaChange("startDate", e.target.value)}
                     bg="white"
                     borderRadius="md"
                     borderColor="orange.200"
@@ -243,9 +224,7 @@ const SearchFormComponent = ({
                   <Input
                     type="date"
                     value={criteria.endDate}
-                    onChange={(e) =>
-                      handleCriteriaChange("endDate", e.target.value)
-                    }
+                    onChange={(e) => handleCriteriaChange("endDate", e.target.value)}
                     bg="white"
                     borderRadius="md"
                     borderColor="orange.200"
@@ -262,11 +241,7 @@ const SearchFormComponent = ({
 
               {/* アクションボタン */}
               <HStack gap={3} justify="flex-end">
-                <Button
-                  variant="secondary"
-                  onClick={handleClearSearch}
-                  disabled={isEmpty}
-                >
+                <Button variant="secondary" onClick={handleClearSearch} disabled={isEmpty}>
                   <MdClose />
                   クリア
                 </Button>

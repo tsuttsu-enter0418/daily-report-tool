@@ -145,10 +145,7 @@ describe("useAuth", () => {
       // Assert: Atoms were called correctly
       expect(mockUseAtomValue).toHaveBeenCalledTimes(3);
       expect(mockUseAtomValue).toHaveBeenNthCalledWith(1, "userAtom");
-      expect(mockUseAtomValue).toHaveBeenNthCalledWith(
-        2,
-        "isAuthenticatedAtom",
-      );
+      expect(mockUseAtomValue).toHaveBeenNthCalledWith(2, "isAuthenticatedAtom");
       expect(mockUseAtomValue).toHaveBeenNthCalledWith(3, "tokenAtom");
     });
 
@@ -420,7 +417,6 @@ describe("useAuth", () => {
 
       // Act: Create hook and get initial reference
       const { result, rerender } = renderHook(() => useAuth());
-      const initialLogout = result.current.logout;
 
       // Reset mocks for rerender
       mockUseAtomValue

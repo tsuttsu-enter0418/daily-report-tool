@@ -65,19 +65,14 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
  * カスタムレンダー関数
  * Chakra UI、React Router、React Queryを含む完全なプロバイダーでコンポーネントをレンダー
  */
-const customRender = (
-  ui: ReactElement,
-  options?: Omit<RenderOptions, "wrapper">,
-) => render(ui, { wrapper: AllTheProviders, ...options });
+const customRender = (ui: ReactElement, options?: Omit<RenderOptions, "wrapper">) =>
+  render(ui, { wrapper: AllTheProviders, ...options });
 
 /**
  * ルーターなしのシンプルなレンダー関数
  * 単体コンポーネントのテスト用
  */
-const renderWithoutRouter = (
-  ui: ReactElement,
-  options?: Omit<RenderOptions, "wrapper">,
-) => {
+const renderWithoutRouter = (ui: ReactElement, options?: Omit<RenderOptions, "wrapper">) => {
   const SimpleWrapper = ({ children }: { children: React.ReactNode }) => {
     const queryClient = new QueryClient({
       defaultOptions: {
@@ -89,9 +84,7 @@ const renderWithoutRouter = (
 
     return (
       <Provider>
-        <QueryClientProvider client={queryClient}>
-          {children}
-        </QueryClientProvider>
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
       </Provider>
     );
   };

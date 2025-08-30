@@ -36,9 +36,7 @@ describe("DeleteConfirmDialog", () => {
 
       // ✅ Assert: 基本要素が表示されることを確認
       expect(screen.getByText("削除の確認")).toBeInTheDocument();
-      expect(
-        screen.getByText("この操作は取り消すことができません"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("この操作は取り消すことができません")).toBeInTheDocument();
       expect(screen.getByText("削除対象:")).toBeInTheDocument();
       expect(screen.getByText("日報: 2025年1月の進捗報告")).toBeInTheDocument();
       expect(screen.getByText("作成日: 2025-01-15")).toBeInTheDocument();
@@ -50,9 +48,7 @@ describe("DeleteConfirmDialog", () => {
 
       // ✅ Assert: 警告メッセージが表示される
       expect(screen.getByText("本当に削除しますか？")).toBeInTheDocument();
-      expect(
-        screen.getByText("削除されたデータは復元できません。"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("削除されたデータは復元できません。")).toBeInTheDocument();
     });
 
     it("アクションボタンが表示される", () => {
@@ -60,12 +56,8 @@ describe("DeleteConfirmDialog", () => {
       render(<DeleteConfirmDialog {...defaultProps} />);
 
       // ✅ Assert: ボタンが正しく表示される
-      expect(
-        screen.getByRole("button", { name: "キャンセル" }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("button", { name: "削除する" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "キャンセル" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "削除する" })).toBeInTheDocument();
     });
 
     it("isOpen が false の場合、ダイアログが表示されない", () => {
@@ -100,9 +92,7 @@ describe("DeleteConfirmDialog", () => {
       render(<DeleteConfirmDialog {...propsWithError} />);
 
       // ✅ Assert: エラーメッセージが表示される
-      expect(
-        screen.getByText("サーバーエラーが発生しました"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("サーバーエラーが発生しました")).toBeInTheDocument();
     });
 
     it("isDeleting が true の場合、削除中状態が表示される", () => {
@@ -196,12 +186,8 @@ describe("DeleteConfirmDialog", () => {
     it("onConfirm でエラーが発生してもアプリが壊れない", async () => {
       // 🏗️ Arrange: エラーを投げるonConfirmを準備
       const user = userEvent.setup();
-      const mockOnConfirm = vi
-        .fn()
-        .mockRejectedValue(new Error("テストエラー"));
-      const consoleSpy = vi
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
+      const mockOnConfirm = vi.fn().mockRejectedValue(new Error("テストエラー"));
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       const props = { ...defaultProps, onConfirm: mockOnConfirm };
 
       render(<DeleteConfirmDialog {...props} />);
@@ -212,10 +198,7 @@ describe("DeleteConfirmDialog", () => {
 
       // ✅ Assert: エラーが適切にキャッチされる
       expect(mockOnConfirm).toHaveBeenCalledTimes(1);
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "削除処理エラー:",
-        expect.any(Error),
-      );
+      expect(consoleSpy).toHaveBeenCalledWith("削除処理エラー:", expect.any(Error));
 
       // クリーンアップ
       consoleSpy.mockRestore();
@@ -228,12 +211,8 @@ describe("DeleteConfirmDialog", () => {
       render(<DeleteConfirmDialog {...defaultProps} />);
 
       // ✅ Assert: ボタンのroleが正しい
-      expect(
-        screen.getByRole("button", { name: "キャンセル" }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("button", { name: "削除する" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "キャンセル" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "削除する" })).toBeInTheDocument();
     });
 
     it("削除中状態でローディングテキストが表示される", () => {
@@ -250,13 +229,9 @@ describe("DeleteConfirmDialog", () => {
 
       // ✅ Assert: 重要なテキストがドキュメントに存在する
       expect(screen.getByText("削除の確認")).toBeInTheDocument();
-      expect(
-        screen.getByText("この操作は取り消すことができません"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("この操作は取り消すことができません")).toBeInTheDocument();
       expect(screen.getByText("本当に削除しますか？")).toBeInTheDocument();
-      expect(
-        screen.getByText("削除されたデータは復元できません。"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("削除されたデータは復元できません。")).toBeInTheDocument();
     });
   });
 

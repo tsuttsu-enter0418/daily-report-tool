@@ -9,16 +9,11 @@ import {
   Spinner,
   Center,
   Alert,
-  AlertIcon,
 } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { Button, HomeButton } from "../components/atoms";
-import {
-  StatusBadge,
-  DeleteConfirmDialog,
-  StatusChangeDialog,
-} from "../components/molecules";
+import { StatusBadge, DeleteConfirmDialog, StatusChangeDialog } from "../components/molecules";
 import { useAuth, useDailyReports, useToast } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 import type { DailyReportResponse } from "../types";
@@ -64,10 +59,7 @@ const DailyReportDetailComponent = () => {
   });
 
   // 日報データ管理フック
-  const { getReport, deleteReport, updateReport } = useDailyReports(
-    undefined,
-    false,
-  );
+  const { getReport, deleteReport, updateReport } = useDailyReports(undefined, false);
 
   // 日報IDを数値に変換
   const reportId = useMemo(() => {
@@ -76,10 +68,7 @@ const DailyReportDetailComponent = () => {
 
   // 開発モード表示判定
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);
-  const useRealAPI = useMemo(
-    () => import.meta.env.VITE_USE_REAL_API === "true",
-    [],
-  );
+  const useRealAPI = useMemo(() => import.meta.env.VITE_USE_REAL_API === "true", []);
 
   // 権限判定
   const canEdit = useMemo(() => {
@@ -87,9 +76,9 @@ const DailyReportDetailComponent = () => {
 
     // 本人、上司、管理者のみ編集可能
     return (
-      user.id === report.userId ||
+      Number(user.id) === report.userId ||
       user.role === "管理者" ||
-      (user.role === "上長" && report.userId === user.id) // 上司の場合は部下の日報
+      (user.role === "上長" && report.userId === Number(user.id)) // 上司の場合は部下の日報
     );
   }, [user, report]);
 
@@ -97,7 +86,7 @@ const DailyReportDetailComponent = () => {
     if (!user || !report) return false;
 
     // 本人、管理者のみ削除可能
-    return user.id === report.userId || user.role === "管理者";
+    return Number(user.id) === report.userId || user.role === "管理者";
   }, [user, report]);
 
   // 日報データ読み込み
@@ -240,8 +229,7 @@ const DailyReportDetailComponent = () => {
           setStatusDialog((prev) => ({
             ...prev,
             isChanging: false,
-            errorMessage:
-              "ステータスの変更に失敗しました。もう一度お試しください。",
+            errorMessage: "ステータスの変更に失敗しました。もう一度お試しください。",
           }));
         }
       } catch (err) {
@@ -274,7 +262,6 @@ const DailyReportDetailComponent = () => {
     navigate(-1);
   }, [navigate]);
 
-
   // ローディング表示
   if (isLoading) {
     return (
@@ -297,10 +284,9 @@ const DailyReportDetailComponent = () => {
       <Box w="100vw" minH="100vh" bg="#F9FAFB">
         <Box maxW="4xl" mx="auto" px={{ base: 4, md: 8 }} py={8}>
           <VStack gap={6}>
-            <Alert status="error" borderRadius="md">
-              <AlertIcon />
-              {error}
-            </Alert>
+            <Alert.Root status="error" borderRadius="md">
+              <Alert.Description>{error}</Alert.Description>
+            </Alert.Root>
             <Button variant="secondary" onClick={handleBack}>
               戻る
             </Button>
@@ -343,14 +329,10 @@ const DailyReportDetailComponent = () => {
 
                   {/* 開発モード表示 */}
                   {isDevelopment && !useRealAPI && (
-                    <StatusBadge status="dev-mock">
-                      {MessageConst.DEV.MOCK_API_MODE}
-                    </StatusBadge>
+                    <StatusBadge status="dev-mock">{MessageConst.DEV.MOCK_API_MODE}</StatusBadge>
                   )}
                   {isDevelopment && useRealAPI && (
-                    <StatusBadge status="dev-api">
-                      {MessageConst.DEV.REAL_API_MODE}
-                    </StatusBadge>
+                    <StatusBadge status="dev-api">{MessageConst.DEV.REAL_API_MODE}</StatusBadge>
                   )}
                 </HStack>
                 <HomeButton />
@@ -392,7 +374,7 @@ const DailyReportDetailComponent = () => {
                       <Text as="span" fontWeight="semibold">
                         作成者:
                       </Text>{" "}
-                      {report.userDisplayName || report.username}
+                      {report.displayName || report.username}
                     </Text>
                   </HStack>
 
@@ -408,12 +390,7 @@ const DailyReportDetailComponent = () => {
 
                 {/* 作業内容 */}
                 <Box>
-                  <Text
-                    fontSize="lg"
-                    fontWeight="semibold"
-                    color="gray.800"
-                    mb={3}
-                  >
+                  <Text fontSize="lg" fontWeight="semibold" color="gray.800" mb={3}>
                     作業内容
                   </Text>
                   <Box
@@ -438,11 +415,7 @@ const DailyReportDetailComponent = () => {
                 </Text>
 
                 {/* アクションボタン */}
-                <Stack
-                  direction={{ base: "column", md: "row" }}
-                  gap={4}
-                  justify="space-between"
-                >
+                <Stack direction={{ base: "column", md: "row" }} gap={4} justify="space-between">
                   <Button variant="secondary" onClick={handleBack}>
                     戻る
                   </Button>
@@ -450,19 +423,13 @@ const DailyReportDetailComponent = () => {
                   <HStack gap={3}>
                     {/* ステータス変更ボタン */}
                     {canEdit && report.status === "draft" && (
-                      <Button
-                        variant="primary"
-                        onClick={() => handleStatusChange("submitted")}
-                      >
+                      <Button variant="primary" onClick={() => handleStatusChange("submitted")}>
                         提出する
                       </Button>
                     )}
 
                     {canEdit && report.status === "submitted" && (
-                      <Button
-                        variant="secondary"
-                        onClick={() => handleStatusChange("draft")}
-                      >
+                      <Button variant="secondary" onClick={() => handleStatusChange("draft")}>
                         下書きに戻す
                       </Button>
                     )}

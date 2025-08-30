@@ -50,20 +50,14 @@ const originalWarn = console.warn;
 
 beforeAll(() => {
   console.error = (...args: any[]) => {
-    if (
-      typeof args[0] === "string" &&
-      args[0].includes("Warning: ReactDOM.render is deprecated")
-    ) {
+    if (typeof args[0] === "string" && args[0].includes("Warning: ReactDOM.render is deprecated")) {
       return;
     }
     originalError.call(console, ...args);
   };
 
   console.warn = (...args: any[]) => {
-    if (
-      typeof args[0] === "string" &&
-      args[0].includes("componentWillReceiveProps")
-    ) {
+    if (typeof args[0] === "string" && args[0].includes("componentWillReceiveProps")) {
       return;
     }
     originalWarn.call(console, ...args);

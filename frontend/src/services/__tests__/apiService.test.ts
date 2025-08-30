@@ -13,7 +13,7 @@ import { apiService } from "../apiService";
 import { setupCommonMocks, clearCommonMocks } from "@/test/utils";
 
 // 共通モック設定
-const { fetch: mockFetch, localStorage: localStorageMock } = setupCommonMocks();
+const { localStorage: localStorageMock } = setupCommonMocks();
 
 describe("apiService", () => {
   beforeEach(() => {

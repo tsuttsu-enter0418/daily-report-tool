@@ -75,14 +75,8 @@ const ReportCardComponent = ({ report, onClick }: ReportCardProps) => {
     [report.author, report.title, report.status, report.date],
   );
 
-  const statusColor = useMemo(
-    () => getStatusColor(report.status),
-    [report.status],
-  );
-  const statusText = useMemo(
-    () => getStatusText(report.status),
-    [report.status],
-  );
+  const statusColor = useMemo(() => getStatusColor(report.status), [report.status]);
+  const statusText = useMemo(() => getStatusText(report.status), [report.status]);
 
   return (
     <Box
@@ -97,8 +91,7 @@ const ReportCardComponent = ({ report, onClick }: ReportCardProps) => {
       w="full"
       minH="180px"
       _hover={{
-        boxShadow:
-          "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
         transform: "translateY(-2px)",
         borderColor: "gray.300",
       }}

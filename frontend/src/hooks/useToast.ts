@@ -34,13 +34,7 @@ type ToastOptions = {
   /** 閉じるボタンの表示（デフォルト: true） */
   isClosable?: boolean;
   /** 位置（デフォルト: "top-right"） */
-  position?:
-    | "top"
-    | "top-left"
-    | "top-right"
-    | "bottom"
-    | "bottom-left"
-    | "bottom-right";
+  position?: "top" | "top-left" | "top-right" | "bottom" | "bottom-left" | "bottom-right";
 };
 
 /**
@@ -111,10 +105,7 @@ export const useToast = () => {
     // 更新成功
     updated: useCallback(
       (resourceName: string = "データ") => {
-        showSuccess(
-          `${resourceName}を更新しました`,
-          "変更内容が保存されました",
-        );
+        showSuccess(`${resourceName}を更新しました`, "変更内容が保存されました");
       },
       [showSuccess],
     ),
@@ -138,10 +129,7 @@ export const useToast = () => {
     // 下書き保存成功
     savedAsDraft: useCallback(
       (resourceName: string = "日報") => {
-        showSuccess(
-          `${resourceName}を下書き保存しました`,
-          "後で編集・提出できます",
-        );
+        showSuccess(`${resourceName}を下書き保存しました`, "後で編集・提出できます");
       },
       [showSuccess],
     ),
@@ -161,10 +149,7 @@ export const useToast = () => {
     // 作成エラー
     createError: useCallback(
       (resourceName: string = "データ", error?: string) => {
-        showError(
-          `${resourceName}の作成に失敗しました`,
-          error || "もう一度お試しください",
-        );
+        showError(`${resourceName}の作成に失敗しました`, error || "もう一度お試しください");
       },
       [showError],
     ),
@@ -172,10 +157,7 @@ export const useToast = () => {
     // 更新エラー
     updateError: useCallback(
       (resourceName: string = "データ", error?: string) => {
-        showError(
-          `${resourceName}の更新に失敗しました`,
-          error || "もう一度お試しください",
-        );
+        showError(`${resourceName}の更新に失敗しました`, error || "もう一度お試しください");
       },
       [showError],
     ),
@@ -183,10 +165,7 @@ export const useToast = () => {
     // 削除エラー
     deleteError: useCallback(
       (resourceName: string = "データ", error?: string) => {
-        showError(
-          `${resourceName}の削除に失敗しました`,
-          error || "もう一度お試しください",
-        );
+        showError(`${resourceName}の削除に失敗しました`, error || "もう一度お試しください");
       },
       [showError],
     ),
@@ -204,10 +183,7 @@ export const useToast = () => {
 
     // ネットワークエラー
     networkError: useCallback(() => {
-      showError(
-        "ネットワークエラーが発生しました",
-        "インターネット接続を確認してください",
-      );
+      showError("ネットワークエラーが発生しました", "インターネット接続を確認してください");
     }, [showError]),
 
     // 認証エラー
@@ -222,10 +198,7 @@ export const useToast = () => {
 
     // 警告メッセージ
     unsavedChanges: useCallback(() => {
-      showWarning(
-        "未保存の変更があります",
-        "変更内容が失われる可能性があります",
-      );
+      showWarning("未保存の変更があります", "変更内容が失われる可能性があります");
     }, [showWarning]),
 
     // 情報メッセージ

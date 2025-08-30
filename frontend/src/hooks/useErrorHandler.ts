@@ -64,8 +64,7 @@ export const useErrorHandler = () => {
         case 500:
           toaster.create({
             title: "サーバーエラー",
-            description:
-              "サーバーでエラーが発生しました。しばらくしてから再度お試しください。",
+            description: "サーバーでエラーが発生しました。しばらくしてから再度お試しください。",
             type: "error",
             duration: 5000,
           });
@@ -95,8 +94,7 @@ export const useErrorHandler = () => {
   const handleNetworkError = useCallback(() => {
     toaster.create({
       title: "ネットワークエラー",
-      description:
-        "ネットワークに接続できません。インターネット接続を確認してください。",
+      description: "ネットワークに接続できません。インターネット接続を確認してください。",
       type: "error",
       duration: 5000,
     });

@@ -1,7 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { apiService } from "../services/apiService";
 import { useErrorHandler } from "./useErrorHandler";
-import type { DailyReportResponse, DailyReportCreateRequest, DailyReportUpdateRequest, DailyReportListParams } from "../types";
+import type {
+  DailyReportResponse,
+  DailyReportCreateRequest,
+  DailyReportUpdateRequest,
+  DailyReportListParams,
+} from "../types";
 
 /**
  * 日報データ管理カスタムフック
@@ -45,7 +50,10 @@ export type UseDailyReportsReturn = {
  * @param autoFetch - 自動取得するかどうか（デフォルト: true）
  * @returns 日報データ管理インターフェース
  */
-export const useDailyReports = (params?: DailyReportListParams, autoFetch: boolean = true): UseDailyReportsReturn => {
+export const useDailyReports = (
+  params?: DailyReportListParams,
+  autoFetch: boolean = true,
+): UseDailyReportsReturn => {
   const [reports, setReports] = useState<DailyReportResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +81,7 @@ export const useDailyReports = (params?: DailyReportListParams, autoFetch: boole
         setIsLoading(false);
       }
     },
-    [handleError]
+    [handleError],
   );
 
   /**
@@ -104,7 +112,7 @@ export const useDailyReports = (params?: DailyReportListParams, autoFetch: boole
         return null;
       }
     },
-    [handleError, showSuccess]
+    [handleError, showSuccess],
   );
 
   /**
@@ -117,7 +125,9 @@ export const useDailyReports = (params?: DailyReportListParams, autoFetch: boole
         const updatedReport = await apiService.updateDailyReport(id, data);
 
         // 更新された日報をリストに反映
-        setReports((prevReports) => prevReports.map((report) => (report.id === id ? updatedReport : report)));
+        setReports((prevReports) =>
+          prevReports.map((report) => (report.id === id ? updatedReport : report)),
+        );
 
         showSuccess("日報が正常に更新されました");
         console.log("✅ 日報更新成功:", updatedReport.title);
@@ -128,7 +138,7 @@ export const useDailyReports = (params?: DailyReportListParams, autoFetch: boole
         return null;
       }
     },
-    [handleError, showSuccess]
+    [handleError, showSuccess],
   );
 
   /**
@@ -152,7 +162,7 @@ export const useDailyReports = (params?: DailyReportListParams, autoFetch: boole
         return false;
       }
     },
-    [handleError, showSuccess]
+    [handleError, showSuccess],
   );
 
   /**
@@ -177,7 +187,7 @@ export const useDailyReports = (params?: DailyReportListParams, autoFetch: boole
         return null;
       }
     },
-    [handleError]
+    [handleError],
   );
 
   // 初期データ取得

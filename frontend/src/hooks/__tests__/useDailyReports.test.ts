@@ -38,12 +38,14 @@ describe("useDailyReports", () => {
     submittedAt: "2025-01-15T10:00:00Z",
     userId: 1,
     username: "test-user",
+    createdAt: "2025-01-15T09:00:00Z",
+    updatedAt: "2025-01-15T09:30:00Z",
   };
 
   const sampleCreateRequest: DailyReportCreateRequest = {
     title: "New Daily Report",
     workContent: "Testing implementation",
-    status: "draft",
+    status: "submitted",
     reportDate: "2025-01-16",
   };
 
@@ -51,6 +53,7 @@ describe("useDailyReports", () => {
     title: "Updated Daily Report",
     workContent: "Updated testing implementation",
     status: "submitted",
+    reportDate: "2025-01-16",
   };
 
   beforeEach(async () => {
@@ -65,16 +68,19 @@ describe("useDailyReports", () => {
       deleteDailyReport: vi.fn(),
       getDailyReport: vi.fn(),
     };
-    apiServiceModule.apiService = mockApiService;
+    Object.assign(apiServiceModule.apiService, mockApiService);
 
     // Setup error handler mocks
-    const errorHandlerModule = await import("../useErrorHandler");
     mockHandleError = vi.fn();
     mockShowSuccess = vi.fn();
-    errorHandlerModule.useErrorHandler = vi.fn(() => ({
+    vi.mocked(await import("../useErrorHandler")).useErrorHandler.mockReturnValue({
+      handleApiError: vi.fn(),
+      handleNetworkError: vi.fn(),
+      handleValidationError: vi.fn(),
       handleError: mockHandleError,
       showSuccess: mockShowSuccess,
-    }));
+      showInfo: vi.fn(),
+    });
   });
 
   describe("initialization", () => {
@@ -171,7 +177,7 @@ describe("useDailyReports", () => {
 
       // Complete the promise
       act(() => {
-        resolvePromise!([sampleReport]);
+        resolvePromise([sampleReport]);
       });
 
       await waitFor(() => {
@@ -196,12 +202,8 @@ describe("useDailyReports", () => {
       // Assert: Report is created and added to list
       expect(createdReport).toEqual(sampleReport);
       expect(result.current.reports).toEqual([sampleReport]);
-      expect(mockApiService.createDailyReport).toHaveBeenCalledWith(
-        sampleCreateRequest,
-      );
-      expect(mockShowSuccess).toHaveBeenCalledWith(
-        "日報が正常に作成されました",
-      );
+      expect(mockApiService.createDailyReport).toHaveBeenCalledWith(sampleCreateRequest);
+      expect(mockShowSuccess).toHaveBeenCalledWith("日報が正常に作成されました");
     });
 
     it("handles creation error correctly", async () => {
@@ -241,21 +243,13 @@ describe("useDailyReports", () => {
       // Act: Update report
       let updateResult: DailyReportResponse | null = null;
       await act(async () => {
-        updateResult = await result.current.updateReport(
-          1,
-          sampleUpdateRequest,
-        );
+        updateResult = await result.current.updateReport(1, sampleUpdateRequest);
       });
 
       // Assert: Report is updated in the list
       expect(updateResult).toEqual(updatedReport);
-      expect(mockApiService.updateDailyReport).toHaveBeenCalledWith(
-        1,
-        sampleUpdateRequest,
-      );
-      expect(mockShowSuccess).toHaveBeenCalledWith(
-        "日報が正常に更新されました",
-      );
+      expect(mockApiService.updateDailyReport).toHaveBeenCalledWith(1, sampleUpdateRequest);
+      expect(mockShowSuccess).toHaveBeenCalledWith("日報が正常に更新されました");
     });
 
     it("handles update error correctly", async () => {
@@ -268,10 +262,7 @@ describe("useDailyReports", () => {
       // Act: Attempt to update report
       let updateResult: DailyReportResponse | null = null;
       await act(async () => {
-        updateResult = await result.current.updateReport(
-          1,
-          sampleUpdateRequest,
-        );
+        updateResult = await result.current.updateReport(1, sampleUpdateRequest);
       });
 
       // Assert: Error is handled, null is returned
@@ -302,9 +293,7 @@ describe("useDailyReports", () => {
       // Assert: Report is deleted successfully
       expect(deleteResult).toBe(true);
       expect(mockApiService.deleteDailyReport).toHaveBeenCalledWith(1);
-      expect(mockShowSuccess).toHaveBeenCalledWith(
-        "日報が正常に削除されました",
-      );
+      expect(mockShowSuccess).toHaveBeenCalledWith("日報が正常に削除されました");
     });
 
     it("handles deletion error correctly", async () => {

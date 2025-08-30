@@ -1,5 +1,18 @@
 /* eslint-disable max-lines */
-import { Box, Heading, VStack, HStack, Text, Textarea, Card, Field, Stack, Input, Spinner, Center } from "@chakra-ui/react";
+import {
+  Box,
+  Heading,
+  VStack,
+  HStack,
+  Text,
+  Textarea,
+  Card,
+  Field,
+  Stack,
+  Input,
+  Spinner,
+  Center,
+} from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -47,8 +60,15 @@ type DailyReportFormProps = {
 
 // バリデーションスキーマ
 const validationSchema = yup.object({
-  title: yup.string().required("タイトルは必須です").max(200, "タイトルは200文字以内で入力してください"),
-  workContent: yup.string().required(MessageConst.REPORT.WORK_CONTENT_REQUIRED).min(10, MessageConst.REPORT.WORK_CONTENT_MIN_LENGTH(10)).max(1000, MessageConst.REPORT.WORK_CONTENT_MAX_LENGTH(1000)),
+  title: yup
+    .string()
+    .required("タイトルは必須です")
+    .max(200, "タイトルは200文字以内で入力してください"),
+  workContent: yup
+    .string()
+    .required(MessageConst.REPORT.WORK_CONTENT_REQUIRED)
+    .min(10, MessageConst.REPORT.WORK_CONTENT_MIN_LENGTH(10))
+    .max(1000, MessageConst.REPORT.WORK_CONTENT_MAX_LENGTH(1000)),
   reportDate: yup
     .string()
     .required("報告日は必須です")
@@ -56,14 +76,16 @@ const validationSchema = yup.object({
 });
 
 // eslint-disable-next-line complexity
-const DailyReportFormComponent = ({ isEditMode = false, initialData }: Omit<DailyReportFormProps, "reportId">) => {
+const DailyReportFormComponent = ({
+  isEditMode = false,
+  initialData,
+}: Omit<DailyReportFormProps, "reportId">) => {
   const { user } = useAuth();
   const { id: reportIdParam } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDraftSaving, setIsDraftSaving] = useState(false);
-  const [currentReport, setCurrentReport] = useState<DailyReportResponse | null>(null);
   const [isLoadingReport, setIsLoadingReport] = useState(false);
 
   // 日報データ管理フック
@@ -80,7 +102,7 @@ const DailyReportFormComponent = ({ isEditMode = false, initialData }: Omit<Dail
     (reportId: number) => {
       navigate(`/report/edit/${reportId}`);
     },
-    [navigate]
+    [navigate],
   );
 
   // 今日の日付をYYYY-MM-DD形式で取得
@@ -120,7 +142,6 @@ const DailyReportFormComponent = ({ isEditMode = false, initialData }: Omit<Dail
           const report = await getReport(reportId);
 
           if (report) {
-            setCurrentReport(report);
             // フォームに既存データを設定
             reset({
               title: report.title,
@@ -194,7 +215,7 @@ const DailyReportFormComponent = ({ isEditMode = false, initialData }: Omit<Dail
         setIsSubmitting(false);
       }
     },
-    [reportId, isEditMode, updateReport, createReport, toast, navigate]
+    [reportId, isEditMode, updateReport, createReport, toast, navigate],
   );
 
   // 下書き保存処理（メモ化）
@@ -231,7 +252,6 @@ const DailyReportFormComponent = ({ isEditMode = false, initialData }: Omit<Dail
 
       if (result) {
         console.log("✅ 下書き保存成功:", result.title);
-        setCurrentReport(result);
 
         // 成功Toast表示
         toast.savedAsDraft("日報");
@@ -266,12 +286,18 @@ const DailyReportFormComponent = ({ isEditMode = false, initialData }: Omit<Dail
               <HStack justify="space-between" w="full">
                 <HStack wrap="wrap" gap={4}>
                   <Heading size="xl" color="gray.800">
-                    {isEditMode ? MessageConst.REPORT.EDIT_FORM_TITLE : MessageConst.REPORT.CREATE_FORM_TITLE}
+                    {isEditMode
+                      ? MessageConst.REPORT.EDIT_FORM_TITLE
+                      : MessageConst.REPORT.CREATE_FORM_TITLE}
                   </Heading>
 
                   {/* 開発モード表示 */}
-                  {isDevelopment && !useRealAPI && <StatusBadge status="dev-mock">{MessageConst.DEV.MOCK_API_MODE}</StatusBadge>}
-                  {isDevelopment && useRealAPI && <StatusBadge status="dev-api">{MessageConst.DEV.REAL_API_MODE}</StatusBadge>}
+                  {isDevelopment && !useRealAPI && (
+                    <StatusBadge status="dev-mock">{MessageConst.DEV.MOCK_API_MODE}</StatusBadge>
+                  )}
+                  {isDevelopment && useRealAPI && (
+                    <StatusBadge status="dev-api">{MessageConst.DEV.REAL_API_MODE}</StatusBadge>
+                  )}
                 </HStack>
                 <HomeButton />
               </HStack>
@@ -290,7 +316,13 @@ const DailyReportFormComponent = ({ isEditMode = false, initialData }: Omit<Dail
 
           {/* 開発モード時の説明 */}
           {isDevelopment && !useRealAPI && (
-            <Box p={4} bg="blue.50" borderRadius="md" borderLeftWidth="4px" borderLeftColor="blue.400">
+            <Box
+              p={4}
+              bg="blue.50"
+              borderRadius="md"
+              borderLeftWidth="4px"
+              borderLeftColor="blue.400"
+            >
               <VStack align="start" gap={1}>
                 <Text fontSize="sm" color="blue.700">
                   <strong>{MessageConst.DEV.MOCK_API_DESCRIPTION}</strong>
@@ -316,7 +348,14 @@ const DailyReportFormComponent = ({ isEditMode = false, initialData }: Omit<Dail
 
           {/* メインフォーム */}
           {!isLoadingReport && (
-            <Card.Root variant="elevated" bg="white" borderRadius="lg" boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)" border="1px" borderColor="gray.200">
+            <Card.Root
+              variant="elevated"
+              bg="white"
+              borderRadius="lg"
+              boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
+              border="1px"
+              borderColor="gray.200"
+            >
               <Card.Body p={8}>
                 <form onSubmit={handleSubmit(onSubmit)}>
                   <VStack gap={6} align="stretch">
@@ -418,7 +457,13 @@ const DailyReportFormComponent = ({ isEditMode = false, initialData }: Omit<Dail
 
                       {/* 文字数カウント */}
                       <HStack justify="space-between" mt={2}>
-                        <Box>{errors.workContent && <Field.ErrorText color="red.500">{errors.workContent.message}</Field.ErrorText>}</Box>
+                        <Box>
+                          {errors.workContent && (
+                            <Field.ErrorText color="red.500">
+                              {errors.workContent.message}
+                            </Field.ErrorText>
+                          )}
+                        </Box>
                         <Text fontSize="sm" color="gray.600">
                           {workContent?.length || 0} / 1000文字
                         </Text>
@@ -426,26 +471,52 @@ const DailyReportFormComponent = ({ isEditMode = false, initialData }: Omit<Dail
                     </Field.Root>
 
                     {/* 自動保存説明 */}
-                    <Box p={3} bg="blue.50" borderRadius="md" borderLeftWidth="4px" borderLeftColor="blue.400">
+                    <Box
+                      p={3}
+                      bg="blue.50"
+                      borderRadius="md"
+                      borderLeftWidth="4px"
+                      borderLeftColor="blue.400"
+                    >
                       <Text fontSize="sm" color="blue.700">
                         💡 {MessageConst.REPORT.DRAFT_AUTO_SAVE}
                       </Text>
                     </Box>
 
                     {/* アクションボタン */}
-                    <Stack direction={{ base: "column", md: "row" }} gap={4} justify="space-between">
+                    <Stack
+                      direction={{ base: "column", md: "row" }}
+                      gap={4}
+                      justify="space-between"
+                    >
                       <HStack gap={3}>
                         <Button variant="secondary" onClick={handleBack}>
                           {MessageConst.ACTION.BACK}
                         </Button>
 
-                        <Button variant="secondary" onClick={handleSaveDraft} loading={isDraftSaving} loadingText={MessageConst.SYSTEM.SAVING}>
+                        <Button
+                          variant="secondary"
+                          onClick={handleSaveDraft}
+                          loading={isDraftSaving}
+                          loadingText={MessageConst.SYSTEM.SAVING}
+                        >
                           {MessageConst.REPORT.SAVE_DRAFT}
                         </Button>
                       </HStack>
 
-                      <Button type="submit" variant="primary" loading={isSubmitting} loadingText={isEditMode ? MessageConst.SYSTEM.SAVING : MessageConst.SYSTEM.PROCESSING} disabled={!isValid} size="lg">
-                        {isEditMode ? MessageConst.ACTION.UPDATE : MessageConst.REPORT.SUBMIT_REPORT}
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        loading={isSubmitting}
+                        loadingText={
+                          isEditMode ? MessageConst.SYSTEM.SAVING : MessageConst.SYSTEM.PROCESSING
+                        }
+                        disabled={!isValid}
+                        size="lg"
+                      >
+                        {isEditMode
+                          ? MessageConst.ACTION.UPDATE
+                          : MessageConst.REPORT.SUBMIT_REPORT}
                       </Button>
                     </Stack>
                   </VStack>

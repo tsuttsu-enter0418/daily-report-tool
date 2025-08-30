@@ -1,12 +1,4 @@
-import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Heading,
-  Card,
-  Alert,
-} from "@chakra-ui/react";
+import { Box, VStack, HStack, Text, Heading, Card, Alert } from "@chakra-ui/react";
 import { MdDelete, MdWarning } from "react-icons/md";
 import { useCallback, memo } from "react";
 import { Button } from "../atoms";
@@ -123,13 +115,7 @@ const DeleteConfirmDialogComponent = ({
             </HStack>
 
             {/* 削除対象の情報 */}
-            <Box
-              p={4}
-              bg="gray.50"
-              borderRadius="md"
-              border="1px"
-              borderColor="gray.200"
-            >
+            <Box p={4} bg="gray.50" borderRadius="md" border="1px" borderColor="gray.200">
               <VStack align="start" gap={2}>
                 <Text fontWeight="semibold" color="gray.800">
                   削除対象:
@@ -166,11 +152,7 @@ const DeleteConfirmDialogComponent = ({
 
             {/* アクションボタン */}
             <HStack gap={3} justify="flex-end">
-              <Button
-                variant="secondary"
-                onClick={handleCancel}
-                disabled={isDeleting}
-              >
+              <Button variant="secondary" onClick={handleCancel} disabled={isDeleting}>
                 キャンセル
               </Button>
               <Button

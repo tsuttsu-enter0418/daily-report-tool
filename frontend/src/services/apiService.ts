@@ -1,5 +1,13 @@
 import { mockApi } from "./mockApi";
-import type { LoginRequest, LoginResponse, UserInfo, DailyReportCreateRequest, DailyReportUpdateRequest, DailyReportResponse, DailyReportListParams } from "../types";
+import type {
+  LoginRequest,
+  LoginResponse,
+  UserInfo,
+  DailyReportCreateRequest,
+  DailyReportUpdateRequest,
+  DailyReportResponse,
+  DailyReportListParams,
+} from "../types";
 
 /**
  * APIサービス統合モジュール
@@ -234,7 +242,10 @@ export const realApi = {
    * @param reportData 日報更新データ
    * @returns 更新された日報
    */
-  async updateDailyReport(id: number, reportData: DailyReportUpdateRequest): Promise<DailyReportResponse> {
+  async updateDailyReport(
+    id: number,
+    reportData: DailyReportUpdateRequest,
+  ): Promise<DailyReportResponse> {
     try {
       const response = await createApiRequest(`/api/daily-reports/${id}`, {
         method: "PUT",
@@ -446,7 +457,10 @@ export const apiService = {
    * @param reportData 日報更新データ
    * @returns 更新された日報
    */
-  async updateDailyReport(id: number, reportData: DailyReportUpdateRequest): Promise<DailyReportResponse> {
+  async updateDailyReport(
+    id: number,
+    reportData: DailyReportUpdateRequest,
+  ): Promise<DailyReportResponse> {
     if (isDevelopment && !useRealAPI) {
       // TODO: モックAPIに日報更新メソッドを追加
       throw new Error("モック日報更新機能は未実装です");

@@ -26,10 +26,7 @@ const HomeComponent = () => {
 
   // 開発モードかどうかの判定（メモ化）
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);
-  const useRealAPI = useMemo(
-    () => import.meta.env.VITE_USE_REAL_API === "true",
-    [],
-  );
+  const useRealAPI = useMemo(() => import.meta.env.VITE_USE_REAL_API === "true", []);
 
   // 上長・管理者かどうかの判定（メモ化）
   const canAccessSupervisorDashboard = useMemo(
@@ -58,14 +55,10 @@ const HomeComponent = () => {
           </Heading>
           {/* 開発モード表示 */}
           {isDevelopment && !useRealAPI && (
-            <StatusBadge status="dev-mock">
-              {MessageConst.DEV.MOCK_API_MODE}
-            </StatusBadge>
+            <StatusBadge status="dev-mock">{MessageConst.DEV.MOCK_API_MODE}</StatusBadge>
           )}
           {isDevelopment && useRealAPI && (
-            <StatusBadge status="dev-api">
-              {MessageConst.DEV.REAL_API_MODE}
-            </StatusBadge>
+            <StatusBadge status="dev-api">{MessageConst.DEV.REAL_API_MODE}</StatusBadge>
           )}
         </HStack>
 
@@ -81,9 +74,7 @@ const HomeComponent = () => {
             <VStack align="start" gap={2}>
               <HStack>
                 <Text fontSize="lg" fontWeight="semibold" color="gray.700">
-                  {MessageConst.AUTH.LOGIN_SUCCESS_DESCRIPTION(
-                    user.displayName || user.username,
-                  )}
+                  {MessageConst.AUTH.LOGIN_SUCCESS_DESCRIPTION(user.displayName || user.username)}
                 </Text>
                 <Badge colorScheme="blue" variant="solid">
                   {user.role}
