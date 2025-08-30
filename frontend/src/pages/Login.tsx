@@ -68,10 +68,10 @@ const LoginComponent = () => {
         <Card.Root maxW="400px" w="full" shadow="lg">
           <Card.Body p={8}>
             <VStack gap={6}>
-              <Heading size="lg" textAlign="center" color="gray.800">
+              <Heading size="lg" textAlign="center" color="gray.50">
                 {MessageConst.APP.TITLE}
               </Heading>
-              <Heading size="md" textAlign="center" color="gray.600">
+              <Heading size="md" textAlign="center" color="gray.50">
                 {MessageConst.ACTION.LOGIN}
               </Heading>
 
@@ -112,11 +112,6 @@ const LoginComponent = () => {
                     {MessageConst.ACTION.LOGIN}
                   </Button>
                 </VStack>
-              </Box>
-
-              <Box textAlign="center" fontSize="sm" color="gray.600">
-                <Text>{MessageConst.DEV.TEST_ACCOUNT_INFO}</Text>
-                <Text>{MessageConst.DEV.TEST_CREDENTIALS}</Text>
               </Box>
             </VStack>
           </Card.Body>
