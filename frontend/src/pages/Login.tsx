@@ -1,4 +1,4 @@
-import { Box, VStack, Heading, Card, Text } from "@chakra-ui/react";
+import { Box, VStack, Heading, Card } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
