@@ -18,11 +18,9 @@ export const MessageConst = {
   // ===== 認証関連 =====
   AUTH: {
     LOGIN_SUCCESS_TITLE: "ログイン成功",
-    LOGIN_SUCCESS_DESCRIPTION: (username: string) =>
-      `${username}さん、おかえりなさい`,
+    LOGIN_SUCCESS_DESCRIPTION: (username: string) => `${username}さん、おかえりなさい`,
     LOGIN_FAILED_TITLE: "ログイン失敗",
-    LOGIN_FAILED_INVALID_CREDENTIALS:
-      "ユーザー名またはパスワードが正しくありません",
+    LOGIN_FAILED_INVALID_CREDENTIALS: "ユーザー名またはパスワードが正しくありません",
     LOGIN_FAILED_NETWORK_ERROR: "ネットワークエラーが発生しました",
     LOGOUT_SUCCESS: "ログアウトしました",
     TOKEN_EXPIRED: "セッションが期限切れです。再度ログインしてください",
@@ -35,10 +33,8 @@ export const MessageConst = {
     REQUIRED_PASSWORD: "パスワードは必須です",
     REQUIRED_EMAIL: "メールアドレスは必須です",
     INVALID_EMAIL: "有効なメールアドレスを入力してください",
-    PASSWORD_MIN_LENGTH: (min: number) =>
-      `パスワードは${min}文字以上で入力してください`,
-    USERNAME_MIN_LENGTH: (min: number) =>
-      `ユーザー名は${min}文字以上で入力してください`,
+    PASSWORD_MIN_LENGTH: (min: number) => `パスワードは${min}文字以上で入力してください`,
+    USERNAME_MIN_LENGTH: (min: number) => `ユーザー名は${min}文字以上で入力してください`,
   },
 
   // ===== システム関連 =====
@@ -69,8 +65,7 @@ export const MessageConst = {
     TEST_ACCOUNT_INFO: "テストアカウント:",
     TEST_CREDENTIALS: "ユーザー名: admin, パスワード: password",
     MOCK_API_DESCRIPTION: "モックAPIを使用しています。",
-    REAL_API_SWITCH_INSTRUCTION:
-      "実際のAPIを使用する場合は npm run dev:api で起動してください。",
+    REAL_API_SWITCH_INSTRUCTION: "実際のAPIを使用する場合は npm run dev:api で起動してください。",
   },
 
   // ===== ダッシュボード関連 =====
@@ -146,10 +141,8 @@ export const MessageConst = {
 
     // バリデーション
     WORK_CONTENT_REQUIRED: "作業内容は必須です",
-    WORK_CONTENT_MIN_LENGTH: (min: number) =>
-      `作業内容は${min}文字以上で入力してください`,
-    WORK_CONTENT_MAX_LENGTH: (max: number) =>
-      `作業内容は${max}文字以内で入力してください`,
+    WORK_CONTENT_MIN_LENGTH: (min: number) => `作業内容は${min}文字以上で入力してください`,
+    WORK_CONTENT_MAX_LENGTH: (max: number) => `作業内容は${max}文字以内で入力してください`,
 
     // アクション
     SUBMIT_REPORT: "日報を提出",

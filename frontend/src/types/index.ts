@@ -79,8 +79,4 @@ export type {
 } from "./forms";
 
 // フォーム型ガード
-export {
-  isLoginFormData,
-  isDailyReportFormData,
-  isFormSubmissionState,
-} from "./forms";
+export { isLoginFormData, isDailyReportFormData, isFormSubmissionState } from "./forms";

@@ -11,10 +11,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen } from "@/test/utils";
+import { render, screen, setupCommonMocks, clearCommonMocks } from "@/test/utils";
 import userEvent from "@testing-library/user-event";
 import { Login } from "../Login";
-import { setupCommonMocks, clearCommonMocks } from "@/test/utils";
 
 // 共通モック設定
 const { localStorage: mockLocalStorage } = setupCommonMocks();
@@ -74,14 +73,10 @@ describe("Login", () => {
     render(<Login />);
 
     expect(screen.getByText("日報管理システム")).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "ログイン" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "ログイン" })).toBeInTheDocument();
     expect(screen.getByLabelText("ユーザー名")).toBeInTheDocument();
     expect(screen.getByLabelText("パスワード")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "ログイン" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "ログイン" })).toBeInTheDocument();
     expect(screen.getByText("テストアカウント:")).toBeInTheDocument();
   });
 
@@ -205,7 +200,7 @@ describe("Login", () => {
     const user = userEvent.setup();
 
     // ログイン処理を遅延させる
-    let resolveLogin: (value: any) => void;
+    let resolveLogin: (value: any) => void = () => {};
     const loginPromise = new Promise((resolve) => {
       resolveLogin = resolve;
     });
@@ -236,7 +231,7 @@ describe("Login", () => {
     expect(mockApiService.login.mock.calls.length).toBe(callCount);
 
     // テストクリーンアップのためにプロミスを解決
-    resolveLogin!({
+    resolveLogin({
       token: "token",
       id: "1",
       username: "admin",

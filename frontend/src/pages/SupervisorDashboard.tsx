@@ -1,13 +1,5 @@
-import {
-  Box,
-  Heading,
-  VStack,
-  HStack,
-  Text,
-  SimpleGrid,
-} from "@chakra-ui/react";
+import { Box, Heading, VStack, HStack, Text, SimpleGrid } from "@chakra-ui/react";
 import { useCallback, useMemo, memo } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button, HomeButton } from "../components/atoms";
 import { StatusBadge, ReportCard } from "../components/molecules";
 import { useAuth, useErrorHandler } from "../hooks";
@@ -97,14 +89,10 @@ const mockReports: MockReport[] = [
 const SupervisorDashboardComponent = () => {
   const { user } = useAuth();
   const { handleError, showInfo } = useErrorHandler();
-  const navigate = useNavigate();
 
   // 開発モード表示判定（メモ化）
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);
-  const useRealAPI = useMemo(
-    () => import.meta.env.VITE_USE_REAL_API === "true",
-    [],
-  );
+  const useRealAPI = useMemo(() => import.meta.env.VITE_USE_REAL_API === "true", []);
 
   const handleReportClick = useCallback(
     async (reportId: string) => {
@@ -132,7 +120,6 @@ const SupervisorDashboardComponent = () => {
     [handleError, showInfo],
   );
 
-
   return (
     <Box w="100vw" minH="100vh" bg="#F9FAFB">
       <Box maxW="7xl" mx="auto" px={{ base: 4, md: 8 }} py={8}>
@@ -147,23 +134,17 @@ const SupervisorDashboardComponent = () => {
                   </Heading>
                   {/* 開発モード表示 */}
                   {isDevelopment && !useRealAPI && (
-                    <StatusBadge status="dev-mock">
-                      {MessageConst.DEV.MOCK_API_MODE}
-                    </StatusBadge>
+                    <StatusBadge status="dev-mock">{MessageConst.DEV.MOCK_API_MODE}</StatusBadge>
                   )}
                   {isDevelopment && useRealAPI && (
-                    <StatusBadge status="dev-api">
-                      {MessageConst.DEV.REAL_API_MODE}
-                    </StatusBadge>
+                    <StatusBadge status="dev-api">{MessageConst.DEV.REAL_API_MODE}</StatusBadge>
                   )}
                 </HStack>
                 <HomeButton />
               </HStack>
               {user && (
                 <Text color="gray.700" fontSize="lg" fontWeight="medium">
-                  {MessageConst.DASHBOARD.SUPERVISOR_GREETING(
-                    user.displayName || user.username,
-                  )}
+                  {MessageConst.DASHBOARD.SUPERVISOR_GREETING(user.displayName || user.username)}
                 </Text>
               )}
             </VStack>
@@ -174,16 +155,10 @@ const SupervisorDashboardComponent = () => {
             <Button variant="primary" onClick={() => handleFilterClick("all")}>
               {MessageConst.DASHBOARD.FILTER_ALL}
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() => handleFilterClick("completed")}
-            >
+            <Button variant="secondary" onClick={() => handleFilterClick("completed")}>
               {MessageConst.DASHBOARD.FILTER_COMPLETED}
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() => handleFilterClick("pending")}
-            >
+            <Button variant="secondary" onClick={() => handleFilterClick("pending")}>
               {MessageConst.DASHBOARD.FILTER_PENDING}
             </Button>
           </HStack>

@@ -112,9 +112,7 @@ export type AsyncClickHandler = () => Promise<void>;
 /**
  * 非同期パラメータ付きクリックハンドラー
  */
-export type AsyncClickHandlerWithParam<T = string> = (
-  param: T,
-) => Promise<void>;
+export type AsyncClickHandlerWithParam<T = string> = (param: T) => Promise<void>;
 
 /**
  * Reactイベントハンドラー（型安全性向上）
@@ -124,16 +122,12 @@ export type EventHandler<T = React.SyntheticEvent> = (event: T) => void;
 /**
  * フォーム送信ハンドラー
  */
-export type FormSubmitHandler = (
-  event: React.FormEvent<HTMLFormElement>,
-) => void;
+export type FormSubmitHandler = (event: React.FormEvent<HTMLFormElement>) => void;
 
 /**
  * 入力変更ハンドラー
  */
-export type InputChangeHandler = (
-  event: React.ChangeEvent<HTMLInputElement>,
-) => void;
+export type InputChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => void;
 
 /**
  * キーボードイベントハンドラー

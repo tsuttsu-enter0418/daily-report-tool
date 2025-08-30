@@ -1,12 +1,4 @@
-import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Heading,
-  Card,
-  Alert,
-} from "@chakra-ui/react";
+import { Box, VStack, HStack, Text, Heading, Card, Alert } from "@chakra-ui/react";
 import { MdCheck, MdEdit } from "react-icons/md";
 import { useCallback, memo } from "react";
 import { Button } from "../atoms";
@@ -61,8 +53,7 @@ const getStatusChangeDescription = (
   if (currentStatus === "draft" && newStatus === "submitted") {
     return {
       title: "日報を提出しますか？",
-      description:
-        "下書きから提出済み状態に変更します。提出後も編集や取り下げは可能です。",
+      description: "下書きから提出済み状態に変更します。提出後も編集や取り下げは可能です。",
       icon: <MdCheck />,
     };
   }
@@ -70,8 +61,7 @@ const getStatusChangeDescription = (
   if (currentStatus === "submitted" && newStatus === "draft") {
     return {
       title: "日報を取り下げますか？",
-      description:
-        "提出済みから下書き状態に戻します。再度提出するまで上司には表示されません。",
+      description: "提出済みから下書き状態に戻します。再度提出するまで上司には表示されません。",
       icon: <MdEdit />,
     };
   }
@@ -79,7 +69,7 @@ const getStatusChangeDescription = (
   return {
     title: "ステータスを変更しますか？",
     description: "日報の状態を変更します。",
-    icon: <EditIcon />,
+    icon: <MdEdit />,
   };
 };
 
@@ -125,10 +115,7 @@ const StatusChangeDialogComponent = ({
   }, [onClose, isChanging]);
 
   // ステータス変更の説明を取得
-  const { title, description, icon } = getStatusChangeDescription(
-    currentStatus,
-    newStatus,
-  );
+  const { title, description, icon } = getStatusChangeDescription(currentStatus, newStatus);
 
   if (!isOpen) return null;
 
@@ -179,13 +166,7 @@ const StatusChangeDialogComponent = ({
             </HStack>
 
             {/* 対象日報の情報 */}
-            <Box
-              p={4}
-              bg="gray.50"
-              borderRadius="md"
-              border="1px"
-              borderColor="gray.200"
-            >
+            <Box p={4} bg="gray.50" borderRadius="md" border="1px" borderColor="gray.200">
               <VStack align="start" gap={3}>
                 <Text fontWeight="semibold" color="gray.800">
                   対象日報:
@@ -213,9 +194,7 @@ const StatusChangeDialogComponent = ({
                     <Text fontSize="sm" color="gray.600">
                       変更後
                     </Text>
-                    <StatusBadge status={newStatus}>
-                      {getStatusDisplayName(newStatus)}
-                    </StatusBadge>
+                    <StatusBadge status={newStatus}>{getStatusDisplayName(newStatus)}</StatusBadge>
                   </VStack>
                 </HStack>
               </VStack>
@@ -241,11 +220,7 @@ const StatusChangeDialogComponent = ({
 
             {/* アクションボタン */}
             <HStack gap={3} justify="flex-end">
-              <Button
-                variant="secondary"
-                onClick={handleCancel}
-                disabled={isChanging}
-              >
+              <Button variant="secondary" onClick={handleCancel} disabled={isChanging}>
                 キャンセル
               </Button>
               <Button
@@ -253,7 +228,6 @@ const StatusChangeDialogComponent = ({
                 onClick={handleConfirm}
                 loading={isChanging}
                 loadingText="変更中..."
-                leftIcon={!isChanging ? icon : undefined}
               >
                 {newStatus === "submitted" ? "提出する" : "下書きに戻す"}
               </Button>

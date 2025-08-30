@@ -12,9 +12,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { renderHook, act, waitFor } from "@testing-library/react";
-import { useLogin } from "../useLogin";
-import type { LoginFormData } from "../useLogin";
+import { renderHook, act } from "@testing-library/react";
+import { useLogin, type LoginFormData } from "../useLogin";
 
 // Mock dependencies
 vi.mock("react-router-dom", () => ({
@@ -39,9 +38,7 @@ vi.mock("../../services/apiService", () => ({
 vi.mock("../../constants/MessageConst", () => ({
   MessageConst: {
     AUTH: {
-      LOGIN_SUCCESS_DESCRIPTION: vi.fn(
-        (username: string) => `${username}さん、ようこそ！`,
-      ),
+      LOGIN_SUCCESS_DESCRIPTION: vi.fn((username: string) => `${username}さん、ようこそ！`),
     },
   },
 }));
@@ -52,7 +49,6 @@ vi.mock("../../stores", () => ({
 
 describe("useLogin", () => {
   let mockNavigate: ReturnType<typeof vi.fn>;
-  let mockSetAtom: ReturnType<typeof vi.fn>;
   let mockLogin: ReturnType<typeof vi.fn>;
   let mockHandleError: ReturnType<typeof vi.fn>;
   let mockShowSuccess: ReturnType<typeof vi.fn>;
@@ -81,7 +77,6 @@ describe("useLogin", () => {
 
     // Setup mocks
     mockNavigate = vi.fn();
-    mockSetAtom = vi.fn();
     mockLogin = vi.fn();
     mockHandleError = vi.fn();
     mockShowSuccess = vi.fn();
@@ -124,7 +119,6 @@ describe("useLogin", () => {
     it("returns stable reference for login function", () => {
       // Act: Create hook and get initial reference
       const { result, rerender } = renderHook(() => useLogin());
-      const initialLogin = result.current.login;
 
       // Act: Rerender the hook
       rerender();
@@ -267,10 +261,7 @@ describe("useLogin", () => {
       });
 
       // Assert: Error was handled
-      expect(mockHandleError).toHaveBeenCalledWith(
-        networkError,
-        "ログイン処理",
-      );
+      expect(mockHandleError).toHaveBeenCalledWith(networkError, "ログイン処理");
 
       // Assert: Loading state was reset
       expect(result.current.isLoading).toBe(false);
@@ -392,7 +383,7 @@ describe("useLogin", () => {
 
       // Complete promise after unmount
       act(() => {
-        resolvePromise!(sampleLoginResponse);
+        resolvePromise(sampleLoginResponse);
       });
 
       // Assert: No errors should occur

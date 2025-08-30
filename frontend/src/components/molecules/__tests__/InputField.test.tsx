@@ -17,53 +17,36 @@ import { InputField } from "../InputField";
 describe("InputField", () => {
   it("ラベルとプレースホルダーが正しく表示される", () => {
     renderWithoutRouter(
-      <InputField
-        label="ユーザー名"
-        placeholder="ユーザー名を入力してください"
-      />,
+      <InputField label="ユーザー名" placeholder="ユーザー名を入力してください" />,
     );
 
     expect(screen.getByText("ユーザー名")).toBeInTheDocument();
-    expect(
-      screen.getByPlaceholderText("ユーザー名を入力してください"),
-    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("ユーザー名を入力してください")).toBeInTheDocument();
   });
 
   it("エラーメッセージが表示される", () => {
     renderWithoutRouter(
-      <InputField
-        label="パスワード"
-        error="パスワードは必須です"
-        isInvalid={true}
-      />,
+      <InputField label="パスワード" error="パスワードは必須です" isInvalid={true} />,
     );
 
     expect(screen.getByText("パスワードは必須です")).toBeInTheDocument();
   });
 
   it("エラーがない場合はエラーメッセージが表示されない", () => {
-    renderWithoutRouter(
-      <InputField label="メールアドレス" placeholder="email@example.com" />,
-    );
+    renderWithoutRouter(<InputField label="メールアドレス" placeholder="email@example.com" />);
 
     expect(screen.queryByText(/エラー/)).not.toBeInTheDocument();
   });
 
   it("異なるinputタイプが正しく設定される", () => {
     const { rerender } = renderWithoutRouter(
-      <InputField
-        label="パスワード"
-        type="password"
-        data-testid="password-input"
-      />,
+      <InputField label="パスワード" type="password" data-testid="password-input" />,
     );
 
     const passwordInput = screen.getByTestId("password-input");
     expect(passwordInput).toHaveAttribute("type", "password");
 
-    rerender(
-      <InputField label="メール" type="email" data-testid="email-input" />,
-    );
+    rerender(<InputField label="メール" type="email" data-testid="email-input" />);
 
     const emailInput = screen.getByTestId("email-input");
     expect(emailInput).toHaveAttribute("type", "email");
@@ -74,11 +57,7 @@ describe("InputField", () => {
     const mockOnChange = vi.fn();
 
     renderWithoutRouter(
-      <InputField
-        label="テスト入力"
-        onChange={mockOnChange}
-        data-testid="test-input"
-      />,
+      <InputField label="テスト入力" onChange={mockOnChange} data-testid="test-input" />,
     );
 
     const input = screen.getByTestId("test-input");
@@ -90,27 +69,16 @@ describe("InputField", () => {
 
   it("無効状態のスタイルが適用される", () => {
     renderWithoutRouter(
-      <InputField
-        label="無効な入力"
-        isInvalid={true}
-        data-testid="invalid-input"
-      />,
+      <InputField label="無効な入力" isInvalid={true} data-testid="invalid-input" />,
     );
 
-    const fieldRoot = screen
-      .getByTestId("invalid-input")
-      .closest("[data-invalid]");
+    const fieldRoot = screen.getByTestId("invalid-input").closest("[data-invalid]");
     expect(fieldRoot).toBeInTheDocument();
   });
 
   it("追加のpropsが正しく渡される", () => {
     renderWithoutRouter(
-      <InputField
-        label="カスタム入力"
-        maxLength={10}
-        disabled={true}
-        data-testid="custom-input"
-      />,
+      <InputField label="カスタム入力" maxLength={10} disabled={true} data-testid="custom-input" />,
     );
 
     const input = screen.getByTestId("custom-input");
@@ -139,10 +107,7 @@ describe("InputField", () => {
 
   it("ラベルとinputが正しく関連付けられている", () => {
     renderWithoutRouter(
-      <InputField
-        label="アクセシビリティテスト"
-        data-testid="accessibility-input"
-      />,
+      <InputField label="アクセシビリティテスト" data-testid="accessibility-input" />,
     );
 
     const input = screen.getByTestId("accessibility-input");

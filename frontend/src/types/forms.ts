@@ -34,14 +34,7 @@ export type FormFieldConfig<T = string> = {
   /** 初期値 */
   readonly defaultValue?: T;
   /** 入力タイプ */
-  readonly type?:
-    | "text"
-    | "password"
-    | "email"
-    | "number"
-    | "tel"
-    | "url"
-    | "search";
+  readonly type?: "text" | "password" | "email" | "number" | "tel" | "url" | "search";
 };
 
 /**
@@ -179,9 +172,7 @@ export const isLoginFormData = (obj: unknown): obj is LoginFormData => {
 /**
  * 型ガード：日報フォームデータの検証
  */
-export const isDailyReportFormData = (
-  obj: unknown,
-): obj is DailyReportFormData => {
+export const isDailyReportFormData = (obj: unknown): obj is DailyReportFormData => {
   return (
     typeof obj === "object" &&
     obj !== null &&
@@ -198,9 +189,7 @@ export const isDailyReportFormData = (
 /**
  * 型ガード：フォーム送信状態の検証
  */
-export const isFormSubmissionState = (
-  obj: unknown,
-): obj is FormSubmissionState => {
+export const isFormSubmissionState = (obj: unknown): obj is FormSubmissionState => {
   return (
     typeof obj === "object" &&
     obj !== null &&

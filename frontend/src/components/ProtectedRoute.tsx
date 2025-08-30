@@ -97,12 +97,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         height="100vh"
         gap={4}
       >
-        <Spinner
-          size="lg"
-          data-testid="spinner"
-          role="status"
-          aria-label="読み込み中"
-        />
+        <Spinner size="lg" data-testid="spinner" role="status" aria-label="読み込み中" />
         <Text>認証確認中...</Text>
       </Box>
     );

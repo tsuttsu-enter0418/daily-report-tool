@@ -12,7 +12,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { setupCommonMocks, clearCommonMocks } from "@/test/utils";
 
 // 共通モック設定
-const { fetch: mockFetch, localStorage: localStorageMock } = setupCommonMocks();
+setupCommonMocks();
 
 // 環境変数を実API使用に設定
 vi.stubGlobal("import.meta", {
@@ -72,16 +72,13 @@ describe("実API テスト", () => {
         role: "管理者",
       });
 
-      expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:8080/api/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(loginData),
+      expect(fetch).toHaveBeenCalledWith("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(loginData),
+      });
     });
 
     it("ログインが失敗する", async () => {
@@ -104,16 +101,13 @@ describe("実API テスト", () => {
         "認証に失敗しました。ログイン情報を確認してください。",
       );
 
-      expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:8080/api/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(loginData),
+      expect(fetch).toHaveBeenCalledWith("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(loginData),
+      });
     });
 
     it("ネットワークエラーでログインが失敗する", async () => {
@@ -145,16 +139,13 @@ describe("実API テスト", () => {
       const isValid = await realApi.validateToken(token);
 
       expect(isValid).toBe(true);
-      expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:8080/api/auth/validate",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+      expect(fetch).toHaveBeenCalledWith("http://localhost:8080/api/auth/validate", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
     });
 
     it("トークン検証が失敗する", async () => {
@@ -170,16 +161,13 @@ describe("実API テスト", () => {
       const isValid = await realApi.validateToken(token);
 
       expect(isValid).toBe(false);
-      expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:8080/api/auth/validate",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+      expect(fetch).toHaveBeenCalledWith("http://localhost:8080/api/auth/validate", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
     });
 
     it("ネットワークエラー時にfalseを返す", async () => {
@@ -280,16 +268,13 @@ describe("実API テスト", () => {
       const result = await realApi.createDailyReport(reportData);
 
       expect(result).toEqual(mockResponseData);
-      expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:8080/api/daily-reports",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(reportData),
+      expect(fetch).toHaveBeenCalledWith("http://localhost:8080/api/daily-reports", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(reportData),
+      });
     });
 
     it("日報取得が成功する", async () => {
@@ -317,15 +302,12 @@ describe("実API テスト", () => {
       const result = await realApi.getDailyReport(reportId);
 
       expect(result).toEqual(mockResponseData);
-      expect(fetch).toHaveBeenCalledWith(
-        `http://localhost:8080/api/daily-reports/${reportId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
+      expect(fetch).toHaveBeenCalledWith(`http://localhost:8080/api/daily-reports/${reportId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+      });
     });
 
     it("日報一覧取得が成功する", async () => {
@@ -394,15 +376,12 @@ describe("実API テスト", () => {
       const { realApi } = await import("../apiService");
       await realApi.deleteDailyReport(reportId);
 
-      expect(fetch).toHaveBeenCalledWith(
-        `http://localhost:8080/api/daily-reports/${reportId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
+      expect(fetch).toHaveBeenCalledWith(`http://localhost:8080/api/daily-reports/${reportId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+      });
     });
   });
 });

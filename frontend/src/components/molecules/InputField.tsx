@@ -49,17 +49,11 @@ const InputFieldComponent = forwardRef<HTMLInputElement, InputFieldProps>(
     ref,
   ) => {
     const errorId = useId();
-    const isErrorState = useMemo(
-      () => isInvalid || !!error,
-      [isInvalid, error],
-    );
+    const isErrorState = useMemo(() => isInvalid || !!error, [isInvalid, error]);
 
     // エラーがある場合のaria-describedby設定
     const describedBy = useMemo(
-      () =>
-        isErrorState
-          ? [ariaDescribedby, errorId].filter(Boolean).join(" ")
-          : ariaDescribedby,
+      () => (isErrorState ? [ariaDescribedby, errorId].filter(Boolean).join(" ") : ariaDescribedby),
       [isErrorState, ariaDescribedby, errorId],
     );
 
@@ -68,10 +62,7 @@ const InputFieldComponent = forwardRef<HTMLInputElement, InputFieldProps>(
         <Field.Label>
           {label}
           {required && (
-            <span
-              aria-label="必須項目"
-              style={{ color: "red", marginLeft: "4px" }}
-            >
+            <span aria-label="必須項目" style={{ color: "red", marginLeft: "4px" }}>
               *
             </span>
           )}

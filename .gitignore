@@ -1,1 +1,52 @@
+# IDE設定ファイル
+.vscode/
+.idea/
+*.iml
+
+# Java/Maven関連
+backend/target/
+**/*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+
+# Node.js/Frontend関連
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ログファイル
+*.log
+logs/
+
+# 環境設定ファイル
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OS生成ファイル
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 一時ファイル
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# 個別ファイル除外
 frontend/部品手配システムマイグレーション.md

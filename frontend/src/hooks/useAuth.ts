@@ -1,11 +1,6 @@
 import { useAtomValue, useSetAtom } from "jotai";
 import { useNavigate } from "react-router-dom";
-import {
-  userAtom,
-  isAuthenticatedAtom,
-  tokenAtom,
-  logoutAtom,
-} from "../stores";
+import { userAtom, isAuthenticatedAtom, tokenAtom, logoutAtom } from "../stores";
 import { apiService } from "../services/apiService";
 import { Toast } from "../components/atoms";
 import { MessageConst } from "../constants/MessageConst";
