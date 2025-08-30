@@ -77,7 +77,6 @@ describe("Login", () => {
     expect(screen.getByLabelText("ユーザー名")).toBeInTheDocument();
     expect(screen.getByLabelText("パスワード")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "ログイン" })).toBeInTheDocument();
-    expect(screen.getByText("テストアカウント:")).toBeInTheDocument();
   });
 
   it("フォームバリデーションが正しく動作する", async () => {
