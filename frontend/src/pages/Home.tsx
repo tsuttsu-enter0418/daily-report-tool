@@ -1,9 +1,10 @@
-import { Box, Heading, Text, VStack } from "@chakra-ui/react";
+import { Box, Heading, Text, VStack, HStack } from "@chakra-ui/react";
 import { useMemo, memo } from "react";
 import { UserInfoSection, DevModeSection, ActionSection } from "../components/organisms";
 import { useAuth } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 import { LogoutButton } from "@/components/molecules/LogoutButton";
+import { DailyReportForm } from "./DailyReportForm";
 
 /**
  * ホームページコンポーネント (Organism)
@@ -26,22 +27,33 @@ const HomeComponent = () => {
   const useRealAPI = useMemo(() => import.meta.env.VITE_USE_REAL_API === "true", []);
 
   return (
-    <Box p={8} minH="100vh" bg="#F9FAFB">
-      <VStack gap={6} align="start">
-        <Heading size="lg" color="gray.800">
-          {MessageConst.APP.TITLE}
-        </Heading>
+    <Box w="100vw" minH="100vh" bg="#F9FAFB">
+      <HStack h="100vh" align="stretch" gap={0}>
+        {/* 左側ペイン */}
+        <Box w="20%" p={6} overflowY="auto" bg="#F9FAFB">
+          <VStack gap={4} align="start">
+            <Heading size="md" color="gray.800">
+              {MessageConst.APP.TITLE}
+            </Heading>
 
-        {/* 開発モード情報表示 */}
-        <DevModeSection isDevelopment={isDevelopment} useRealAPI={useRealAPI} />
+            {/* 開発モード情報表示 */}
+            <DevModeSection isDevelopment={isDevelopment} useRealAPI={useRealAPI} />
 
-        {/* ユーザー情報表示 */}
-        {user && <UserInfoSection user={user} />}
+            {/* ユーザー情報表示 */}
+            {user && <UserInfoSection user={user} />}
 
-        {/* 役職別アクション */}
-        {user && <ActionSection user={user} />}
-        <LogoutButton logout={logout} />
-      </VStack>
+            {/* 役職別アクション */}
+            {user && <ActionSection user={user} />}
+
+            <LogoutButton logout={logout} />
+          </VStack>
+        </Box>
+
+        {/* 右側ペイン */}
+        <Box flex="1" borderLeft="1px" borderColor="gray.200" bg="white" overflowY="auto" h="100vh">
+          <DailyReportForm />
+        </Box>
+      </HStack>
     </Box>
   );
 };

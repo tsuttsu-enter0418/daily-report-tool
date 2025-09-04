@@ -47,19 +47,24 @@ const ActionSectionComponent = ({ user }: ActionSectionProps) => {
         <Text fontSize="md" fontWeight="semibold" color="gray.700">
           利用可能な機能
         </Text>
-        <HStack gap={3}>
+        <VStack gap={3} align="start">
           {canAccessSupervisorDashboard && (
-            <Button variant="primary" onClick={handleSupervisorDashboard}>
+            <Button
+              variant="secondary"
+              w="100%"
+              justifyContent="left"
+              onClick={handleSupervisorDashboard}
+            >
               {MessageConst.ACTION.VIEW_TEAM_REPORTS}
             </Button>
           )}
-          <Button variant="secondary" onClick={handleCreateReport}>
+          <Button variant="secondary" w="100%" justifyContent="left" onClick={handleCreateReport}>
             {MessageConst.ACTION.CREATE_REPORT}
           </Button>
-          <Button variant="secondary" onClick={handleViewHistory}>
+          <Button variant="secondary" w="100%" justifyContent="left" onClick={handleViewHistory}>
             {MessageConst.ACTION.VIEW_HISTORY}
           </Button>
-        </HStack>
+        </VStack>
       </VStack>
     </Box>
   );

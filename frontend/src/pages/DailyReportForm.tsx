@@ -277,15 +277,15 @@ const DailyReportFormComponent = ({
   }, [navigate]);
 
   return (
-    <Box w="100vw" minH="100vh" bg="#F9FAFB">
-      <Box maxW="4xl" mx="auto" px={{ base: 4, md: 8 }} py={8}>
+    <Box w="100%" minH="100%" bg="#F9FAFB">
+      <Box w="100%" px={{ base: 2, md: 3 }} py={4}>
         <VStack gap={8} align="stretch">
           {/* ヘッダー */}
           <Box w="full">
             <VStack align="start" gap={4}>
               <HStack justify="space-between" w="full">
                 <HStack wrap="wrap" gap={4}>
-                  <Heading size="xl" color="gray.800">
+                  <Heading size="lg" color="gray.800">
                     {isEditMode
                       ? MessageConst.REPORT.EDIT_FORM_TITLE
                       : MessageConst.REPORT.CREATE_FORM_TITLE}
@@ -356,7 +356,7 @@ const DailyReportFormComponent = ({
               border="1px"
               borderColor="gray.200"
             >
-              <Card.Body p={8}>
+              <Card.Body p={{ base: 3, md: 4 }}>
                 <form onSubmit={handleSubmit(onSubmit)}>
                   <VStack gap={6} align="stretch">
                     {/* タイトル入力 */}
@@ -485,8 +485,8 @@ const DailyReportFormComponent = ({
 
                     {/* アクションボタン */}
                     <Stack
-                      direction={{ base: "column", md: "row" }}
-                      gap={4}
+                      direction="column"
+                      gap={3}
                       justify="space-between"
                     >
                       <HStack gap={3}>
