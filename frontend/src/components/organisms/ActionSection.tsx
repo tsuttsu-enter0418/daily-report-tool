@@ -1,4 +1,4 @@
-import { Box, VStack, HStack, Text } from "@chakra-ui/react";
+import { Box, VStack, Text } from "@chakra-ui/react";
 import { memo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../atoms";

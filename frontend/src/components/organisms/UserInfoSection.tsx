@@ -9,12 +9,12 @@ type UserInfoSectionProps = {
 
 /**
  * ユーザー情報表示セクション (Organism)
- * 
+ *
  * 機能:
  * - ログインユーザーの基本情報表示
  * - 表示名・ロール・ID・Emailの可視化
  * - 緑色の情報ボックスでの統一デザイン
- * 
+ *
  * デザイン:
  * - 緑色のアクセントカラー（成功状態）
  * - 左ボーダーによる視覚的強調
@@ -22,13 +22,7 @@ type UserInfoSectionProps = {
  */
 const UserInfoSectionComponent = ({ user }: UserInfoSectionProps) => {
   return (
-    <Box
-      p={4}
-      bg="green.50"
-      borderRadius="md"
-      borderLeftWidth="4px"
-      borderLeftColor="green.400"
-    >
+    <Box p={4} bg="green.50" borderRadius="md" borderLeftWidth="4px" borderLeftColor="green.400">
       <VStack align="start" gap={2}>
         <HStack>
           <Text fontSize="lg" fontWeight="semibold" color="gray.700">

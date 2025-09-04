@@ -17,7 +17,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "../components/atoms";
-import { StatusBadge, DatePickerField } from "../components/molecules";
+import { DatePickerField, DevModeIndicator } from "../components/molecules";
 import { useDailyReports, useToast } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 import { useState, useCallback, useMemo, memo, useEffect } from "react";
@@ -147,11 +147,9 @@ const DailyReportFormComponent = ({
               reportDate: report.reportDate,
             });
           } else {
-            console.warn("📄 指定された日報が見つかりません:", reportId);
             navigate("/reports");
           }
-        } catch (error) {
-          console.error("❌ 既存日報データ読み込み失敗:", error);
+        } catch {
           navigate("/reports");
         } finally {
           setIsLoadingReport(false);
@@ -167,8 +165,6 @@ const DailyReportFormComponent = ({
     async (data: DailyReportFormData) => {
       setIsSubmitting(true);
       try {
-        console.log("📝 日報提出開始:", { ...data, reportId, isEditMode });
-
         const reportData: DailyReportCreateRequest = {
           title: data.title,
           workContent: data.workContent,
@@ -220,14 +216,11 @@ const DailyReportFormComponent = ({
 
     // 必須フィールドのチェック（下書きの場合は緩めに）
     if (!currentValues.title?.trim()) {
-      console.warn("タイトルが入力されていません");
       return;
     }
 
     setIsDraftSaving(true);
     try {
-      console.log("💾 下書き保存開始:", currentValues);
-
       const reportData: DailyReportCreateRequest = {
         title: currentValues.title,
         workContent: currentValues.workContent || "",
@@ -246,8 +239,6 @@ const DailyReportFormComponent = ({
       }
 
       if (result) {
-        console.log("✅ 下書き保存成功:", result.title);
-
         // 成功Toast表示
         toast.savedAsDraft("日報");
 
@@ -256,9 +247,7 @@ const DailyReportFormComponent = ({
           navigate(`/report/edit/${result.id}`, { replace: true });
         }
       }
-    } catch (error) {
-      console.error("❌ 下書き保存失敗:", error);
-
+    } catch {
       // エラーToast表示
       toast.updateError("日報", "下書き保存中にエラーが発生しました");
     } finally {
@@ -287,36 +276,16 @@ const DailyReportFormComponent = ({
                   </Heading>
 
                   {/* 開発モード表示 */}
-                  {isDevelopment && !useRealAPI && (
-                    <StatusBadge status="dev-mock">{MessageConst.DEV.MOCK_API_MODE}</StatusBadge>
-                  )}
-                  {isDevelopment && useRealAPI && (
-                    <StatusBadge status="dev-api">{MessageConst.DEV.REAL_API_MODE}</StatusBadge>
-                  )}
+                  <DevModeIndicator
+                    isDevelopment={isDevelopment}
+                    useRealAPI={useRealAPI}
+                    badgeMode="inline"
+                    showDescription={false}
+                  />
                 </HStack>
               </HStack>
             </VStack>
           </Box>
-
-          {/* 開発モード時の説明 */}
-          {isDevelopment && !useRealAPI && (
-            <Box
-              p={4}
-              bg="blue.50"
-              borderRadius="md"
-              borderLeftWidth="4px"
-              borderLeftColor="blue.400"
-            >
-              <VStack align="start" gap={1}>
-                <Text fontSize="sm" color="blue.700">
-                  <strong>{MessageConst.DEV.MOCK_API_DESCRIPTION}</strong>
-                </Text>
-                <Text fontSize="sm" color="blue.600">
-                  フォーム送信はモック処理されます。実際のデータ保存は行われません。
-                </Text>
-              </VStack>
-            </Box>
-          )}
 
           {/* ローディング表示（編集モード時のデータ読み込み） */}
           {isLoadingReport && (
