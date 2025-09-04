@@ -66,3 +66,30 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+/* DatePicker ChakraUI統一スタイル */
+.custom-datepicker {
+  width: 100%;
+  height: 40px;
+  padding: 8px 12px;
+  background-color: white;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  color: #1F2937;
+  font-size: 16px;
+  font-family: system-ui, sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.custom-datepicker:hover {
+  border-color: #9CA3AF;
+}
+
+.custom-datepicker:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 1px #3B82F6;
+  outline: none;
+}
+
+.custom-datepicker::placeholder {
+  color: #9CA3AF;
+}

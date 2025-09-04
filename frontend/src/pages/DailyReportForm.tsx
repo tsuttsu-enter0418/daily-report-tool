@@ -17,9 +17,9 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button, HomeButton } from "../components/atoms";
-import { StatusBadge } from "../components/molecules";
-import { useAuth, useDailyReports, useToast } from "../hooks";
+import { Button } from "../components/atoms";
+import { StatusBadge, DatePickerField } from "../components/molecules";
+import { useDailyReports, useToast } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 import { useState, useCallback, useMemo, memo, useEffect } from "react";
 import type { DailyReportCreateRequest, DailyReportResponse } from "../types";
@@ -80,7 +80,6 @@ const DailyReportFormComponent = ({
   isEditMode = false,
   initialData,
 }: Omit<DailyReportFormProps, "reportId">) => {
-  const { user } = useAuth();
   const { id: reportIdParam } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
@@ -118,6 +117,7 @@ const DailyReportFormComponent = ({
     formState: { errors, isValid },
     watch,
     reset,
+    setValue,
   } = useForm<DailyReportFormData>({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -138,7 +138,6 @@ const DailyReportFormComponent = ({
       if (isEditMode && reportId) {
         setIsLoadingReport(true);
         try {
-          console.log("📖 既存日報データ読み込み開始:", reportId);
           const report = await getReport(reportId);
 
           if (report) {
@@ -148,7 +147,6 @@ const DailyReportFormComponent = ({
               workContent: report.workContent,
               reportDate: report.reportDate,
             });
-            console.log("✅ 既存日報データ読み込み完了:", report.title);
           } else {
             console.warn("📄 指定された日報が見つかりません:", reportId);
             navigate("/reports");
@@ -190,8 +188,6 @@ const DailyReportFormComponent = ({
         }
 
         if (result) {
-          console.log("✅ 日報提出成功:", result.title);
-
           // 成功Toast表示
           if (isEditMode) {
             toast.updated("日報");
@@ -215,7 +211,7 @@ const DailyReportFormComponent = ({
         setIsSubmitting(false);
       }
     },
-    [reportId, isEditMode, updateReport, createReport, toast, navigate],
+    [reportId, isEditMode, updateReport, createReport, toast, handleEdit],
   );
 
   // 下書き保存処理（メモ化）
@@ -269,7 +265,7 @@ const DailyReportFormComponent = ({
     } finally {
       setIsDraftSaving(false);
     }
-  }, [watch, isEditMode, reportId, createReport, updateReport, navigate]);
+  }, [watch, isEditMode, reportId, createReport, updateReport, navigate, toast]);
 
   // 戻る処理（メモ化）
   const handleBack = useCallback(() => {
@@ -299,18 +295,7 @@ const DailyReportFormComponent = ({
                     <StatusBadge status="dev-api">{MessageConst.DEV.REAL_API_MODE}</StatusBadge>
                   )}
                 </HStack>
-                <HomeButton />
               </HStack>
-
-              {user && (
-                <Text color="gray.700" fontSize="lg">
-                  {user.displayName || user.username} さんの日報
-                </Text>
-              )}
-
-              <Text color="gray.700" fontSize="md">
-                {MessageConst.REPORT.FORM_DESCRIPTION}
-              </Text>
             </VStack>
           </Box>
 
@@ -394,37 +379,16 @@ const DailyReportFormComponent = ({
                     </Field.Root>
 
                     {/* 報告日入力 */}
-                    <Field.Root invalid={!!errors.reportDate}>
-                      <Field.Label fontSize="md" fontWeight="semibold" color="gray.800">
-                        報告日
-                        <Text as="span" color="red.500" ml={1}>
-                          *
-                        </Text>
-                      </Field.Label>
-                      <Input
-                        {...register("reportDate")}
-                        type="date"
-                        bg="white"
-                        borderRadius="md"
-                        borderColor="gray.300"
-                        color="gray.800"
-                        _hover={{
-                          borderColor: "gray.400",
-                        }}
-                        _focus={{
-                          borderColor: "blue.500",
-                          boxShadow: "0 0 0 1px #3B82F6",
-                        }}
-                      />
-                      {errors.reportDate && (
-                        <Field.ErrorText color="red.500" fontSize="sm">
-                          {errors.reportDate.message}
-                        </Field.ErrorText>
-                      )}
-                      <Field.HelperText color="gray.600" fontSize="sm">
-                        日報の対象日を選択してください
-                      </Field.HelperText>
-                    </Field.Root>
+                    <DatePickerField
+                      name="reportDate"
+                      label="報告日"
+                      isRequired
+                      register={register}
+                      setValue={setValue}
+                      errors={errors}
+                      helperText="日報の対象日を選択してください"
+                      defaultValue={watch("reportDate")}
+                    />
 
                     {/* 作業内容入力 */}
                     <Field.Root invalid={!!errors.workContent}>
@@ -469,27 +433,9 @@ const DailyReportFormComponent = ({
                         </Text>
                       </HStack>
                     </Field.Root>
-
-                    {/* 自動保存説明 */}
-                    <Box
-                      p={3}
-                      bg="blue.50"
-                      borderRadius="md"
-                      borderLeftWidth="4px"
-                      borderLeftColor="blue.400"
-                    >
-                      <Text fontSize="sm" color="blue.700">
-                        💡 {MessageConst.REPORT.DRAFT_AUTO_SAVE}
-                      </Text>
-                    </Box>
-
                     {/* アクションボタン */}
-                    <Stack
-                      direction="column"
-                      gap={3}
-                      justify="space-between"
-                    >
-                      <HStack gap={3}>
+                    <Stack direction="column" gap={3} justify="space-between">
+                      <HStack gap={3} justifyContent="flex-end">
                         <Button variant="secondary" onClick={handleBack}>
                           {MessageConst.ACTION.BACK}
                         </Button>
@@ -502,22 +448,21 @@ const DailyReportFormComponent = ({
                         >
                           {MessageConst.REPORT.SAVE_DRAFT}
                         </Button>
+                        <Button
+                          type="submit"
+                          variant="primary"
+                          loading={isSubmitting}
+                          loadingText={
+                            isEditMode ? MessageConst.SYSTEM.SAVING : MessageConst.SYSTEM.PROCESSING
+                          }
+                          disabled={!isValid}
+                          size="lg"
+                        >
+                          {isEditMode
+                            ? MessageConst.ACTION.UPDATE
+                            : MessageConst.REPORT.SUBMIT_REPORT}
+                        </Button>
                       </HStack>
-
-                      <Button
-                        type="submit"
-                        variant="primary"
-                        loading={isSubmitting}
-                        loadingText={
-                          isEditMode ? MessageConst.SYSTEM.SAVING : MessageConst.SYSTEM.PROCESSING
-                        }
-                        disabled={!isValid}
-                        size="lg"
-                      >
-                        {isEditMode
-                          ? MessageConst.ACTION.UPDATE
-                          : MessageConst.REPORT.SUBMIT_REPORT}
-                      </Button>
                     </Stack>
                   </VStack>
                 </form>
