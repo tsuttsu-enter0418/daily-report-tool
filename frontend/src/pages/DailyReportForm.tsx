@@ -8,7 +8,6 @@ import {
   Textarea,
   Card,
   Field,
-  Stack,
   Input,
   Spinner,
   Center,
@@ -434,8 +433,9 @@ const DailyReportFormComponent = ({
                       </HStack>
                     </Field.Root>
                     {/* アクションボタン */}
-                    <Stack direction="column" gap={3} justify="space-between">
-                      <HStack gap={3} justifyContent="flex-end">
+                    <HStack justify="space-between" w="full">
+                      {/* 左側：戻る・下書き保存ボタン */}
+                      <HStack gap={3}>
                         <Button variant="secondary" onClick={handleBack}>
                           {MessageConst.ACTION.BACK}
                         </Button>
@@ -448,22 +448,24 @@ const DailyReportFormComponent = ({
                         >
                           {MessageConst.REPORT.SAVE_DRAFT}
                         </Button>
-                        <Button
-                          type="submit"
-                          variant="primary"
-                          loading={isSubmitting}
-                          loadingText={
-                            isEditMode ? MessageConst.SYSTEM.SAVING : MessageConst.SYSTEM.PROCESSING
-                          }
-                          disabled={!isValid}
-                          size="lg"
-                        >
-                          {isEditMode
-                            ? MessageConst.ACTION.UPDATE
-                            : MessageConst.REPORT.SUBMIT_REPORT}
-                        </Button>
                       </HStack>
-                    </Stack>
+
+                      {/* 右側：送信ボタン */}
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        loading={isSubmitting}
+                        loadingText={
+                          isEditMode ? MessageConst.SYSTEM.SAVING : MessageConst.SYSTEM.PROCESSING
+                        }
+                        disabled={!isValid}
+                        size="lg"
+                      >
+                        {isEditMode
+                          ? MessageConst.ACTION.UPDATE
+                          : MessageConst.REPORT.SUBMIT_REPORT}
+                      </Button>
+                    </HStack>
                   </VStack>
                 </form>
               </Card.Body>
