@@ -18,7 +18,7 @@ export const MessageConst = {
   // ===== 認証関連 =====
   AUTH: {
     LOGIN_SUCCESS_TITLE: "ログイン成功",
-    LOGIN_SUCCESS_DESCRIPTION: (username: string) => `${username}さん、おかえりなさい`,
+    LOGIN_SUCCESS_DESCRIPTION: (username: string) => `${username}さん`,
     LOGIN_FAILED_TITLE: "ログイン失敗",
     LOGIN_FAILED_INVALID_CREDENTIALS: "ユーザー名またはパスワードが正しくありません",
     LOGIN_FAILED_NETWORK_ERROR: "ネットワークエラーが発生しました",
