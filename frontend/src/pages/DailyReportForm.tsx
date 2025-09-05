@@ -22,6 +22,7 @@ import { useDailyReports, useToast } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 import { useState, useCallback, useMemo, memo, useEffect } from "react";
 import type { DailyReportCreateRequest, DailyReportResponse } from "../types";
+import * as validations from "../utils/validations";
 
 /**
  * 日報作成・編集フォームページ (Organism)
@@ -59,19 +60,9 @@ type DailyReportFormProps = {
 
 // バリデーションスキーマ
 const validationSchema = yup.object({
-  title: yup
-    .string()
-    .required("タイトルは必須です")
-    .max(200, "タイトルは200文字以内で入力してください"),
-  workContent: yup
-    .string()
-    .required(MessageConst.REPORT.WORK_CONTENT_REQUIRED)
-    .min(10, MessageConst.REPORT.WORK_CONTENT_MIN_LENGTH(10))
-    .max(1000, MessageConst.REPORT.WORK_CONTENT_MAX_LENGTH(1000)),
-  reportDate: yup
-    .string()
-    .required("報告日は必須です")
-    .matches(/^\d{4}-\d{2}-\d{2}$/, "日付はYYYY-MM-DD形式で入力してください"),
+  title: validations.VALIDATION__FORM_TITLE,
+  workContent: validations.VALIDATION__FORM_WORK_CONTENT,
+  reportDate: validations.VALIDATION__FORM_REPORT_DATE,
 });
 
 // eslint-disable-next-line complexity
@@ -116,7 +107,7 @@ const DailyReportFormComponent = ({
     formState: { errors, isValid },
     watch,
     reset,
-    setValue,
+    control,
   } = useForm<DailyReportFormData>({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -351,11 +342,8 @@ const DailyReportFormComponent = ({
                       name="reportDate"
                       label="報告日"
                       isRequired
-                      register={register}
-                      setValue={setValue}
-                      errors={errors}
+                      control={control}
                       helperText="日報の対象日を選択してください"
-                      defaultValue={watch("reportDate")}
                     />
 
                     {/* 作業内容入力 */}
@@ -427,7 +415,6 @@ const DailyReportFormComponent = ({
                         loadingText={
                           isEditMode ? MessageConst.SYSTEM.SAVING : MessageConst.SYSTEM.PROCESSING
                         }
-                        disabled={!isValid}
                         size="lg"
                       >
                         {isEditMode

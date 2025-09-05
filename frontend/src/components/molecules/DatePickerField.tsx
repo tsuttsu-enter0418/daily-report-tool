@@ -1,23 +1,16 @@
 import { Text, Field } from "@chakra-ui/react";
+import { Controller } from "react-hook-form";
 import { DatePicker } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { useState, useCallback, useEffect } from "react";
-import type {
-  UseFormRegister,
-  UseFormSetValue,
-  FieldErrors,
-  FieldValues,
-  Path,
-} from "react-hook-form";
+import type { Control, FieldPath, FieldValues } from "react-hook-form";
 
 /**
  * DatePickerField (Molecule)
  *
  * 機能:
- * - React DatePickerとChakraUIのField構造を統合
- * - React Hook Formとの完全な統合
- * - バリデーション表示対応
- * - ChakraUI他コンポーネントと統一されたスタイリング
+ * - シンプルな日付選択フィールド
+ * - React Hook Form Controller統合
+ * - ChakraUI統一デザイン
  *
  * 使用例:
  * ```tsx
@@ -25,17 +18,14 @@ import type {
  *   name="reportDate"
  *   label="報告日"
  *   isRequired
- *   register={register}
- *   setValue={setValue}
- *   errors={errors}
- *   helperText="日報の対象日を選択してください"
+ *   control={control}
  * />
  * ```
  */
 
 type DatePickerFieldProps<T extends FieldValues = FieldValues> = {
-  /** フィールド名（React Hook Form用） */
-  name: Path<T>;
+  /** フィールド名 */
+  name: FieldPath<T>;
   /** ラベルテキスト */
   label: string;
   /** 必須フィールドかどうか */
@@ -44,18 +34,8 @@ type DatePickerFieldProps<T extends FieldValues = FieldValues> = {
   placeholder?: string;
   /** ヘルプテキスト */
   helperText?: string;
-  /** 日付フォーマット（デフォルト: "yyyy/MM/dd"） */
-  dateFormat?: string;
-  /** React Hook Form のregister関数 */
-  register: UseFormRegister<T>;
-  /** React Hook Form のsetValue関数 */
-  setValue: UseFormSetValue<T>;
-  /** React Hook Form のerrors */
-  errors: FieldErrors<T>;
-  /** 初期値（YYYY-MM-DD形式の文字列） */
-  defaultValue?: string;
-  /** DatePickerのその他のプロパティ */
-  [key: string]: any;
+  /** React Hook Form のcontrol */
+  control: Control<T>;
 };
 
 export const DatePickerField = <T extends FieldValues = FieldValues>({
@@ -64,76 +44,47 @@ export const DatePickerField = <T extends FieldValues = FieldValues>({
   isRequired = false,
   placeholder = "日付を選択してください",
   helperText,
-  dateFormat = "yyyy/MM/dd",
-  register,
-  setValue,
-  errors,
-  defaultValue,
-  ...datePickerProps
+  control,
 }: DatePickerFieldProps<T>) => {
-  // DatePicker用の日付状態管理
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
-  // エラーメッセージの取得
-  const error = errors[name];
-
-  // 初期値の設定
-  useEffect(() => {
-    if (defaultValue && !selectedDate) {
-      const date = new Date(defaultValue);
-      setSelectedDate(date);
-    }
-  }, [defaultValue, selectedDate]);
-
-  // DatePicker変更時の処理
-  const handleDateChange = useCallback(
-    (date: Date | null) => {
-      setSelectedDate(date);
-      if (date) {
-        // Date をYYYY-MM-DD形式の文字列に変換
-        const formattedDate = date.toISOString().split("T")[0];
-        setValue(name, formattedDate, { shouldValidate: true });
-      }
-    },
-    [name, setValue],
-  );
-
   return (
-    <Field.Root invalid={!!error}>
-      <Field.Label fontSize="md" fontWeight="semibold" color="gray.800">
-        {label}
-        {isRequired && (
-          <Text as="span" color="red.500" ml={1}>
-            *
-          </Text>
-        )}
-      </Field.Label>
+    <Controller
+      name={name}
+      control={control}
+      render={({ field: { onChange, value }, fieldState: { error } }) => (
+        <Field.Root invalid={!!error}>
+          <Field.Label fontSize="md" fontWeight="semibold" color="gray.800">
+            {label}
+            {isRequired && (
+              <Text as="span" color="red.500" ml={1}>
+                *
+              </Text>
+            )}
+          </Field.Label>
 
-      <DatePicker
-        dateFormat={dateFormat}
-        selected={selectedDate}
-        onChange={handleDateChange}
-        placeholderText={placeholder}
-        className="custom-datepicker"
-        {...datePickerProps}
-      />
+          <DatePicker
+            selected={value ? new Date(value) : null}
+            onChange={(date) => {
+              const formattedDate = date ? date.toISOString().split("T")[0] : "";
+              onChange(formattedDate);
+            }}
+            placeholderText={placeholder}
+            dateFormat="yyyy/MM/dd"
+            className="custom-datepicker"
+          />
 
-      {/* 隠しフィールド: React Hook Form用 */}
-      <input type="hidden" {...register(name)} />
+          {error && (
+            <Field.ErrorText color="red.500" fontSize="sm">
+              {error.message as string}
+            </Field.ErrorText>
+          )}
 
-      {/* エラーメッセージ */}
-      {error && (
-        <Field.ErrorText color="red.500" fontSize="sm">
-          {error.message as string}
-        </Field.ErrorText>
+          {helperText && (
+            <Field.HelperText color="gray.600" fontSize="sm">
+              {helperText}
+            </Field.HelperText>
+          )}
+        </Field.Root>
       )}
-
-      {/* ヘルプテキスト */}
-      {helperText && (
-        <Field.HelperText color="gray.600" fontSize="sm">
-          {helperText}
-        </Field.HelperText>
-      )}
-    </Field.Root>
+    />
   );
 };
