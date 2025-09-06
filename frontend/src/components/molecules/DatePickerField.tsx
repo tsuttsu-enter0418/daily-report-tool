@@ -52,10 +52,10 @@ export const DatePickerField = <T extends FieldValues = FieldValues>({
       control={control}
       render={({ field: { onChange, value }, fieldState: { error } }) => (
         <Field.Root invalid={!!error}>
-          <Field.Label fontSize="md" fontWeight="semibold" color="gray.800">
+          <Field.Label fontSize="md" fontWeight="semibold" color="gray.800" htmlFor="datepicker">
             {label}
             {isRequired && (
-              <Text as="span" color="red.500" ml={1}>
+              <Text as="span" color="red.500" ml={1} data-testid="required-datepicker">
                 *
               </Text>
             )}
@@ -70,6 +70,7 @@ export const DatePickerField = <T extends FieldValues = FieldValues>({
             placeholderText={placeholder}
             dateFormat="yyyy/MM/dd"
             className="custom-datepicker"
+            id="datepicker"
           />
 
           {error && (

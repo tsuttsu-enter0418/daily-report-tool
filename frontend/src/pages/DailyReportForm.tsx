@@ -390,13 +390,9 @@ const DailyReportFormComponent = ({
                       </HStack>
                     </Field.Root>
                     {/* アクションボタン */}
-                    <HStack justify="space-between" w="full">
+                    <HStack justify="end" w="full">
                       {/* 左側：戻る・下書き保存ボタン */}
                       <HStack gap={3}>
-                        <Button variant="secondary" onClick={handleBack}>
-                          {MessageConst.ACTION.BACK}
-                        </Button>
-
                         <Button
                           variant="secondary"
                           onClick={handleSaveDraft}
