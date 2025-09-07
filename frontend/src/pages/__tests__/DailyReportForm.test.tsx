@@ -1,4 +1,4 @@
-/* eslint-disable max-lines, max-nested-callbacks, @typescript-eslint/no-explicit-any */
+/* eslint-disable max-lines, max-nested-callbacks */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor, within, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";

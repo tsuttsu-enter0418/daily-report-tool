@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 import { Fragment } from "react";
 import { Box } from "@chakra-ui/react";
 import { StatusBadge } from "./StatusBadge";
