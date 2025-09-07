@@ -8,13 +8,13 @@ import type { DailyReportResponse } from "../../types";
 
 /**
  * 個人日報カードコンポーネント (Molecule)
- * 
+ *
  * 機能:
  * - 日報データの表示カード
  * - 日付フォーマット処理（共通ユーティリティ使用）
  * - ステータス表示・操作ボタン
  * - メモ化による再レンダリング最適化
- * 
+ *
  * 使用場面:
  * - 日報一覧画面での個別日報表示
  * - 検索結果の日報カード表示
@@ -115,9 +115,7 @@ const PersonalReportCardComponent = ({
           <VStack align="stretch" gap={1}>
             <HStack justify="space-between" fontSize="xs" color="gray.500">
               <Text>作成: {formattedDates.createdAt}</Text>
-              {formattedDates.submittedAt && (
-                <Text>提出: {formattedDates.submittedAt}</Text>
-              )}
+              {formattedDates.submittedAt && <Text>提出: {formattedDates.submittedAt}</Text>}
             </HStack>
           </VStack>
 
