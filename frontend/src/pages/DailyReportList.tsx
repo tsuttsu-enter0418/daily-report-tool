@@ -202,25 +202,8 @@ const DailyReportListComponent = () => {
                 </HStack>
                 <HomeButton />
               </HStack>
-
-              {user && (
-                <Text color="gray.700" fontSize="lg" fontWeight="medium">
-                  {user.displayName || user.username} さんの日報履歴
-                </Text>
-              )}
-
-              <Text color="gray.700" fontSize="md">
-                {MessageConst.REPORT.LIST_DESCRIPTION}
-              </Text>
             </VStack>
           </Box>
-
-          {/* 新規作成ボタン */}
-          <HStack justify="flex-end">
-            <Button variant="primary" onClick={handleCreateNew}>
-              {MessageConst.ACTION.CREATE_REPORT}
-            </Button>
-          </HStack>
 
           {/* 検索結果件数表示 */}
           {!isLoading && !error && (
@@ -235,6 +218,9 @@ const DailyReportListComponent = () => {
                   全 {reports.length} 件中
                 </Text>
               )}
+              <Button variant="primary" onClick={handleCreateNew}>
+                {MessageConst.ACTION.CREATE_REPORT}
+              </Button>
             </HStack>
           )}
 
