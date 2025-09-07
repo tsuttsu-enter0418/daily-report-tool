@@ -1,4 +1,4 @@
-import { Box, Heading, Text, VStack, HStack } from "@chakra-ui/react";
+import { Box, Heading, VStack, HStack } from "@chakra-ui/react";
 import { useMemo, memo } from "react";
 import { UserInfoSection, DevModeSection, ActionSection } from "../components/organisms";
 import { useAuth } from "../hooks";

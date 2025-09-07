@@ -7,6 +7,9 @@ import type { UserInfo } from "../../types";
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
+  BrowserRouter: ({ children }: { children: React.ReactNode }) => children,
+  Router: ({ children }: { children: React.ReactNode }) => children,
+  useParams: () => ({}),
 }));
 
 // useAuth フックのモック
@@ -16,9 +19,19 @@ vi.mock("../../hooks", () => ({
   useAuth: () => mockUseAuth(),
 }));
 
+const mockToast = vi.fn();
+const mockUseDailyReports = vi.fn();
+vi.mock("../../hooks", () => ({
+  useAuth: () => mockUseAuth(),
+  useToast: () => mockToast,
+}));
+vi.mock("../../pages/DailyReportForm", () => ({
+  DailyReportForm: () => mockUseDailyReports(),
+}));
+
 /**
  * Home ページコンポーネントの統合テスト
- * 
+ *
  * テスト対象:
  * - 分割されたコンポーネントの正しい統合
  * - ユーザー情報の表示統合
@@ -44,15 +57,15 @@ describe("Home", () => {
 
   it("ホーム画面の基本要素が表示される", () => {
     const { getByText } = render(<Home />);
-    
+
     expect(getByText("日報管理システム")).toBeInTheDocument();
-    expect(getByText("日報管理システムへようこそ")).toBeInTheDocument();
     expect(getByText("ログアウト")).toBeInTheDocument();
+    expect(getByText("利用可能な機能")).toBeInTheDocument();
   });
 
   it("ログインユーザーの情報が表示される", () => {
     const { getByText } = render(<Home />);
-    
+
     expect(getByText(/テストユーザー/)).toBeInTheDocument();
     expect(getByText("部下")).toBeInTheDocument();
   });
@@ -62,16 +75,16 @@ describe("Home", () => {
       user: null,
       logout: mockLogout,
     });
-    
+
     const { queryByText } = render(<Home />);
-    
+
     expect(queryByText(/テストユーザー/)).not.toBeInTheDocument();
     expect(queryByText("部下")).not.toBeInTheDocument();
   });
 
   it("ログアウトボタンをクリックするとlogout関数が呼ばれる", () => {
     const { getByText } = render(<Home />);
-    
+
     fireEvent.click(getByText("ログアウト"));
     expect(mockLogout).toHaveBeenCalledTimes(1);
   });
@@ -81,14 +94,14 @@ describe("Home", () => {
       ...mockUser,
       role: "上長",
     };
-    
+
     mockUseAuth.mockReturnValue({
       user: supervisorUser,
       logout: mockLogout,
     });
-    
+
     const { getByText } = render(<Home />);
-    
+
     expect(getByText(/チーム日報を確認/)).toBeInTheDocument();
     expect(getByText(/日報を作成/)).toBeInTheDocument();
     expect(getByText(/自分の日報履歴/)).toBeInTheDocument();
@@ -99,14 +112,14 @@ describe("Home", () => {
       ...mockUser,
       role: "管理者",
     };
-    
+
     mockUseAuth.mockReturnValue({
       user: adminUser,
       logout: mockLogout,
     });
-    
+
     const { getByText } = render(<Home />);
-    
+
     expect(getByText(/チーム日報を確認/)).toBeInTheDocument();
     expect(getByText(/日報を作成/)).toBeInTheDocument();
     expect(getByText(/自分の日報履歴/)).toBeInTheDocument();
