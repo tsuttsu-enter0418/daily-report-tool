@@ -23,4 +23,4 @@ export {
   updateUserAtom,
 } from "./userStore";
 
-export type { UserInfo, AuthState } from "./userStore";
+export type { AuthState } from "./userStore";

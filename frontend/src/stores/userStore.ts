@@ -1,28 +1,7 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
-import type { UserRole } from "../types";
-
-/**
- * ユーザー情報の型定義（状態管理用）
- *
- * 機能:
- * - ログインユーザーの基本情報を管理
- * - 全画面で参照可能な状態管理
- * - ローカルストレージとの同期
- */
-export type UserInfo = {
-  /** ユーザーID */
-  id: string;
-  /** ユーザー名 */
-  username: string;
-  /** メールアドレス */
-  email: string;
-  /** ユーザー役職 */
-  role: UserRole;
-  /** 表示名 */
-  displayName?: string;
-};
+import type { UserInfo } from "../types";
 
 /**
  * 認証状態の型定義

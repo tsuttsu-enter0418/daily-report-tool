@@ -5,7 +5,9 @@ React + Spring Boot + PostgreSQL で構築された企業向け日報管理シ�
 ## 🚀 クイックスタート
 
 ### フロントエンド開発（推奨）
-実API統合完成により、モックまたは実APIを選択可能：
+
+実 API 統合完成により、モックまたは実 API を選択可能：
+
 ```bash
 cd frontend
 npm install
@@ -14,6 +16,7 @@ npm run dev:api      # 実APIで起動（要バックエンド起動）
 ```
 
 ### フルスタック開発
+
 ```bash
 docker-compose up    # 全サービス起動（推奨：完全動作確認）
 ```
@@ -21,61 +24,72 @@ docker-compose up    # 全サービス起動（推奨：完全動作確認）
 ## 📋 機能
 
 ✅ **ログイン認証**
-- JWT認証によるセキュアなログイン
+
+- JWT 認証によるセキュアなログイン
 - ユーザー名: `admin` / パスワード: `password`
-- Cookie自動保存でログイン状態維持
+- Cookie 自動保存でログイン状態維持
 
 ✅ **開発環境**
-- モックAPI: フロントエンド独立開発
-- 実API連携: バックエンド連携開発
+
+- モック API: フロントエンド独立開発
+- 実 API 連携: バックエンド連携開発
 - Docker: フルスタック開発
 
 ✅ **アーキテクチャ改善**
-- アトミックデザイン実装（Button/Toast のAtom化）
+
+- アトミックデザイン実装（Button/Toast の Atom 化）
 - カスタムフック導入（useLogin, useAuth）
 - 統一メッセージ管理（MessageConst）
 - ChakraUI v3.2 完全対応
 
 ✅ **状態管理**
+
 - Jotai による全画面ユーザー情報参照
 - ローカルストレージ同期でページリロード対応
 - 認証状態の一元管理
 
 ✅ **開発効率向上**
+
 - Lombok によるボイラープレートコード削減
-- OpenAPI/Swagger による自動API仕様書生成
+- OpenAPI/Swagger による自動 API 仕様書生成
 - type エイリアス優先による柔軟な型定義
 - モック API による独立開発環境
 
 ✅ **上司ダッシュボード**
+
 - 部下の日報一覧表示・管理機能
 - ステータスフィルタリング（完了/保留/全件）
-- レスポンシブ対応（モバイル1列、タブレット2列、PC3列）
-- アバター付きカードUIで直感的な進捗確認
+- レスポンシブ対応（モバイル 1 列、タブレット 2 列、PC3 列）
+- アバター付きカード UI で直感的な進捗確認
 
 ✅ **暖色系フレッシュデザイン**
+
 - オレンジ・アンバー・イエロー基調のカラーパレット
-- グラデーション背景による美しいUI体験
 - ホバーアニメーションとシャドウ効果
-- 統一されたStatusBadgeカラーシステム
+- 統一された StatusBadge カラーシステム
 
 ✅ **最新技術対応**
-- ChakraUI v3.2完全対応（TypeScriptエラー解消）
-- Vitest設定修正（テスト環境構築完了）
-- 実API統合完成（モック→リアルAPI移行完了）
-- **コード品質向上完了**（ESLintエラー97%削減：232→3・型安全性強化）
-- **テスト品質大幅向上完了**（APIサービステスト改善・ChakraProviderエラー修正・実APIテスト完全実装）
-- **アクセシビリティ強化完了**（Spinnerコンポーネントaria-label追加・WCAG準拠向上）
-- **テスト安定性向上完了**（ProtectedRouteテストタイムアウト解決・非同期処理最適化）
+
+- ChakraUI v3.2 完全対応（TypeScript エラー解消）
+- Vitest 設定修正（テスト環境構築完了）
+- 実 API 統合完成（モック → リアル API 移行完了）
+- **コード品質向上完了**（ESLint エラー 97%削減：232→3・型安全性強化）
+- **テスト品質大幅向上完了**（API サービステスト改善・ChakraProvider エラー修正・実 API テスト完全実装）
+- **アクセシビリティ強化完了**（Spinner コンポーネント aria-label 追加・WCAG 準拠向上）
+- **テスト安定性向上完了**（ProtectedRoute テストタイムアウト解決・非同期処理最適化）
+- **コンポーネント共通化完了**（DatePickerField・DevModeIndicator の Molecule 化・再利用性向上）
+- **包括的テスト実装完了**（DailyReportForm 18 テストケース・フォーム機能完全カバレッジ）
 
 ✅ **日報管理機能完成**
-- 日報作成・編集・削除・詳細表示の完全CRUD実装
-- ステータス管理（下書き⇔提出済み）リアルタイム変更
+
+- 日報作成・編集・削除・詳細表示の完全 CRUD 実装
+- ステータス管理（下書き ⇔ 提出済み）リアルタイム変更
 - 高度な検索機能（タイトル・内容・日付フィルタリング）
 - セキュアな削除機能（確認ダイアログ + データ保護）
 
-✅ **UX/UI強化**
-- Toast通知システム（成功・エラー・警告・情報対応）
+✅ **UX/UI 強化**
+
+- Toast 通知システム（成功・エラー・警告・情報対応）
 - 確認ダイアログシステム（操作安全性向上）
 - 権限制御強化（本人・上司・管理者の適切なアクセス制御）
 - ローディング状態とエラーハンドリング統一
@@ -83,49 +97,55 @@ docker-compose up    # 全サービス起動（推奨：完全動作確認）
 ## 🛠 技術スタック
 
 ### フロントエンド
+
 - **React 19** + **TypeScript** + **Vite**
-- **Chakra UI v3.2** (UIコンポーネント・Toast通知)
+- **Chakra UI v3.2** (UI コンポーネント・Toast 通知)
 - **Jotai** (状態管理)
 - **React Router** (ルーティング)
 - **React Hook Form** + **Yup** (フォーム管理・バリデーション)
-- **Axios** (HTTP通信・API統合)
-- **カスタムフック** (useToast, useDailyReports, useAuth等)
+- **Axios** (HTTP 通信・API 統合)
+- **カスタムフック** (useToast, useDailyReports, useAuth 等)
 
 ### テスト環境（大幅向上完了）
+
 - **Vitest** (単体テスト・統合テスト)
-- **React Testing Library** (UIコンポーネントテスト)
-- **fetchモック** (実API挙動シミュレーション)
-- **ChakraProvider統合** (テストユーティリティ自動ラップ)
+- **React Testing Library** (UI コンポーネントテスト)
+- **fetch モック** (実 API 挙動シミュレーション)
+- **ChakraProvider 統合** (テストユーティリティ自動ラップ)
 - **テストファイル構成**:
-  - `apiService.test.ts` - シンプルモックAPIテスト (11テスト成功)
-  - `realApi.test.ts` - 完全実APIテスト (12テスト成功)
+  - `apiService.test.ts` - シンプルモック API テスト (11 テスト成功)
+  - `realApi.test.ts` - 完全実 API テスト (12 テスト成功)
+  - `DailyReportForm.test.tsx` - 包括的フォームテスト (18 テストケース)
   - `ProtectedRoute.test.tsx` - タイムアウト問題解決済み統合テスト
   - `Login.test.tsx` - ログイン機能統合テスト
-  - `DeleteConfirmDialog.test.tsx` - ChakraProvider対応統合テスト
+  - `DeleteConfirmDialog.test.tsx` - ChakraProvider 対応統合テスト
 
-### バックエンド  
+### バックエンド
+
 - **Spring Boot 3.2** + **Java 17**
-- **Spring Security** + **JWT認証**
+- **Spring Security** + **JWT 認証**
 - **BaseController** (共通認証処理・デバッグモード対応)
 - **JPA/Hibernate** (ORM)
 - **Lombok** (ボイラープレート削減)
-- **SpringDoc OpenAPI** (API仕様書生成)
+- **SpringDoc OpenAPI** (API 仕様書生成)
 
 ### データベース・インフラ
+
 - **PostgreSQL 15**
-- **pgAdmin 4** (PostgreSQL GUI管理ツール)
+- **pgAdmin 4** (PostgreSQL GUI 管理ツール)
 - **Docker Compose** (コンテナ管理)
 - **Maven** (依存関係管理)
 
 ### 開発・設計手法
+
 - **アトミックデザイン** (コンポーネント設計)
 - **Clean Architecture** 意識
-- **type エイリアス優先** (TypeScript型定義)
-- **実API統合** (モックから完全移行)
-- **暖色系デザインシステム** (統一されたUI/UX)
-- **レスポンシブデザイン** (SimpleGridレイアウト)
+- **type エイリアス優先** (TypeScript 型定義)
+- **実 API 統合** (モックから完全移行)
+- **暖色系デザインシステム** (統一された UI/UX)
+- **レスポンシブデザイン** (SimpleGrid レイアウト)
 - **確認ダイアログパターン** (安全な操作確認)
-- **Toast通知システム** (統一されたフィードバック)
+- **Toast 通知システム** (統一されたフィードバック)
 - **カスタムフック活用** (ロジック分離・再利用性向上)
 - **コード品質重視** (ESLint strict・型安全性・本番最適化)
 
@@ -137,7 +157,7 @@ daily-report-tool/
 │   ├── src/
 │   │   ├── components/        # アトミックデザイン構成
 │   │   │   ├── atoms/         # 最小単位コンポーネント (Button等)
-│   │   │   ├── molecules/     # 小機能コンポーネント (SearchForm, DeleteConfirmDialog等)
+│   │   │   ├── molecules/     # 小機能コンポーネント (DatePickerField, DevModeIndicator, SearchForm, DeleteConfirmDialog等)
 │   │   │   └── ui/            # ChakraUI設定
 │   │   ├── hooks/             # カスタムフック (useToast, useDailyReports等)
 │   │   ├── stores/            # Jotai状態管理
@@ -170,6 +190,7 @@ daily-report-tool/
 ## 🔧 開発コマンド
 
 ### フロントエンド
+
 ```bash
 cd frontend
 npm run dev              # モックAPI使用（推奨）
@@ -183,6 +204,7 @@ npm test -- apiService   # モックAPIテストのみ実行 (11テスト)
 ```
 
 ### バックエンド
+
 ```bash
 cd backend
 ./mvnw spring-boot:run   # Spring Boot起動
@@ -193,8 +215,9 @@ cd backend
 # http://localhost:8080/swagger-ui.html
 ```
 
-### デバッグモード（JWT認証無効化）
-APIのデバッグ時にトークン検証を無効化する場合：
+### デバッグモード（JWT 認証無効化）
+
+API のデバッグ時にトークン検証を無効化する場合：
 
 ```bash
 # 1. JWT認証を無効化
@@ -214,16 +237,19 @@ curl http://localhost:8080/swagger-ui.html
 ```
 
 **注意**：
+
 - デバッグ後は `jwt.auth.enabled=true` に戻してください
-- デバッグモードでは**全API**がトークンなしでアクセス可能
+- デバッグモードでは**全 API**がトークンなしでアクセス可能
 - 本番環境では必ず認証を有効化してください
 
-**BaseController対応**：
-- 全Controllerで共通の認証処理を使用
+**BaseController 対応**：
+
+- 全 Controller で共通の認証処理を使用
 - デバッグモード時は自動的にデフォルトユーザー（user1）を使用
 - 権限判定メソッド（isAdmin、isSupervisor）が利用可能
 
 ### Docker
+
 ```bash
 docker-compose up             # 全サービス起動
 docker-compose up frontend    # フロントエンドのみ
@@ -235,18 +261,22 @@ docker-compose up database pgadmin  # DB管理環境（PostgreSQL + pgAdmin）
 ## 🔐 認証情報
 
 ### アプリケーション
+
 テスト用アカウント:
+
 - **管理者**: admin / password
-- **上長**: manager / password  
+- **上長**: manager / password
 - **部下**: employee1 / password
 
 ### pgAdmin（データベース管理）
+
 - **URL**: http://localhost:5050
 - **Email**: admin@example.com
 - **Password**: admin123
 
 ### PostgreSQL（データベース）
-- **Host**: localhost（外部接続）/ database（Docker内部）
+
+- **Host**: localhost（外部接続）/ database（Docker 内部）
 - **Port**: 5432
 - **Database**: daily_report_tool
 - **Username**: admin
@@ -255,13 +285,17 @@ docker-compose up database pgadmin  # DB管理環境（PostgreSQL + pgAdmin）
 ## 🏗 開発モード
 
 ### 1. モック開発モード
+
 フロントエンドのみで開発する場合:
+
 ```bash
 npm run dev    # バックエンド不要、画面遷移確認可能
 ```
 
-### 2. API連携モード  
+### 2. API 連携モード
+
 バックエンドと連携して開発する場合:
+
 ```bash
 # 1. バックエンド起動
 docker-compose up backend
@@ -271,13 +305,17 @@ npm run dev:api
 ```
 
 ### 3. フルスタックモード
+
 全サービス連携:
+
 ```bash
 docker-compose up
 ```
 
 ### 4. データベース管理モード
+
 PostgreSQL + pgAdmin でデータベース管理:
+
 ```bash
 docker-compose up database pgadmin
 
@@ -289,65 +327,66 @@ docker-compose up database pgadmin
 ## 📝 開発状況・今後の予定
 
 ### ✅ Phase 1: 基盤システム（完了）
-- [x] JWT認証システム完全実装
+
+- [x] JWT 認証システム完全実装
 - [x] フロントエンド-バックエンド統合
-- [x] Docker開発環境構築
+- [x] Docker 開発環境構築
 - [x] モック API システム
 - [x] データベース設計・実装
 
 ### ✅ Phase 2: 日報機能（完了）
+
 - [x] 上司ダッシュボード（部下日報一覧表示）
 - [x] レスポンシブカードレイアウト
 - [x] ステータスバッジシステム
-- [x] **日報CRUD API完全実装**（作成・取得・更新・削除）
-- [x] **フロントエンド-バックエンドAPI連携完成**
+- [x] **日報 CRUD API 完全実装**（作成・取得・更新・削除）
+- [x] **フロントエンド-バックエンド API 連携完成**
 - [x] **日報詳細画面**（表示・編集・削除・ステータス変更）
 - [x] **高度な検索機能**（タイトル・内容・日付フィルタリング）
 - [x] **削除機能完全実装**（確認ダイアログ + セキュア削除）
-- [x] **ステータス管理UI**（下書き⇔提出済み状態管理）
-- [x] **Toast通知システム**（API操作結果フィードバック）
+- [x] **ステータス管理 UI**（下書き ⇔ 提出済み状態管理）
+- [x] **Toast 通知システム**（API 操作結果フィードバック）
 - [x] **権限制御システム**（本人・上司・管理者アクセス制御）
 
 ### 🎯 Phase 3: 高度な機能（現在の開発対象）
+
 - [ ] ユーザー設定画面（プロフィール編集・パスワード変更）
 - [ ] 管理者ダッシュボード（全社日報分析・ユーザー管理）
 - [ ] チーム管理機能（チーム作成・メンバー管理・権限設定）
-- [ ] データエクスポート機能（PDF・Excel出力）
+- [ ] データエクスポート機能（PDF・Excel 出力）
 - [ ] 承認ワークフロー（上司承認・コメント機能）
 
-### 🎯 Phase 4: 拡張機能
-- [ ] 通知機能（メール・Push）
-- [ ] コメント・フィードバック機能
-- [ ] モバイル対応（PWA）
-- [ ] 多言語対応（i18n）
-
 ### 🎨 デザインシステム拡張
-- [x] 暖色系フレッシュデザイン実装
-- [x] レスポンシブSimpleGridレイアウト
+
+- [x] レスポンシブ SimpleGrid レイアウト
 - [x] 確認ダイアログシステム統一
-- [x] Toast通知デザイン（4つのステータス対応）
-- [x] 検索UI（折りたたみ可能フォーム）
-- [x] ステータス変更UI（視覚的遷移表示）
+- [x] Toast 通知デザイン（4 つのステータス対応）
+- [x] 検索 UI（折りたたみ可能フォーム）
+- [x] ステータス変更 UI（視覚的遷移表示）
 - [ ] ダークモード対応
 - [ ] アニメーションライブラリ導入
 
 ### 🔧 技術改善・品質向上
-- [x] 実API統合完成（モック→リアルAPI移行）
+
+- [x] 実 API 統合完成（モック → リアル API 移行）
 - [x] 包括的エラーハンドリング実装
-- [x] Toast通知システム統一
+- [x] Toast 通知システム統一
 - [x] 権限制御強化
-- [x] **BaseController実装**（共通認証処理・デバッグモード対応・コード重複削減）
-- [x] **デバッグモード対応**（JWT認証無効化・トークンレス開発環境・IDE デバッグ効率向上）
-- [x] **pgAdmin統合**（PostgreSQL GUI管理ツール・Docker統合・データベース管理効率化）
-- [x] **ESLintエラー97%削減**（232→3エラー・型安全性強化・本番環境最適化）
-- [x] **TypeScript型安全性向上**（useToast, color-mode, main.tsx修正完了）
-- [x] **本番環境ログ最適化**（console.log開発環境限定・パフォーマンス向上）
-- [x] **テスト安定性向上**（ProtectedRouteテストタイムアウト解決・非同期処理最適化）
-- [x] **アクセシビリティ強化**（Spinnerコンポーネントaria-label追加・WCAG準拠向上）
+- [x] **BaseController 実装**（共通認証処理・デバッグモード対応・コード重複削減）
+- [x] **デバッグモード対応**（JWT 認証無効化・トークンレス開発環境・IDE デバッグ効率向上）
+- [x] **pgAdmin 統合**（PostgreSQL GUI 管理ツール・Docker 統合・データベース管理効率化）
+- [x] **ESLint エラー 97%削減**（232→3 エラー・型安全性強化・本番環境最適化）
+- [x] **TypeScript 型安全性向上**（useToast, color-mode, main.tsx 修正完了）
+- [x] **本番環境ログ最適化**（console.log 開発環境限定・パフォーマンス向上）
+- [x] **テスト安定性向上**（ProtectedRoute テストタイムアウト解決・非同期処理最適化）
+- [x] **アクセシビリティ強化**（Spinner コンポーネント aria-label 追加・WCAG 準拠向上）
+- [x] **コンポーネント共通化**（DatePickerField・DevModeIndicator の Molecule 化・再利用性向上）
+- [x] **包括的テスト実装**（DailyReportForm 18 テストケース・フォーム機能完全カバレッジ）
+- [x] **静的解析品質向上**（ESLint/TypeScript 警告修正・complexity 対応・未使用変数削除）
 - [ ] エラーバウンダリ実装（予期しないエラー処理）
-- [ ] E2Eテスト（Playwright）導入
+- [ ] E2E テスト（Playwright）導入
 - [ ] CI/CD パイプライン構築
-- [ ] Docker本番環境対応
+- [ ] Docker 本番環境対応
 - [ ] パフォーマンス最適化
 
 ## 📄 ライセンス

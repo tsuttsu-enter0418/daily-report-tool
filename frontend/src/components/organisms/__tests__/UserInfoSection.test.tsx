@@ -5,7 +5,7 @@ import type { UserInfo } from "../../../types";
 
 /**
  * UserInfoSection コンポーネントのテスト
- * 
+ *
  * テスト対象:
  * - ユーザー情報の正しい表示
  * - 表示名の優先表示ロジック
@@ -23,7 +23,7 @@ describe("UserInfoSection", () => {
 
   it("ユーザー情報が正しく表示される", () => {
     const { getByText } = render(<UserInfoSection user={mockUser} />);
-    
+
     expect(getByText(/テストユーザー/)).toBeInTheDocument();
     expect(getByText("部下")).toBeInTheDocument();
     expect(getByText(/ID: 1/)).toBeInTheDocument();
@@ -35,9 +35,9 @@ describe("UserInfoSection", () => {
       ...mockUser,
       displayName: undefined,
     };
-    
+
     const { getByText } = render(<UserInfoSection user={userWithoutDisplayName} />);
-    
+
     expect(getByText(/testuser/)).toBeInTheDocument();
   });
 
@@ -46,9 +46,9 @@ describe("UserInfoSection", () => {
       ...mockUser,
       email: undefined,
     };
-    
+
     const { getByText } = render(<UserInfoSection user={userWithoutEmail} />);
-    
+
     expect(getByText(/Email: 未設定/)).toBeInTheDocument();
   });
 
@@ -57,9 +57,9 @@ describe("UserInfoSection", () => {
       ...mockUser,
       role: "管理者",
     };
-    
+
     const { getByText } = render(<UserInfoSection user={adminUser} />);
-    
+
     expect(getByText("管理者")).toBeInTheDocument();
   });
 
@@ -68,9 +68,9 @@ describe("UserInfoSection", () => {
       ...mockUser,
       role: "上長",
     };
-    
+
     const { getByText } = render(<UserInfoSection user={supervisorUser} />);
-    
+
     expect(getByText("上長")).toBeInTheDocument();
   });
 });

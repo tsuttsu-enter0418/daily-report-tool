@@ -119,7 +119,7 @@ describe("Login", () => {
       // 成功Toastの確認
       expect(mockToasterCreate).toHaveBeenCalledWith({
         title: "成功",
-        description: "adminさん、おかえりなさい",
+        description: "adminさん",
         type: "success",
         duration: 3000,
       });

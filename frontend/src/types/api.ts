@@ -68,8 +68,8 @@ export type UserInfo = {
   readonly id: string;
   /** ユーザー名（必須） */
   username: string;
-  /** メールアドレス（必須） */
-  email: string;
+  /** メールアドレス（オプション） */
+  email?: string;
   /** ユーザー役職（必須、型安全性向上） */
   role: UserRole;
   /** 表示名（オプション） */

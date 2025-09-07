@@ -8,7 +8,6 @@ import {
   Textarea,
   Card,
   Field,
-  Stack,
   Input,
   Spinner,
   Center,
@@ -17,12 +16,13 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button, HomeButton } from "../components/atoms";
-import { StatusBadge } from "../components/molecules";
-import { useAuth, useDailyReports, useToast } from "../hooks";
+import { Button } from "../components/atoms";
+import { DatePickerField, DevModeIndicator } from "../components/molecules";
+import { useDailyReports, useToast } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 import { useState, useCallback, useMemo, memo, useEffect } from "react";
 import type { DailyReportCreateRequest, DailyReportResponse } from "../types";
+import * as validations from "../utils/validations";
 
 /**
  * 日報作成・編集フォームページ (Organism)
@@ -60,19 +60,9 @@ type DailyReportFormProps = {
 
 // バリデーションスキーマ
 const validationSchema = yup.object({
-  title: yup
-    .string()
-    .required("タイトルは必須です")
-    .max(200, "タイトルは200文字以内で入力してください"),
-  workContent: yup
-    .string()
-    .required(MessageConst.REPORT.WORK_CONTENT_REQUIRED)
-    .min(10, MessageConst.REPORT.WORK_CONTENT_MIN_LENGTH(10))
-    .max(1000, MessageConst.REPORT.WORK_CONTENT_MAX_LENGTH(1000)),
-  reportDate: yup
-    .string()
-    .required("報告日は必須です")
-    .matches(/^\d{4}-\d{2}-\d{2}$/, "日付はYYYY-MM-DD形式で入力してください"),
+  title: validations.VALIDATION__FORM_TITLE,
+  workContent: validations.VALIDATION__FORM_WORK_CONTENT,
+  reportDate: validations.VALIDATION__FORM_REPORT_DATE,
 });
 
 // eslint-disable-next-line complexity
@@ -80,7 +70,6 @@ const DailyReportFormComponent = ({
   isEditMode = false,
   initialData,
 }: Omit<DailyReportFormProps, "reportId">) => {
-  const { user } = useAuth();
   const { id: reportIdParam } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
@@ -115,9 +104,10 @@ const DailyReportFormComponent = ({
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors },
     watch,
     reset,
+    control,
   } = useForm<DailyReportFormData>({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -138,7 +128,6 @@ const DailyReportFormComponent = ({
       if (isEditMode && reportId) {
         setIsLoadingReport(true);
         try {
-          console.log("📖 既存日報データ読み込み開始:", reportId);
           const report = await getReport(reportId);
 
           if (report) {
@@ -148,13 +137,10 @@ const DailyReportFormComponent = ({
               workContent: report.workContent,
               reportDate: report.reportDate,
             });
-            console.log("✅ 既存日報データ読み込み完了:", report.title);
           } else {
-            console.warn("📄 指定された日報が見つかりません:", reportId);
             navigate("/reports");
           }
-        } catch (error) {
-          console.error("❌ 既存日報データ読み込み失敗:", error);
+        } catch {
           navigate("/reports");
         } finally {
           setIsLoadingReport(false);
@@ -170,8 +156,6 @@ const DailyReportFormComponent = ({
     async (data: DailyReportFormData) => {
       setIsSubmitting(true);
       try {
-        console.log("📝 日報提出開始:", { ...data, reportId, isEditMode });
-
         const reportData: DailyReportCreateRequest = {
           title: data.title,
           workContent: data.workContent,
@@ -190,8 +174,6 @@ const DailyReportFormComponent = ({
         }
 
         if (result) {
-          console.log("✅ 日報提出成功:", result.title);
-
           // 成功Toast表示
           if (isEditMode) {
             toast.updated("日報");
@@ -215,7 +197,7 @@ const DailyReportFormComponent = ({
         setIsSubmitting(false);
       }
     },
-    [reportId, isEditMode, updateReport, createReport, toast, navigate],
+    [reportId, isEditMode, updateReport, createReport, toast, handleEdit],
   );
 
   // 下書き保存処理（メモ化）
@@ -225,14 +207,11 @@ const DailyReportFormComponent = ({
 
     // 必須フィールドのチェック（下書きの場合は緩めに）
     if (!currentValues.title?.trim()) {
-      console.warn("タイトルが入力されていません");
       return;
     }
 
     setIsDraftSaving(true);
     try {
-      console.log("💾 下書き保存開始:", currentValues);
-
       const reportData: DailyReportCreateRequest = {
         title: currentValues.title,
         workContent: currentValues.workContent || "",
@@ -251,8 +230,6 @@ const DailyReportFormComponent = ({
       }
 
       if (result) {
-        console.log("✅ 下書き保存成功:", result.title);
-
         // 成功Toast表示
         toast.savedAsDraft("日報");
 
@@ -261,20 +238,13 @@ const DailyReportFormComponent = ({
           navigate(`/report/edit/${result.id}`, { replace: true });
         }
       }
-    } catch (error) {
-      console.error("❌ 下書き保存失敗:", error);
-
+    } catch {
       // エラーToast表示
       toast.updateError("日報", "下書き保存中にエラーが発生しました");
     } finally {
       setIsDraftSaving(false);
     }
-  }, [watch, isEditMode, reportId, createReport, updateReport, navigate]);
-
-  // 戻る処理（メモ化）
-  const handleBack = useCallback(() => {
-    navigate(-1); // 前のページに戻る
-  }, [navigate]);
+  }, [watch, isEditMode, reportId, createReport, updateReport, navigate, toast]);
 
   return (
     <Box w="100%" minH="100%" bg="#F9FAFB">
@@ -292,47 +262,16 @@ const DailyReportFormComponent = ({
                   </Heading>
 
                   {/* 開発モード表示 */}
-                  {isDevelopment && !useRealAPI && (
-                    <StatusBadge status="dev-mock">{MessageConst.DEV.MOCK_API_MODE}</StatusBadge>
-                  )}
-                  {isDevelopment && useRealAPI && (
-                    <StatusBadge status="dev-api">{MessageConst.DEV.REAL_API_MODE}</StatusBadge>
-                  )}
+                  <DevModeIndicator
+                    isDevelopment={isDevelopment}
+                    useRealAPI={useRealAPI}
+                    badgeMode="inline"
+                    showDescription={false}
+                  />
                 </HStack>
-                <HomeButton />
               </HStack>
-
-              {user && (
-                <Text color="gray.700" fontSize="lg">
-                  {user.displayName || user.username} さんの日報
-                </Text>
-              )}
-
-              <Text color="gray.700" fontSize="md">
-                {MessageConst.REPORT.FORM_DESCRIPTION}
-              </Text>
             </VStack>
           </Box>
-
-          {/* 開発モード時の説明 */}
-          {isDevelopment && !useRealAPI && (
-            <Box
-              p={4}
-              bg="blue.50"
-              borderRadius="md"
-              borderLeftWidth="4px"
-              borderLeftColor="blue.400"
-            >
-              <VStack align="start" gap={1}>
-                <Text fontSize="sm" color="blue.700">
-                  <strong>{MessageConst.DEV.MOCK_API_DESCRIPTION}</strong>
-                </Text>
-                <Text fontSize="sm" color="blue.600">
-                  フォーム送信はモック処理されます。実際のデータ保存は行われません。
-                </Text>
-              </VStack>
-            </Box>
-          )}
 
           {/* ローディング表示（編集モード時のデータ読み込み） */}
           {isLoadingReport && (
@@ -394,37 +333,13 @@ const DailyReportFormComponent = ({
                     </Field.Root>
 
                     {/* 報告日入力 */}
-                    <Field.Root invalid={!!errors.reportDate}>
-                      <Field.Label fontSize="md" fontWeight="semibold" color="gray.800">
-                        報告日
-                        <Text as="span" color="red.500" ml={1}>
-                          *
-                        </Text>
-                      </Field.Label>
-                      <Input
-                        {...register("reportDate")}
-                        type="date"
-                        bg="white"
-                        borderRadius="md"
-                        borderColor="gray.300"
-                        color="gray.800"
-                        _hover={{
-                          borderColor: "gray.400",
-                        }}
-                        _focus={{
-                          borderColor: "blue.500",
-                          boxShadow: "0 0 0 1px #3B82F6",
-                        }}
-                      />
-                      {errors.reportDate && (
-                        <Field.ErrorText color="red.500" fontSize="sm">
-                          {errors.reportDate.message}
-                        </Field.ErrorText>
-                      )}
-                      <Field.HelperText color="gray.600" fontSize="sm">
-                        日報の対象日を選択してください
-                      </Field.HelperText>
-                    </Field.Root>
+                    <DatePickerField
+                      name="reportDate"
+                      label="報告日"
+                      isRequired
+                      control={control}
+                      helperText="日報の対象日を選択してください"
+                    />
 
                     {/* 作業内容入力 */}
                     <Field.Root invalid={!!errors.workContent}>
@@ -469,31 +384,10 @@ const DailyReportFormComponent = ({
                         </Text>
                       </HStack>
                     </Field.Root>
-
-                    {/* 自動保存説明 */}
-                    <Box
-                      p={3}
-                      bg="blue.50"
-                      borderRadius="md"
-                      borderLeftWidth="4px"
-                      borderLeftColor="blue.400"
-                    >
-                      <Text fontSize="sm" color="blue.700">
-                        💡 {MessageConst.REPORT.DRAFT_AUTO_SAVE}
-                      </Text>
-                    </Box>
-
                     {/* アクションボタン */}
-                    <Stack
-                      direction="column"
-                      gap={3}
-                      justify="space-between"
-                    >
+                    <HStack justify="end" w="full">
+                      {/* 左側：戻る・下書き保存ボタン */}
                       <HStack gap={3}>
-                        <Button variant="secondary" onClick={handleBack}>
-                          {MessageConst.ACTION.BACK}
-                        </Button>
-
                         <Button
                           variant="secondary"
                           onClick={handleSaveDraft}
@@ -504,6 +398,7 @@ const DailyReportFormComponent = ({
                         </Button>
                       </HStack>
 
+                      {/* 右側：送信ボタン */}
                       <Button
                         type="submit"
                         variant="primary"
@@ -511,14 +406,13 @@ const DailyReportFormComponent = ({
                         loadingText={
                           isEditMode ? MessageConst.SYSTEM.SAVING : MessageConst.SYSTEM.PROCESSING
                         }
-                        disabled={!isValid}
                         size="lg"
                       >
                         {isEditMode
                           ? MessageConst.ACTION.UPDATE
                           : MessageConst.REPORT.SUBMIT_REPORT}
                       </Button>
-                    </Stack>
+                    </HStack>
                   </VStack>
                 </form>
               </Card.Body>

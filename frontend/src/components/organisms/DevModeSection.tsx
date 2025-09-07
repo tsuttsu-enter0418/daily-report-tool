@@ -1,4 +1,4 @@
-import { Box, VStack, HStack, Text } from "@chakra-ui/react";
+import { HStack } from "@chakra-ui/react";
 import { memo } from "react";
 import { StatusBadge } from "../molecules";
 import { MessageConst } from "../../constants/MessageConst";

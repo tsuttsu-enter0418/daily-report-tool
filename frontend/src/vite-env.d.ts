@@ -2,7 +2,7 @@
 
 /**
  * Vite 環境変数の型定義
- * 
+ *
  * import.meta.env でアクセス可能な環境変数に型安全性を提供
  */
 interface ImportMetaEnv {
