@@ -1,18 +1,14 @@
 # GitHub Actions ワークフロー設定ファイル
-# 日報作成支援ツールのフロントエンド（React+Vite+TypeScript）のCI
-name: Frontend CI
+# 日報作成支援ツールのフロントエンド（React+Vite+TypeScript）のCI/CD
+name: Frontend CI/CD
 
 on:
   push:
     branches: [main]
-    # frontendディレクトリ内のファイルが変更された時のみ実行
-    # またはこのymlファイルが更新された時実行
     paths:
       - "frontend/**"
       - ".github/workflows/frontend-ci.yml"
 
-  # Pull Requestがmainブランチに作成された時（マージ前のチェック）
-  # またはこのymlファイルが更新された時実行
   pull_request:
     branches: [main]
     paths:
@@ -20,48 +16,38 @@ on:
       - ".github/workflows/frontend-ci.yml"
 
 jobs:
-  # CIジョブ（静的解析＋テスト実行）
+  # CIジョブ（静的解析＋テスト実行）- PRとmainブランチ両方で実行
   ci:
     name: ci-job
-    # 実行環境（Ubuntu最新版を使用）
     runs-on: ubuntu-latest
     env:
       NODE_VERSION: "18"
       WORKING_DIR: "frontend"
-    # ジョブ内で実行する処理のステップ
     steps:
-      # 1. リポジトリのコードをチェックアウト（取得）
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Node.jsの環境をセットアップ
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          # package-lock.jsonを使ってキャッシュを有効化（ビルド時間短縮）
           cache: "npm"
           cache-dependency-path: "${{ env.WORKING_DIR }}/package-lock.json"
 
-      # 3. 依存関係のインストール
       - name: Install dependencies
         working-directory: ${{ env.WORKING_DIR }}
         run: |
           echo "📦 依存関係をインストール中..."
           npm ci
 
-      # 4. 静的解析（Lint）の実行
       - name: Run ESLint
         working-directory: ${{ env.WORKING_DIR }}
         run: |
           echo "🔍 静的解析（ESLint）を実行中..."
           npm run lint 2>&1 | tee eslint-results.log
-        # teeコマンドで結果をファイルに保存しつつ標準出力にも表示
-        # エラーが発生してもジョブを続行（テストも実行するため）
         continue-on-error: true
         id: eslint
 
-      # 5. 型チェック（TypeScript）の実行
       - name: Run TypeScript type check
         working-directory: ${{ env.WORKING_DIR }}
         run: |
@@ -70,7 +56,6 @@ jobs:
         continue-on-error: true
         id: typecheck
 
-      # 6. テストの実行
       - name: Run tests
         working-directory: ${{ env.WORKING_DIR }}
         run: |
@@ -79,7 +64,6 @@ jobs:
         continue-on-error: true
         id: test
 
-      # 7. ビルドの実行（本番環境での動作確認）
       - name: Build project
         working-directory: ${{ env.WORKING_DIR }}
         run: |
@@ -88,10 +72,8 @@ jobs:
         continue-on-error: true
         id: build
 
-      # 8. 結果ファイルをアーティファクトとしてアップロード（ログ保存）
       - name: Upload results as artifacts
         uses: actions/upload-artifact@v4
-        # 成功・失敗に関わらず常に実行
         if: always()
         with:
           name: ci-results-${{ github.run_number }}
@@ -100,9 +82,8 @@ jobs:
             ${{ env.WORKING_DIR }}/typecheck-results.log
             ${{ env.WORKING_DIR }}/test-results.log
             ${{ env.WORKING_DIR }}/build-results.log
-          retention-days: 30 # 30日間保持
+          retention-days: 30
 
-      # 9. 結果のサマリーをコメントに表示
       - name: Create result summary
         if: always()
         run: |
@@ -110,28 +91,24 @@ jobs:
           echo "| ステップ | 結果 |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|------|" >> $GITHUB_STEP_SUMMARY
 
-          # ESLintの結果
           if [ "${{ steps.eslint.outcome }}" == "success" ]; then
             echo "| ESLint | ✅ 成功 |" >> $GITHUB_STEP_SUMMARY
           else
             echo "| ESLint | ❌ 失敗 |" >> $GITHUB_STEP_SUMMARY
           fi
 
-          # TypeScript型チェックの結果
           if [ "${{ steps.typecheck.outcome }}" == "success" ]; then
             echo "| TypeScript型チェック | ✅ 成功 |" >> $GITHUB_STEP_SUMMARY
           else
             echo "| TypeScript型チェック | ❌ 失敗 |" >> $GITHUB_STEP_SUMMARY
           fi
 
-          # テストの結果
           if [ "${{ steps.test.outcome }}" == "success" ]; then
             echo "| テスト | ✅ 成功 |" >> $GITHUB_STEP_SUMMARY
           else
             echo "| テスト | ❌ 失敗 |" >> $GITHUB_STEP_SUMMARY
           fi
 
-          # ビルドの結果
           if [ "${{ steps.build.outcome }}" == "success" ]; then
             echo "| ビルド | ✅ 成功 |" >> $GITHUB_STEP_SUMMARY
           else
@@ -141,16 +118,94 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "詳細なログは「Artifacts」からダウンロードできます。" >> $GITHUB_STEP_SUMMARY
 
-      # 10. 最終判定（いずれかが失敗した場合はワークフロー全体を失敗にする）
+      # CI結果をjobの出力として設定（デプロイジョブで参照用）
+      - name: Set CI results as outputs
+        id: ci-results
+        if: always()
+        run: |
+          if [ "${{ steps.eslint.outcome }}" == "success" ] && \
+             [ "${{ steps.typecheck.outcome }}" == "success" ] && \
+             [ "${{ steps.test.outcome }}" == "success" ] && \
+             [ "${{ steps.build.outcome }}" == "success" ]; then
+            echo "ci_success=true" >> $GITHUB_OUTPUT
+          else
+            echo "ci_success=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Final result check
         if: always()
         run: |
-          if [ "${{ steps.eslint.outcome }}" != "success" ] || \
-             [ "${{ steps.typecheck.outcome }}" != "success" ] || \
-             [ "${{ steps.test.outcome }}" != "success" ] || \
-             [ "${{ steps.build.outcome }}" != "success" ]; then
+          if [ "${{ steps.ci-results.outputs.ci_success }}" != "true" ]; then
             echo "❌ いずれかのステップが失敗しました。詳細はログを確認してください。"
             exit 1
           else
             echo "✅ すべてのチェックが正常に完了しました！"
+          fi
+
+  # デプロイジョブ - mainブランチへのpushかつCIが成功した場合のみ実行
+  deploy:
+    name: deploy-job
+    runs-on: ubuntu-latest
+    # CIジョブが完了してから実行
+    needs: ci
+    # mainブランチへのpushかつCIが成功した場合のみ実行
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.ci.result == 'success'
+    env:
+      NODE_VERSION: "18"
+      WORKING_DIR: "frontend"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: "${{ env.WORKING_DIR }}/package-lock.json"
+
+      # AWS認証設定
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # GitHub SecretsにAWSの認証情報を設定
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1 # 東京リージョン
+
+      # デプロイスクリプトに実行権限付与
+      - name: Make deploy script executable
+        run: chmod +x ./scripts/deploy-frontend.sh
+
+      # デプロイ実行
+      - name: Deploy to AWS
+        run: |
+          echo "🚀 AWS環境へのデプロイを開始..."
+          ./scripts/deploy-frontend.sh
+        id: deploy
+
+      - name: Notify deployment failure
+        if: failure()
+        run: |
+          echo "❌ デプロイが失敗しました。ログを確認してください。"
+          # Slack通知例（必要に応じて追加）
+          # curl -X POST -H 'Content-type: application/json' \
+          #   --data '{"text":"❌ フロントエンドデプロイ失敗\n詳細: GitHub Actions"}' \
+          #   ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      # デプロイ結果サマリー
+      - name: Create deployment summary
+        if: always()
+        run: |
+          echo "## 🚀 デプロイ結果サマリー" >> $GITHUB_STEP_SUMMARY
+          echo "| 項目 | 値 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|----|" >> $GITHUB_STEP_SUMMARY
+          echo "| デプロイ先 | https://kouhei-portfolio.net |" >> $GITHUB_STEP_SUMMARY
+          echo "| コミットSHA | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| デプロイ日時 | $(date '+%Y-%m-%d %H:%M:%S') |" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.deploy.outcome }}" == "success" ]; then
+            echo "| 結果 | ✅ 成功 |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 結果 | ❌ 失敗 |" >> $GITHUB_STEP_SUMMARY
           fi
