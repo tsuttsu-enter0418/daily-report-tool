@@ -17,3 +17,4 @@ export { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 export { StatusChangeDialog } from "./StatusChangeDialog";
 export { DatePickerField } from "./DatePickerField";
 export { DevModeIndicator } from "./DevModeIndicator";
+export { PersonalReportCard } from "./PersonalReportCard";

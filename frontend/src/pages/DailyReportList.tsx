@@ -1,19 +1,9 @@
 /* eslint-disable complexity */
-import {
-  Box,
-  Heading,
-  VStack,
-  HStack,
-  Text,
-  SimpleGrid,
-  Card,
-  Spinner,
-  Center,
-} from "@chakra-ui/react";
+import { Box, Heading, VStack, HStack, Text, SimpleGrid, Spinner, Center } from "@chakra-ui/react";
 import { useState, useCallback, useMemo, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, HomeButton } from "../components/atoms";
-import { StatusBadge, DeleteConfirmDialog } from "../components/molecules";
+import { StatusBadge, DeleteConfirmDialog, PersonalReportCard } from "../components/molecules";
 import type { SearchCriteria } from "../components/molecules/SearchForm";
 import { useAuth, useMyDailyReports, useToast } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
@@ -132,153 +122,7 @@ const setDeletingState = (prev: DeleteDialogState): DeleteDialogState => ({
   errorMessage: "",
 });
 
-/**
- * 個人日報カードコンポーネント (Molecule)
- */
-type PersonalReportCardProps = {
-  report: DailyReportResponse;
-  onView: (reportId: number) => void;
-  onEdit: (reportId: number) => void;
-  onDelete: (reportId: number) => void;
-};
-
-const PersonalReportCardComponent = ({
-  report,
-  onView,
-  onEdit,
-  onDelete,
-}: PersonalReportCardProps) => {
-  const statusColor = useMemo(() => {
-    switch (report.status) {
-      case "submitted":
-        return "submitted";
-      case "draft":
-        return "draft";
-      default:
-        return "error";
-    }
-  }, [report.status]);
-
-  const statusText = useMemo(() => {
-    switch (report.status) {
-      case "submitted":
-        return MessageConst.REPORT.FILTER_SUBMITTED;
-      case "draft":
-        return MessageConst.REPORT.FILTER_DRAFTS;
-      default:
-        return "不明";
-    }
-  }, [report.status]);
-
-  // 作業内容を100文字で切り詰め（メモ化）
-  const truncatedContent = useMemo(
-    () =>
-      report.workContent.length > 100
-        ? report.workContent.substring(0, 100) + "..."
-        : report.workContent,
-    [report.workContent],
-  );
-
-  // 日付フォーマット（メモ化）
-  const formattedDates = useMemo(() => {
-    const formatDate = (dateString: string) => {
-      try {
-        return new Date(dateString).toLocaleDateString("ja-JP", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-        });
-      } catch {
-        return dateString;
-      }
-    };
-
-    const formatDateTime = (dateString: string) => {
-      try {
-        return new Date(dateString).toLocaleString("ja-JP", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      } catch {
-        return dateString;
-      }
-    };
-
-    return {
-      reportDate: formatDate(report.reportDate),
-      createdAt: formatDateTime(report.createdAt),
-      submittedAt: report.submittedAt ? formatDateTime(report.submittedAt) : null,
-    };
-  }, [report.reportDate, report.createdAt, report.submittedAt]);
-
-  return (
-    <Card.Root
-      variant="elevated"
-      bg="white"
-      borderRadius="lg"
-      boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
-      border="1px"
-      borderColor="gray.200"
-      transition="all 0.2s"
-      _hover={{
-        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-        transform: "translateY(-2px)",
-        borderColor: "gray.300",
-      }}
-    >
-      <Card.Body p={6}>
-        <VStack align="stretch" gap={4}>
-          {/* ヘッダー部分 */}
-          <HStack justify="space-between" align="start">
-            <VStack align="start" gap={1} flex={1}>
-              <Heading size="md" color="gray.800" lineHeight="1.3">
-                {report.title}
-              </Heading>
-              <Text fontSize="sm" color="gray.600">
-                対象日: {formattedDates.reportDate}
-              </Text>
-              <Text fontSize="sm" color="gray.500">
-                作成: {formattedDates.createdAt}
-              </Text>
-              {formattedDates.submittedAt && (
-                <Text fontSize="sm" color="teal.600">
-                  提出: {formattedDates.submittedAt}
-                </Text>
-              )}
-            </VStack>
-            <StatusBadge status={statusColor}>{statusText}</StatusBadge>
-          </HStack>
-
-          {/* 作業内容プレビュー */}
-          <Box p={3} bg="gray.50" borderRadius="md" border="1px" borderColor="gray.200">
-            <Text fontSize="sm" color="gray.700" lineHeight="1.5">
-              {truncatedContent}
-            </Text>
-          </Box>
-
-          {/* アクションボタン */}
-          <HStack gap={2} justify="flex-end">
-            <Button variant="primary" size="sm" onClick={() => onView(report.id)}>
-              詳細
-            </Button>
-            <Button variant="secondary" size="sm" onClick={() => onEdit(report.id)}>
-              {MessageConst.REPORT.EDIT_REPORT}
-            </Button>
-            <Button variant="danger" size="sm" onClick={() => onDelete(report.id)}>
-              {MessageConst.REPORT.DELETE_REPORT}
-            </Button>
-          </HStack>
-        </VStack>
-      </Card.Body>
-    </Card.Root>
-  );
-};
-
-// メモ化による再レンダリング最適化
-const PersonalReportCard = memo(PersonalReportCardComponent);
+// PersonalReportCard コンポーネントは molecules に移行完了
 
 /**
  * ローディング状態コンポーネント
@@ -431,7 +275,9 @@ const DailyReportListComponent = () => {
   );
 
   const handleDeleteSuccess = useCallback(() => {
-    console.log("✅ 日報削除完了");
+    if (import.meta.env.DEV) {
+      console.log("✅ 日報削除完了");
+    }
     toast.deleted("日報");
     setDeleteDialog(createSuccessDeleteState());
   }, [toast]);
@@ -458,7 +304,9 @@ const DailyReportListComponent = () => {
     setDeleteDialog(setDeletingState);
 
     try {
-      console.log(`日報削除: ${deleteDialog.reportId}`);
+      if (import.meta.env.DEV) {
+        console.log(`日報削除: ${deleteDialog.reportId}`);
+      }
       const success = await deleteReport(deleteDialog.reportId);
 
       if (success) {

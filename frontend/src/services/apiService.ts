@@ -444,8 +444,11 @@ export const apiService = {
    */
   async createDailyReport(reportData: DailyReportCreateRequest): Promise<DailyReportResponse> {
     if (isDevelopment && !useRealAPI) {
-      // TODO: モックAPIに日報作成メソッドを追加
-      throw new Error("モック日報作成機能は未実装です");
+      const token = this.getAuthToken();
+      if (!token) {
+        throw new Error("認証トークンが見つかりません");
+      }
+      return mockApi.createDailyReport(token, reportData);
     }
 
     return realApi.createDailyReport(reportData);
@@ -462,8 +465,11 @@ export const apiService = {
     reportData: DailyReportUpdateRequest,
   ): Promise<DailyReportResponse> {
     if (isDevelopment && !useRealAPI) {
-      // TODO: モックAPIに日報更新メソッドを追加
-      throw new Error("モック日報更新機能は未実装です");
+      const token = this.getAuthToken();
+      if (!token) {
+        throw new Error("認証トークンが見つかりません");
+      }
+      return mockApi.updateDailyReport(token, id, reportData);
     }
 
     return realApi.updateDailyReport(id, reportData);
@@ -476,8 +482,11 @@ export const apiService = {
    */
   async getDailyReport(id: number): Promise<DailyReportResponse | null> {
     if (isDevelopment && !useRealAPI) {
-      // TODO: モックAPIに日報取得メソッドを追加
-      throw new Error("モック日報取得機能は未実装です");
+      const token = this.getAuthToken();
+      if (!token) {
+        throw new Error("認証トークンが見つかりません");
+      }
+      return mockApi.getDailyReport(token, id);
     }
 
     return realApi.getDailyReport(id);
@@ -490,8 +499,11 @@ export const apiService = {
    */
   async getDailyReports(params?: DailyReportListParams): Promise<DailyReportResponse[]> {
     if (isDevelopment && !useRealAPI) {
-      // TODO: モックAPIに日報一覧メソッドを追加
-      throw new Error("モック日報一覧機能は未実装です");
+      const token = this.getAuthToken();
+      if (!token) {
+        throw new Error("認証トークンが見つかりません");
+      }
+      return mockApi.getDailyReports(token, params);
     }
 
     return realApi.getDailyReports(params);
@@ -503,8 +515,11 @@ export const apiService = {
    */
   async deleteDailyReport(id: number): Promise<void> {
     if (isDevelopment && !useRealAPI) {
-      // TODO: モックAPIに日報削除メソッドを追加
-      throw new Error("モック日報削除機能は未実装です");
+      const token = this.getAuthToken();
+      if (!token) {
+        throw new Error("認証トークンが見つかりません");
+      }
+      return mockApi.deleteDailyReport(token, id);
     }
 
     return realApi.deleteDailyReport(id);
