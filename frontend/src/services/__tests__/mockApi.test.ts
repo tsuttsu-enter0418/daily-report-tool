@@ -143,6 +143,7 @@ describe("mockApi", () => {
       const userInfo = await loginPromise;
 
       expect(userInfo).toEqual({
+        displayName: "admin",
         id: "1",
         username: "admin",
         email: "admin@example.com",

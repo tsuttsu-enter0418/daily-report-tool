@@ -127,6 +127,7 @@ describe("apiService", () => {
       const userInfo = await apiService.getUserInfo(token);
 
       expect(userInfo).toEqual({
+        displayName: "admin",
         id: "1",
         username: "admin",
         email: "admin@example.com",
