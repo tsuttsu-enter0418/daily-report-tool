@@ -1,21 +1,18 @@
 /* eslint-disable complexity */
-import {
-  Box,
-  Heading,
-  VStack,
-  HStack,
-  Text,
-  SimpleGrid,
-  Card,
-  Spinner,
-  Center,
-} from "@chakra-ui/react";
+import { Box, Heading, VStack, HStack, Text, SimpleGrid } from "@chakra-ui/react";
 import { useState, useCallback, useMemo, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, HomeButton } from "../components/atoms";
-import { StatusBadge, DeleteConfirmDialog } from "../components/molecules";
+import {
+  StatusBadge,
+  DeleteConfirmDialog,
+  PersonalReportCard,
+  LoadingState,
+  ErrorState,
+  EmptyState,
+} from "../components/molecules";
 import type { SearchCriteria } from "../components/molecules/SearchForm";
-import { useAuth, useMyDailyReports, useToast } from "../hooks";
+import { useMyDailyReports, useToast, useDeleteDialog } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 import type { DailyReportStatus, DailyReportResponse } from "../types";
 
@@ -98,251 +95,11 @@ const applyAllFilters = (
   return filtered;
 };
 
-// 削除ダイアログの状態型定義
-type DeleteDialogState = {
-  isOpen: boolean;
-  reportId: number | null;
-  reportTitle: string;
-  isDeleting: boolean;
-  errorMessage: string;
-};
+// 削除ダイアログの状態管理はuseDeleteDialogフックに移行済み
 
-// 削除処理ヘルパー関数
-const createInitialDeleteState = (): DeleteDialogState => ({
-  isOpen: false,
-  reportId: null,
-  reportTitle: "",
-  isDeleting: false,
-  errorMessage: "",
-});
+// PersonalReportCard コンポーネントは molecules に移行完了
 
-const createSuccessDeleteState = createInitialDeleteState;
-
-const createErrorDeleteState =
-  (errorMessage: string) =>
-  (prev: DeleteDialogState): DeleteDialogState => ({
-    ...prev,
-    isDeleting: false,
-    errorMessage,
-  });
-
-const setDeletingState = (prev: DeleteDialogState): DeleteDialogState => ({
-  ...prev,
-  isDeleting: true,
-  errorMessage: "",
-});
-
-/**
- * 個人日報カードコンポーネント (Molecule)
- */
-type PersonalReportCardProps = {
-  report: DailyReportResponse;
-  onView: (reportId: number) => void;
-  onEdit: (reportId: number) => void;
-  onDelete: (reportId: number) => void;
-};
-
-const PersonalReportCardComponent = ({
-  report,
-  onView,
-  onEdit,
-  onDelete,
-}: PersonalReportCardProps) => {
-  const statusColor = useMemo(() => {
-    switch (report.status) {
-      case "submitted":
-        return "submitted";
-      case "draft":
-        return "draft";
-      default:
-        return "error";
-    }
-  }, [report.status]);
-
-  const statusText = useMemo(() => {
-    switch (report.status) {
-      case "submitted":
-        return MessageConst.REPORT.FILTER_SUBMITTED;
-      case "draft":
-        return MessageConst.REPORT.FILTER_DRAFTS;
-      default:
-        return "不明";
-    }
-  }, [report.status]);
-
-  // 作業内容を100文字で切り詰め（メモ化）
-  const truncatedContent = useMemo(
-    () =>
-      report.workContent.length > 100
-        ? report.workContent.substring(0, 100) + "..."
-        : report.workContent,
-    [report.workContent],
-  );
-
-  // 日付フォーマット（メモ化）
-  const formattedDates = useMemo(() => {
-    const formatDate = (dateString: string) => {
-      try {
-        return new Date(dateString).toLocaleDateString("ja-JP", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-        });
-      } catch {
-        return dateString;
-      }
-    };
-
-    const formatDateTime = (dateString: string) => {
-      try {
-        return new Date(dateString).toLocaleString("ja-JP", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      } catch {
-        return dateString;
-      }
-    };
-
-    return {
-      reportDate: formatDate(report.reportDate),
-      createdAt: formatDateTime(report.createdAt),
-      submittedAt: report.submittedAt ? formatDateTime(report.submittedAt) : null,
-    };
-  }, [report.reportDate, report.createdAt, report.submittedAt]);
-
-  return (
-    <Card.Root
-      variant="elevated"
-      bg="white"
-      borderRadius="lg"
-      boxShadow="0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
-      border="1px"
-      borderColor="gray.200"
-      transition="all 0.2s"
-      _hover={{
-        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-        transform: "translateY(-2px)",
-        borderColor: "gray.300",
-      }}
-    >
-      <Card.Body p={6}>
-        <VStack align="stretch" gap={4}>
-          {/* ヘッダー部分 */}
-          <HStack justify="space-between" align="start">
-            <VStack align="start" gap={1} flex={1}>
-              <Heading size="md" color="gray.800" lineHeight="1.3">
-                {report.title}
-              </Heading>
-              <Text fontSize="sm" color="gray.600">
-                対象日: {formattedDates.reportDate}
-              </Text>
-              <Text fontSize="sm" color="gray.500">
-                作成: {formattedDates.createdAt}
-              </Text>
-              {formattedDates.submittedAt && (
-                <Text fontSize="sm" color="teal.600">
-                  提出: {formattedDates.submittedAt}
-                </Text>
-              )}
-            </VStack>
-            <StatusBadge status={statusColor}>{statusText}</StatusBadge>
-          </HStack>
-
-          {/* 作業内容プレビュー */}
-          <Box p={3} bg="gray.50" borderRadius="md" border="1px" borderColor="gray.200">
-            <Text fontSize="sm" color="gray.700" lineHeight="1.5">
-              {truncatedContent}
-            </Text>
-          </Box>
-
-          {/* アクションボタン */}
-          <HStack gap={2} justify="flex-end">
-            <Button variant="primary" size="sm" onClick={() => onView(report.id)}>
-              詳細
-            </Button>
-            <Button variant="secondary" size="sm" onClick={() => onEdit(report.id)}>
-              {MessageConst.REPORT.EDIT_REPORT}
-            </Button>
-            <Button variant="danger" size="sm" onClick={() => onDelete(report.id)}>
-              {MessageConst.REPORT.DELETE_REPORT}
-            </Button>
-          </HStack>
-        </VStack>
-      </Card.Body>
-    </Card.Root>
-  );
-};
-
-// メモ化による再レンダリング最適化
-const PersonalReportCard = memo(PersonalReportCardComponent);
-
-/**
- * ローディング状態コンポーネント
- */
-const LoadingState = memo(() => (
-  <Center py={20}>
-    <VStack gap={4}>
-      <Spinner size="xl" color="blue.500" />
-      <Text color="gray.600" fontSize="lg">
-        日報データを読み込み中...
-      </Text>
-    </VStack>
-  </Center>
-));
-
-/**
- * エラー状態コンポーネント
- */
-type ErrorStateProps = {
-  error: string;
-  onRetry: () => void;
-};
-
-const ErrorState = memo(({ error, onRetry }: ErrorStateProps) => (
-  <Center py={20}>
-    <VStack gap={4}>
-      <Text color="red.500" fontSize="lg" fontWeight="medium">
-        データの読み込みに失敗しました
-      </Text>
-      <Text color="gray.600" fontSize="md">
-        {error}
-      </Text>
-      <Button variant="primary" onClick={onRetry}>
-        再試行
-      </Button>
-    </VStack>
-  </Center>
-));
-
-/**
- * 空状態コンポーネント
- */
-type EmptyStateProps = {
-  currentFilter: FilterType;
-  onCreateNew: () => void;
-};
-
-const EmptyState = memo(({ currentFilter, onCreateNew }: EmptyStateProps) => (
-  <Box textAlign="center" py={10} w="full">
-    <VStack gap={4}>
-      <Text color="gray.600" fontSize="lg" fontWeight="semibold">
-        {currentFilter === "all"
-          ? MessageConst.REPORT.NO_REPORTS_MESSAGE
-          : `${getFilterText(currentFilter)}の日報がありません`}
-      </Text>
-      <Text color="gray.500" fontSize="md">
-        {MessageConst.REPORT.CREATE_FIRST_REPORT}
-      </Text>
-      <Button variant="primary" onClick={onCreateNew}>
-        {MessageConst.ACTION.CREATE_REPORT}
-      </Button>
-    </VStack>
-  </Box>
-));
+// LoadingState・ErrorState・EmptyState は molecules ディレクトリに移行済み
 
 /**
  * 日報一覧表示コンポーネント
@@ -369,7 +126,6 @@ const ReportList = memo(({ reports, onView, onEdit, onDelete }: ReportListProps)
 ));
 
 const DailyReportListComponent = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
   const [currentFilter] = useState<FilterType>("all");
@@ -379,10 +135,16 @@ const DailyReportListComponent = () => {
     startDate: "",
     endDate: "",
   });
-  const [deleteDialog, setDeleteDialog] = useState(createInitialDeleteState);
 
   // 日報データ取得
   const { reports, isLoading, error, deleteReport, refetch } = useMyDailyReports();
+
+  // 削除ダイアログ状態管理（カスタムフック）
+  const { deleteDialog, handleDelete, handleDeleteConfirm, handleDeleteCancel } = useDeleteDialog({
+    deleteReport,
+    toast,
+    reports,
+  });
 
   // 開発モード表示判定（メモ化）
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);
@@ -413,84 +175,8 @@ const DailyReportListComponent = () => {
     [navigate],
   );
 
-  const handleDelete = useCallback(
-    (reportId: number) => {
-      const targetReport = reports.find((r) => r.id === reportId);
-      if (!targetReport) return;
-
-      // 削除ダイアログを開く
-      setDeleteDialog({
-        isOpen: true,
-        reportId,
-        reportTitle: targetReport.title,
-        isDeleting: false,
-        errorMessage: "",
-      });
-    },
-    [reports],
-  );
-
-  const handleDeleteSuccess = useCallback(() => {
-    console.log("✅ 日報削除完了");
-    toast.deleted("日報");
-    setDeleteDialog(createSuccessDeleteState());
-  }, [toast]);
-
-  const handleDeleteError = useCallback(
-    (error: unknown, isApiError: boolean = false) => {
-      console.error("❌ 日報削除処理エラー:", error);
-      const errorMessage = isApiError
-        ? "削除に失敗しました。もう一度お試しください。"
-        : "削除処理中にエラーが発生しました。";
-
-      toast.deleteError(
-        "日報",
-        isApiError ? "削除に失敗しました" : "削除処理中にエラーが発生しました",
-      );
-      setDeleteDialog(createErrorDeleteState(errorMessage));
-    },
-    [toast],
-  );
-
-  const handleDeleteConfirm = useCallback(async () => {
-    if (!deleteDialog.reportId) return;
-
-    setDeleteDialog(setDeletingState);
-
-    try {
-      console.log(`日報削除: ${deleteDialog.reportId}`);
-      const success = await deleteReport(deleteDialog.reportId);
-
-      if (success) {
-        handleDeleteSuccess();
-      } else {
-        handleDeleteError(null, true);
-      }
-    } catch (error) {
-      handleDeleteError(error, false);
-    }
-  }, [deleteDialog.reportId, deleteReport, handleDeleteSuccess, handleDeleteError]);
-
-  const handleDeleteCancel = useCallback(() => {
-    setDeleteDialog(createInitialDeleteState());
-  }, []);
-
-  // const handleFilterChange = useCallback((filter: FilterType) => {
-  //   setCurrentFilter(filter);
-  // }, []);
-
-  // const handleSearchChange = useCallback((criteria: SearchCriteria) => {
-  //   setSearchCriteria(criteria);
-  // }, []);
-
-  // const handleClearSearch = useCallback(() => {
-  //   setSearchCriteria({
-  //     title: "",
-  //     content: "",
-  //     startDate: "",
-  //     endDate: "",
-  //   });
-  // }, []);
+  // 削除処理は useDeleteDialog フックに移行済み
+  // フィルタリング・検索機能は将来実装予定
 
   return (
     <Box w="100vw" minH="100vh" bg="#F9FAFB">
@@ -515,25 +201,8 @@ const DailyReportListComponent = () => {
                 </HStack>
                 <HomeButton />
               </HStack>
-
-              {user && (
-                <Text color="gray.700" fontSize="lg" fontWeight="medium">
-                  {user.displayName || user.username} さんの日報履歴
-                </Text>
-              )}
-
-              <Text color="gray.700" fontSize="md">
-                {MessageConst.REPORT.LIST_DESCRIPTION}
-              </Text>
             </VStack>
           </Box>
-
-          {/* 新規作成ボタン */}
-          <HStack justify="flex-end">
-            <Button variant="primary" onClick={handleCreateNew}>
-              {MessageConst.ACTION.CREATE_REPORT}
-            </Button>
-          </HStack>
 
           {/* 検索結果件数表示 */}
           {!isLoading && !error && (
@@ -548,12 +217,15 @@ const DailyReportListComponent = () => {
                   全 {reports.length} 件中
                 </Text>
               )}
+              <Button variant="primary" onClick={handleCreateNew}>
+                {MessageConst.ACTION.CREATE_REPORT}
+              </Button>
             </HStack>
           )}
 
           {/* 日報一覧 */}
           {isLoading ? (
-            <LoadingState />
+            <LoadingState message="日報データを読み込み中..." />
           ) : error ? (
             <ErrorState error={error} onRetry={refetch} />
           ) : filteredReports.length > 0 ? (
@@ -564,7 +236,16 @@ const DailyReportListComponent = () => {
               onDelete={handleDelete}
             />
           ) : (
-            <EmptyState currentFilter={currentFilter} onCreateNew={handleCreateNew} />
+            <EmptyState
+              title={
+                currentFilter === "all"
+                  ? MessageConst.REPORT.NO_REPORTS_MESSAGE
+                  : `${getFilterText(currentFilter)}の日報がありません`
+              }
+              description={MessageConst.REPORT.CREATE_FIRST_REPORT}
+              actionLabel={MessageConst.ACTION.CREATE_REPORT}
+              onAction={handleCreateNew}
+            />
           )}
         </VStack>
       </Box>

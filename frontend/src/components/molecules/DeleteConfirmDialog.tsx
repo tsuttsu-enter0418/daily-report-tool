@@ -137,7 +137,7 @@ const DeleteConfirmDialogComponent = ({
                 <Text fontSize="sm" fontWeight="medium">
                   本当に削除しますか？
                 </Text>
-                <Text fontSize="sm" color="gray.600">
+                <Text fontSize="sm" color="gray.50">
                   削除されたデータは復元できません。
                 </Text>
               </VStack>
