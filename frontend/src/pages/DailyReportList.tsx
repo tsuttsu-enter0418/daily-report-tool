@@ -12,7 +12,7 @@ import {
   EmptyState,
 } from "../components/molecules";
 import type { SearchCriteria } from "../components/molecules/SearchForm";
-import { useAuth, useMyDailyReports, useToast, useDeleteDialog } from "../hooks";
+import { useMyDailyReports, useToast, useDeleteDialog } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 import type { DailyReportStatus, DailyReportResponse } from "../types";
 
@@ -126,7 +126,6 @@ const ReportList = memo(({ reports, onView, onEdit, onDelete }: ReportListProps)
 ));
 
 const DailyReportListComponent = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
   const [currentFilter] = useState<FilterType>("all");

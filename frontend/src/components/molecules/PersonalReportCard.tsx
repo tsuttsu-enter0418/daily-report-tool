@@ -81,32 +81,19 @@ const PersonalReportCardComponent = ({
           {/* ヘッダー行: タイトルとステータス */}
           <HStack justify="space-between" align="flex-start">
             <Box flex={1} minW={0}>
-              <Text
-                fontSize="lg"
-                fontWeight="bold"
-                color="gray.800"
-                noOfLines={2}
-                lineHeight="1.3"
-                mb={1}
-              >
+              <Text fontSize="lg" fontWeight="bold" color="gray.800" lineHeight="1.3" mb={1}>
                 {report.title}
               </Text>
               <Text fontSize="sm" color="blue.600" fontWeight="medium">
                 {formattedDates.reportDate}
               </Text>
             </Box>
-            <StatusBadge status={report.status} />
+            <StatusBadge status={report.status}>{report.status}</StatusBadge>
           </HStack>
 
           {/* 作業内容プレビュー */}
           <Box>
-            <Text
-              fontSize="sm"
-              color="gray.700"
-              lineHeight="1.5"
-              noOfLines={3}
-              whiteSpace="pre-wrap"
-            >
+            <Text fontSize="sm" color="gray.700" lineHeight="1.5" whiteSpace="pre-wrap">
               {previewContent}
             </Text>
           </Box>
