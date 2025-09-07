@@ -1,11 +1,18 @@
 /* eslint-disable complexity */
-import { Box, Heading, VStack, HStack, Text, SimpleGrid, Spinner, Center } from "@chakra-ui/react";
+import { Box, Heading, VStack, HStack, Text, SimpleGrid } from "@chakra-ui/react";
 import { useState, useCallback, useMemo, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, HomeButton } from "../components/atoms";
-import { StatusBadge, DeleteConfirmDialog, PersonalReportCard } from "../components/molecules";
+import {
+  StatusBadge,
+  DeleteConfirmDialog,
+  PersonalReportCard,
+  LoadingState,
+  ErrorState,
+  EmptyState,
+} from "../components/molecules";
 import type { SearchCriteria } from "../components/molecules/SearchForm";
-import { useAuth, useMyDailyReports, useToast } from "../hooks";
+import { useAuth, useMyDailyReports, useToast, useDeleteDialog } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 import type { DailyReportStatus, DailyReportResponse } from "../types";
 
@@ -88,105 +95,11 @@ const applyAllFilters = (
   return filtered;
 };
 
-// 削除ダイアログの状態型定義
-type DeleteDialogState = {
-  isOpen: boolean;
-  reportId: number | null;
-  reportTitle: string;
-  isDeleting: boolean;
-  errorMessage: string;
-};
-
-// 削除処理ヘルパー関数
-const createInitialDeleteState = (): DeleteDialogState => ({
-  isOpen: false,
-  reportId: null,
-  reportTitle: "",
-  isDeleting: false,
-  errorMessage: "",
-});
-
-const createSuccessDeleteState = createInitialDeleteState;
-
-const createErrorDeleteState =
-  (errorMessage: string) =>
-  (prev: DeleteDialogState): DeleteDialogState => ({
-    ...prev,
-    isDeleting: false,
-    errorMessage,
-  });
-
-const setDeletingState = (prev: DeleteDialogState): DeleteDialogState => ({
-  ...prev,
-  isDeleting: true,
-  errorMessage: "",
-});
+// 削除ダイアログの状態管理はuseDeleteDialogフックに移行済み
 
 // PersonalReportCard コンポーネントは molecules に移行完了
 
-/**
- * ローディング状態コンポーネント
- */
-const LoadingState = memo(() => (
-  <Center py={20}>
-    <VStack gap={4}>
-      <Spinner size="xl" color="blue.500" />
-      <Text color="gray.600" fontSize="lg">
-        日報データを読み込み中...
-      </Text>
-    </VStack>
-  </Center>
-));
-
-/**
- * エラー状態コンポーネント
- */
-type ErrorStateProps = {
-  error: string;
-  onRetry: () => void;
-};
-
-const ErrorState = memo(({ error, onRetry }: ErrorStateProps) => (
-  <Center py={20}>
-    <VStack gap={4}>
-      <Text color="red.500" fontSize="lg" fontWeight="medium">
-        データの読み込みに失敗しました
-      </Text>
-      <Text color="gray.600" fontSize="md">
-        {error}
-      </Text>
-      <Button variant="primary" onClick={onRetry}>
-        再試行
-      </Button>
-    </VStack>
-  </Center>
-));
-
-/**
- * 空状態コンポーネント
- */
-type EmptyStateProps = {
-  currentFilter: FilterType;
-  onCreateNew: () => void;
-};
-
-const EmptyState = memo(({ currentFilter, onCreateNew }: EmptyStateProps) => (
-  <Box textAlign="center" py={10} w="full">
-    <VStack gap={4}>
-      <Text color="gray.600" fontSize="lg" fontWeight="semibold">
-        {currentFilter === "all"
-          ? MessageConst.REPORT.NO_REPORTS_MESSAGE
-          : `${getFilterText(currentFilter)}の日報がありません`}
-      </Text>
-      <Text color="gray.500" fontSize="md">
-        {MessageConst.REPORT.CREATE_FIRST_REPORT}
-      </Text>
-      <Button variant="primary" onClick={onCreateNew}>
-        {MessageConst.ACTION.CREATE_REPORT}
-      </Button>
-    </VStack>
-  </Box>
-));
+// LoadingState・ErrorState・EmptyState は molecules ディレクトリに移行済み
 
 /**
  * 日報一覧表示コンポーネント
@@ -223,10 +136,16 @@ const DailyReportListComponent = () => {
     startDate: "",
     endDate: "",
   });
-  const [deleteDialog, setDeleteDialog] = useState(createInitialDeleteState);
 
   // 日報データ取得
   const { reports, isLoading, error, deleteReport, refetch } = useMyDailyReports();
+
+  // 削除ダイアログ状態管理（カスタムフック）
+  const { deleteDialog, handleDelete, handleDeleteConfirm, handleDeleteCancel } = useDeleteDialog({
+    deleteReport,
+    toast,
+    reports,
+  });
 
   // 開発モード表示判定（メモ化）
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);
@@ -257,88 +176,8 @@ const DailyReportListComponent = () => {
     [navigate],
   );
 
-  const handleDelete = useCallback(
-    (reportId: number) => {
-      const targetReport = reports.find((r) => r.id === reportId);
-      if (!targetReport) return;
-
-      // 削除ダイアログを開く
-      setDeleteDialog({
-        isOpen: true,
-        reportId,
-        reportTitle: targetReport.title,
-        isDeleting: false,
-        errorMessage: "",
-      });
-    },
-    [reports],
-  );
-
-  const handleDeleteSuccess = useCallback(() => {
-    if (import.meta.env.DEV) {
-      console.log("✅ 日報削除完了");
-    }
-    toast.deleted("日報");
-    setDeleteDialog(createSuccessDeleteState());
-  }, [toast]);
-
-  const handleDeleteError = useCallback(
-    (error: unknown, isApiError: boolean = false) => {
-      console.error("❌ 日報削除処理エラー:", error);
-      const errorMessage = isApiError
-        ? "削除に失敗しました。もう一度お試しください。"
-        : "削除処理中にエラーが発生しました。";
-
-      toast.deleteError(
-        "日報",
-        isApiError ? "削除に失敗しました" : "削除処理中にエラーが発生しました",
-      );
-      setDeleteDialog(createErrorDeleteState(errorMessage));
-    },
-    [toast],
-  );
-
-  const handleDeleteConfirm = useCallback(async () => {
-    if (!deleteDialog.reportId) return;
-
-    setDeleteDialog(setDeletingState);
-
-    try {
-      if (import.meta.env.DEV) {
-        console.log(`日報削除: ${deleteDialog.reportId}`);
-      }
-      const success = await deleteReport(deleteDialog.reportId);
-
-      if (success) {
-        handleDeleteSuccess();
-      } else {
-        handleDeleteError(null, true);
-      }
-    } catch (error) {
-      handleDeleteError(error, false);
-    }
-  }, [deleteDialog.reportId, deleteReport, handleDeleteSuccess, handleDeleteError]);
-
-  const handleDeleteCancel = useCallback(() => {
-    setDeleteDialog(createInitialDeleteState());
-  }, []);
-
-  // const handleFilterChange = useCallback((filter: FilterType) => {
-  //   setCurrentFilter(filter);
-  // }, []);
-
-  // const handleSearchChange = useCallback((criteria: SearchCriteria) => {
-  //   setSearchCriteria(criteria);
-  // }, []);
-
-  // const handleClearSearch = useCallback(() => {
-  //   setSearchCriteria({
-  //     title: "",
-  //     content: "",
-  //     startDate: "",
-  //     endDate: "",
-  //   });
-  // }, []);
+  // 削除処理は useDeleteDialog フックに移行済み
+  // フィルタリング・検索機能は将来実装予定
 
   return (
     <Box w="100vw" minH="100vh" bg="#F9FAFB">
@@ -401,7 +240,7 @@ const DailyReportListComponent = () => {
 
           {/* 日報一覧 */}
           {isLoading ? (
-            <LoadingState />
+            <LoadingState message="日報データを読み込み中..." />
           ) : error ? (
             <ErrorState error={error} onRetry={refetch} />
           ) : filteredReports.length > 0 ? (
@@ -412,7 +251,16 @@ const DailyReportListComponent = () => {
               onDelete={handleDelete}
             />
           ) : (
-            <EmptyState currentFilter={currentFilter} onCreateNew={handleCreateNew} />
+            <EmptyState
+              title={
+                currentFilter === "all"
+                  ? MessageConst.REPORT.NO_REPORTS_MESSAGE
+                  : `${getFilterText(currentFilter)}の日報がありません`
+              }
+              description={MessageConst.REPORT.CREATE_FIRST_REPORT}
+              actionLabel={MessageConst.ACTION.CREATE_REPORT}
+              onAction={handleCreateNew}
+            />
           )}
         </VStack>
       </Box>
