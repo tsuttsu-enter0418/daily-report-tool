@@ -104,7 +104,7 @@ const DailyReportFormComponent = ({
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors },
     watch,
     reset,
     control,
@@ -245,11 +245,6 @@ const DailyReportFormComponent = ({
       setIsDraftSaving(false);
     }
   }, [watch, isEditMode, reportId, createReport, updateReport, navigate, toast]);
-
-  // 戻る処理（メモ化）
-  const handleBack = useCallback(() => {
-    navigate(-1); // 前のページに戻る
-  }, [navigate]);
 
   return (
     <Box w="100%" minH="100%" bg="#F9FAFB">

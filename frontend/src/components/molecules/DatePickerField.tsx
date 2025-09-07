@@ -1,8 +1,7 @@
 import { Text, Field } from "@chakra-ui/react";
-import { Controller } from "react-hook-form";
 import { DatePicker } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import type { Control, FieldPath, FieldValues } from "react-hook-form";
+import { Controller, type Control, type FieldPath, type FieldValues } from "react-hook-form";
 
 /**
  * DatePickerField (Molecule)

@@ -1,6 +1,6 @@
 /* eslint-disable complexity */
 import { Fragment } from "react";
-import { Box, VStack, Text } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import { StatusBadge } from "./StatusBadge";
 import { MessageConst } from "../../constants/MessageConst";
 
@@ -43,7 +43,7 @@ export const DevModeIndicator = ({
   isDevelopment,
   useRealAPI,
   badgeMode = "inline",
-  showDescription = true,
+  // showDescription = true,
   showBadge = true,
 }: DevModeIndicatorProps) => {
   // 本番環境では何も表示しない

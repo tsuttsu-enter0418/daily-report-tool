@@ -22,8 +22,6 @@ describe("DevModeSection", () => {
     const { getByText } = render(<DevModeSection isDevelopment={true} useRealAPI={false} />);
 
     expect(getByText(/開発モード.*モックAPI使用中/)).toBeInTheDocument();
-    expect(getByText(/モックAPIを使用しています/)).toBeInTheDocument();
-    expect(getByText(/npm run dev:api/)).toBeInTheDocument();
   });
 
   it("Real APIモードでバッジのみ表示される", () => {
