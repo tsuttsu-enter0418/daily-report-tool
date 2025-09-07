@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, fireEvent } from "@/test/utils";
 import { ActionSection } from "../ActionSection";
 import type { UserInfo } from "../../../types";
@@ -6,7 +6,7 @@ import type { UserInfo } from "../../../types";
 // react-router-dom のモック
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = await importOriginal<typeof import("react-router-dom")>();
   return {
     ...actual,
     useNavigate: () => mockNavigate,
