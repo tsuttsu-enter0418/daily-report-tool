@@ -68,6 +68,7 @@ const PersonalReportCardComponent = ({
       borderLeftColor={report.status === "submitted" ? "blue.400" : "orange.400"}
       bg="white"
       boxShadow="md"
+      h="280px" // カード高さを統一
       _hover={{
         boxShadow: "lg",
         transform: "translateY(-2px)",
@@ -76,48 +77,74 @@ const PersonalReportCardComponent = ({
       transition="all 0.2s ease-in-out"
       cursor="pointer"
     >
-      <Card.Body p={5}>
-        <VStack align="stretch" gap={3}>
-          {/* ヘッダー行: タイトルとステータス */}
-          <HStack justify="space-between" align="flex-start">
-            <Box flex={1} minW={0}>
-              <Text fontSize="lg" fontWeight="bold" color="gray.800" lineHeight="1.3" mb={1}>
-                {report.title}
-              </Text>
-              <Text fontSize="sm" color="blue.600" fontWeight="medium">
-                {formattedDates.reportDate}
-              </Text>
-            </Box>
-            <StatusBadge status={report.status}>{report.status}</StatusBadge>
-          </HStack>
-
-          {/* 作業内容プレビュー */}
-          <Box>
-            <Text fontSize="sm" color="gray.700" lineHeight="1.5" whiteSpace="pre-wrap">
-              {previewContent}
-            </Text>
-          </Box>
-
-          {/* メタデータ */}
-          <VStack align="stretch" gap={1}>
-            <HStack justify="space-between" fontSize="xs" color="gray.500">
-              <Text>作成: {formattedDates.createdAt}</Text>
-              {formattedDates.submittedAt && <Text>提出: {formattedDates.submittedAt}</Text>}
+      <Card.Body p={5} h="100%">
+        <VStack align="stretch" gap={3} h="100%" justify="space-between">
+          {/* 上部コンテンツ */}
+          <VStack align="stretch" gap={3}>
+            {/* ヘッダー行: タイトルとステータス */}
+            <HStack justify="space-between" align="flex-start">
+              <Box flex={1} minW={0}>
+                <Text fontSize="lg" fontWeight="bold" color="gray.800" lineHeight="1.3" mb={1}>
+                  {report.title}
+                </Text>
+                <Text fontSize="sm" color="blue.600" fontWeight="medium">
+                  {formattedDates.reportDate}
+                </Text>
+              </Box>
+              <StatusBadge status={report.status}>{report.status}</StatusBadge>
             </HStack>
+
+            {/* 作業内容プレビュー - 固定高さ */}
+            <Box
+              h="60px" // プレビュー高さを固定
+              overflowY="hidden"
+              position="relative"
+            >
+              <Text
+                fontSize="sm"
+                color="gray.700"
+                lineHeight="1.4"
+                whiteSpace="pre-wrap"
+                wordBreak="break-word"
+              >
+                {previewContent}
+              </Text>
+              {/* フェードアウト効果 */}
+              <Box
+                position="absolute"
+                bottom={0}
+                left={0}
+                right={0}
+                h="15px"
+                bgGradient="linear(to-b, transparent, white)"
+                pointerEvents="none"
+              />
+            </Box>
           </VStack>
 
-          {/* アクションボタン */}
-          <HStack justify="flex-end" gap={2} mt={2}>
-            <Button variant="primary" size="sm" onClick={() => onView(report.id)}>
-              詳細
-            </Button>
-            <Button variant="secondary" size="sm" onClick={() => onEdit(report.id)}>
-              {MessageConst.REPORT.EDIT_REPORT}
-            </Button>
-            <Button variant="danger" size="sm" onClick={() => onDelete(report.id)}>
-              {MessageConst.REPORT.DELETE_REPORT}
-            </Button>
-          </HStack>
+          {/* 下部コンテンツ（メタデータ + ボタン） */}
+          <VStack align="stretch" gap={3}>
+            {/* メタデータ */}
+            <VStack align="stretch" gap={1}>
+              <HStack justify="space-between" fontSize="xs" color="gray.500">
+                <Text>作成: {formattedDates.createdAt}</Text>
+                {formattedDates.submittedAt && <Text>提出: {formattedDates.submittedAt}</Text>}
+              </HStack>
+            </VStack>
+
+            {/* アクションボタン */}
+            <HStack justify="flex-end" gap={2}>
+              <Button variant="primary" size="sm" onClick={() => onView(report.id)}>
+                詳細
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => onEdit(report.id)}>
+                {MessageConst.REPORT.EDIT_REPORT}
+              </Button>
+              <Button variant="danger" size="sm" onClick={() => onDelete(report.id)}>
+                {MessageConst.REPORT.DELETE_REPORT}
+              </Button>
+            </HStack>
+          </VStack>
         </VStack>
       </Card.Body>
     </Card.Root>
