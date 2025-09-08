@@ -239,6 +239,39 @@ describe("DailyReportList", () => {
 
       expect(screen.getByText("2 件の日報が見つかりました")).toBeInTheDocument();
     });
+
+    // カバレッジ向上: フィルター機能の分岐テスト
+    it("フィルタリング時の件数表示をテスト", () => {
+      // 3件のデータでフィルタリング効果をテスト
+      const extendedReports = [
+        ...mockReports,
+        {
+          id: 3,
+          userId: 1,
+          username: "testuser1",
+          displayName: "テストユーザー1",
+          title: "テスト日報3",
+          workContent: "追加テスト作業内容",
+          status: "submitted" as const,
+          reportDate: "2024-01-17",
+          createdAt: "2024-01-17T09:00:00Z",
+          submittedAt: "2024-01-17T18:00:00Z",
+          updatedAt: "2024-01-17T18:00:00Z",
+        },
+      ];
+
+      mockUseMyDailyReports.mockReturnValue({
+        reports: extendedReports,
+        isLoading: false,
+        error: null,
+        deleteReport: mockDeleteReport,
+        refetch: mockRefetch,
+      });
+
+      render(<DailyReportList />);
+
+      expect(screen.getByText("3 件の日報が見つかりました")).toBeInTheDocument();
+    });
   });
 
   describe("削除機能", () => {
