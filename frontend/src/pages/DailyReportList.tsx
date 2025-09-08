@@ -1,10 +1,7 @@
-/* eslint-disable complexity */
 import { Box, Heading, VStack, HStack, Text, SimpleGrid } from "@chakra-ui/react";
 import { useState, useCallback, useMemo, memo } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button, HomeButton } from "../components/atoms";
+import { Button } from "../components/atoms";
 import {
-  StatusBadge,
   DeleteConfirmDialog,
   PersonalReportCard,
   LoadingState,
@@ -12,30 +9,31 @@ import {
   EmptyState,
 } from "../components/molecules";
 import type { SearchCriteria } from "../components/molecules/SearchForm";
-import { useMyDailyReports, useToast, useDeleteDialog } from "../hooks";
+import { useMyDailyReports, useToast, useDeleteDialog, useRightPane } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 import type { DailyReportStatus, DailyReportResponse } from "../types";
 
 /**
- * 個人日報一覧ページ (Organism)
+ * 個人日報一覧コンポーネント (Organism)
+ * 右ペイン表示に特化
  *
  * 機能:
- * - 個人の日報履歴一覧表示
+ * - 個人の日報履歴一覧表示（右ペイン用レイアウト）
  * - ステータス別フィルタリング
- * - 新規作成・編集・削除機能
+ * - 右ペイン内での状態切り替えナビゲーション
  * - レスポンシブカードレイアウト
  *
  * 対象ユーザー:
  * - すべてのログインユーザー
  *
  * 表示情報:
- * - 日報作成日
- * - ステータス（提出済み・下書き）
- * - 作業内容（抜粋）
- * - アクションボタン（編集・削除）
+ * - 日報作成日・ステータス・作業内容（抜粋）
+ * - 右ペイン用アクションボタン（編集・削除、詳細は今後実装予定）
  */
 
 type FilterType = "all" | DailyReportStatus;
+
+// 右ペイン表示に特化した日報一覧コンポーネント
 
 // フィルタリングヘルパー関数
 const filterByStatus = (
@@ -126,8 +124,8 @@ const ReportList = memo(({ reports, onView, onEdit, onDelete }: ReportListProps)
 ));
 
 const DailyReportListComponent = () => {
-  const navigate = useNavigate();
   const toast = useToast();
+  const { actions: rightPaneActions } = useRightPane();
   const [currentFilter] = useState<FilterType>("all");
   const [searchCriteria] = useState<SearchCriteria>({
     title: "",
@@ -146,60 +144,49 @@ const DailyReportListComponent = () => {
     reports,
   });
 
-  // 開発モード表示判定（メモ化）
-  const isDevelopment = useMemo(() => import.meta.env.DEV, []);
-  const useRealAPI = useMemo(() => import.meta.env.VITE_USE_REAL_API === "true", []);
-
   // フィルタリング処理（メモ化）
   const filteredReports = useMemo(
     () => applyAllFilters(reports, currentFilter, searchCriteria),
     [reports, currentFilter, searchCriteria],
   );
 
-  // ハンドラー関数（メモ化）
+  // ハンドラー関数（右ペイン用・メモ化）
   const handleCreateNew = useCallback(() => {
-    navigate("/report/create");
-  }, [navigate]);
+    rightPaneActions.showCreate();
+  }, [rightPaneActions]);
 
   const handleView = useCallback(
     (reportId: number) => {
-      navigate(`/report/detail/${reportId}`);
+      // 詳細画面は今後実装予定のため通知表示
+      toast.showWarning(
+        "詳細表示機能",
+        `日報詳細表示は今後実装予定です (ID: ${reportId})。現在は編集機能をご利用ください。`,
+      );
     },
-    [navigate],
+    [toast],
   );
 
   const handleEdit = useCallback(
     (reportId: number) => {
-      navigate(`/report/edit/${reportId}`);
+      rightPaneActions.showEdit(reportId);
     },
-    [navigate],
+    [rightPaneActions],
   );
 
   // 削除処理は useDeleteDialog フックに移行済み
   // フィルタリング・検索機能は将来実装予定
 
   return (
-    <Box w="100vw" minH="100vh" bg="#F9FAFB">
-      <Box maxW="7xl" mx="auto" px={{ base: 4, md: 8 }} py={8}>
-        <VStack gap={8} align="stretch">
+    <Box w="100%" minH="100%" bg="transparent">
+      <Box maxW="full" mx={0} px={{ base: 2, md: 3 }} py={4}>
+        <VStack gap={6} align="stretch">
           {/* ヘッダー */}
           <Box w="full">
             <VStack align="start" gap={4}>
               <HStack justify="space-between" w="full">
-                <HStack wrap="wrap" gap={4}>
-                  <Heading size="xl" color="gray.800">
-                    {MessageConst.REPORT.LIST_TITLE}
-                  </Heading>
-
-                  {/* 開発モード表示 */}
-                  {isDevelopment && !useRealAPI && (
-                    <StatusBadge status="dev-mock">{MessageConst.DEV.MOCK_API_MODE}</StatusBadge>
-                  )}
-                  {isDevelopment && useRealAPI && (
-                    <StatusBadge status="dev-api">{MessageConst.DEV.REAL_API_MODE}</StatusBadge>
-                  )}
-                </HStack>
-                <HomeButton />
+                <Heading size="lg" color="gray.800">
+                  {MessageConst.REPORT.LIST_TITLE}
+                </Heading>
               </HStack>
             </VStack>
           </Box>

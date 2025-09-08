@@ -68,8 +68,9 @@ const validationSchema = yup.object({
 // eslint-disable-next-line complexity
 const DailyReportFormComponent = ({
   isEditMode = false,
+  reportId: propReportId,
   initialData,
-}: Omit<DailyReportFormProps, "reportId">) => {
+}: DailyReportFormProps) => {
   const { id: reportIdParam } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
@@ -80,8 +81,14 @@ const DailyReportFormComponent = ({
   // 日報データ管理フック
   const { createReport, updateReport, getReport } = useDailyReports(undefined, false);
 
-  // reportIdをnumberに変換
-  const reportId = reportIdParam ? parseInt(reportIdParam, 10) : undefined;
+  // reportIdをnumberに変換（propsが優先、なければuseParamsから取得）
+  const reportId = useMemo(() => {
+    if (propReportId !== undefined) {
+      return propReportId;
+    }
+    // parseIntの10は10進数を指定
+    return reportIdParam ? parseInt(reportIdParam, 10) : undefined;
+  }, [propReportId, reportIdParam]);
 
   // 開発モード表示判定（メモ化）
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);

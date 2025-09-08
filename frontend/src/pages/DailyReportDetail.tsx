@@ -33,7 +33,12 @@ import type { DailyReportResponse } from "../types";
  * - 管理者
  */
 
-const DailyReportDetailComponent = () => {
+type DailyReportDetailProps = {
+  /** 日報ID（右ペイン使用時にpropsで指定） */
+  reportId?: number;
+};
+
+const DailyReportDetailComponent = ({ reportId: propReportId }: DailyReportDetailProps) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -61,10 +66,13 @@ const DailyReportDetailComponent = () => {
   // 日報データ管理フック
   const { getReport, deleteReport, updateReport } = useDailyReports(undefined, false);
 
-  // 日報IDを数値に変換
+  // 日報IDを数値に変換（propsが優先、なければuseParamsから取得）
   const reportId = useMemo(() => {
+    if (propReportId !== undefined) {
+      return propReportId;
+    }
     return id ? parseInt(id, 10) : null;
-  }, [id]);
+  }, [propReportId, id]);
 
   // 開発モード表示判定
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);
