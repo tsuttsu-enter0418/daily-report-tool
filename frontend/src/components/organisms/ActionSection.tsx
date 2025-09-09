@@ -3,7 +3,7 @@ import { memo } from "react";
 import { Button } from "../atoms";
 import type { UserInfo } from "../../types";
 import { MessageConst } from "../../constants/MessageConst";
-import { useRightPane } from "../../hooks/useRightPane";
+import { useRightPane } from "@/hooks/useRightPane";
 
 type ActionSectionProps = {
   user: UserInfo;

@@ -1,7 +1,7 @@
 import { Box, Heading, VStack, HStack } from "@chakra-ui/react";
 import { useMemo, memo, useCallback } from "react";
 import { UserInfoSection, DevModeSection, ActionSection } from "../components/organisms";
-import { useAuth, useRightPane } from "../hooks";
+import { useAuth, useRightPane } from "@/hooks";
 import { MessageConst } from "../constants/MessageConst";
 import { LogoutButton } from "@/components/molecules/LogoutButton";
 import { DailyReportForm } from "./DailyReportForm";

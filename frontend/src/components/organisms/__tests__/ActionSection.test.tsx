@@ -3,6 +3,16 @@ import { render, fireEvent } from "@/test/utils";
 import { ActionSection } from "../ActionSection";
 import type { UserInfo } from "../../../types";
 
+const mockUseRightPane = {
+  showCreate: vi.fn(),
+  showEdit: vi.fn(),
+  showList: vi.fn(),
+  showDetail: vi.fn(),
+  showSupervisor: vi.fn(),
+};
+vi.mock("@/hooks/useRightPane", () => ({
+  useRightPane: () => ({ actions: mockUseRightPane }),
+}));
 // react-router-dom のモック
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async (importOriginal) => {
@@ -71,7 +81,7 @@ describe("ActionSection", () => {
     expect(getByText(/自分の日報履歴/)).toBeInTheDocument();
   });
 
-  it("上司ダッシュボードボタンをクリックすると正しいパスに遷移する", () => {
+  it("上司ダッシュボードボタンをクリックするとチーム日報呼び出す", () => {
     const supervisorUser: UserInfo = {
       ...baseUser,
       role: "上長",
@@ -80,20 +90,20 @@ describe("ActionSection", () => {
     const { getByText } = render(<ActionSection user={supervisorUser} />);
 
     fireEvent.click(getByText(/チーム日報を確認/));
-    expect(mockNavigate).toHaveBeenCalledWith("/supervisor");
+    expect(mockUseRightPane.showSupervisor).toHaveBeenCalled();
   });
 
   it("日報作成ボタンをクリックすると正しいパスに遷移する", () => {
     const { getByText } = render(<ActionSection user={baseUser} />);
 
     fireEvent.click(getByText(/日報を作成/));
-    expect(mockNavigate).toHaveBeenCalledWith("/report/create");
+    expect(mockUseRightPane.showCreate).toHaveBeenCalled();
   });
 
   it("履歴閲覧ボタンをクリックすると正しいパスに遷移する", () => {
     const { getByText } = render(<ActionSection user={baseUser} />);
 
     fireEvent.click(getByText(/自分の日報履歴/));
-    expect(mockNavigate).toHaveBeenCalledWith("/report/list");
+    expect(mockUseRightPane.showList).toHaveBeenCalled();
   });
 });

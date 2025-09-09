@@ -1,5 +1,3 @@
-/* eslint-disable prettier/prettier */
-/* eslint-disable max-lines, max-nested-callbacks */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -25,16 +23,23 @@ const mockRefetch = vi.fn();
 const mockToast = {
   deleted: vi.fn(),
   deleteError: vi.fn(),
+  showWarning: vi.fn(),
 };
 
 const mockUseAuth = vi.fn();
 const mockUseMyDailyReports = vi.fn();
 const mockUseDeleteDialog = vi.fn();
+const mockUseRightPane = {
+  showCreate: vi.fn(),
+};
 
 vi.mock("@/hooks", () => ({
   useAuth: () => mockUseAuth(),
   useMyDailyReports: () => mockUseMyDailyReports(),
   useToast: () => mockToast,
+  useRightPane: () => ({
+    actions: mockUseRightPane,
+  }),
   useDeleteDialog: (params: { deleteReport: any; toast: any; reports: any }) =>
     mockUseDeleteDialog(params),
 }));
@@ -196,17 +201,17 @@ describe("DailyReportList", () => {
   });
 
   describe("ナビゲーション機能", () => {
-    it("新規作成ボタンクリック時に正しいルートに遷移する", async () => {
+    it("新規作成ボタンクリック時に新規作成アクションを実行する", async () => {
       const user = userEvent.setup();
       render(<DailyReportList />);
 
       const createButton = screen.getByText(MessageConst.ACTION.CREATE_REPORT);
       await user.click(createButton);
 
-      expect(mockNavigate).toHaveBeenCalledWith("/report/create");
+      expect(mockUseRightPane.showCreate).toHaveBeenCalled();
     });
 
-    it("詳細表示時に正しいルートに遷移する", async () => {
+    it("詳細ボタン押下時にトーストを表示", async () => {
       const user = userEvent.setup();
       render(<DailyReportList />);
 
@@ -214,10 +219,13 @@ describe("DailyReportList", () => {
       const detailButtons = screen.getAllByText("詳細");
       expect(detailButtons).toHaveLength(2);
 
-      await user.click(detailButtons[0]);
+      await user.click(detailButtons[1]);
 
       // handleViewが呼ばれてナビゲーションが実行されることを確認
-      expect(mockNavigate).toHaveBeenCalledWith("/report/detail/1");
+      expect(mockToast.showWarning).toHaveBeenCalledWith(
+        "詳細表示機能",
+        "日報詳細表示は今後実装予定です (ID: 2)。現在は編集機能をご利用ください。",
+      );
     });
   });
 
@@ -324,18 +332,6 @@ describe("DailyReportList", () => {
       // 削除中の状態確認
       expect(screen.getByText("削除された日報は復元できません。")).toBeInTheDocument();
     });
-  });
-
-  describe("開発モード表示", () => {
-    it("DEV環境でモックAPIバッジを表示する", () => {
-      // デフォルトの設定でレンダリング（既にbeforeEachで設定済み）
-      render(<DailyReportList />);
-
-      expect(screen.getByText(MessageConst.DEV.MOCK_API_MODE)).toBeInTheDocument();
-    });
-
-    // 環境変数の動的変更テストは複雑なため、基本的な表示テストのみ実装
-    // 実際の環境では環境変数は起動時に固定されるため、これで十分
   });
 
   describe("エラーハンドリング", () => {
