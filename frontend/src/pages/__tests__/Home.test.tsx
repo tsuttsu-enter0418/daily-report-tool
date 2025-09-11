@@ -15,15 +15,13 @@ vi.mock("react-router-dom", () => ({
 // useAuth フックのモック
 const mockLogout = vi.fn();
 const mockUseAuth = vi.fn();
-vi.mock("../../hooks", () => ({
-  useAuth: () => mockUseAuth(),
-}));
-
+const mockUseRightPane = vi.fn();
 const mockToast = vi.fn();
 const mockUseDailyReports = vi.fn();
-vi.mock("../../hooks", () => ({
+vi.mock("@/hooks", () => ({
   useAuth: () => mockUseAuth(),
   useToast: () => mockToast,
+  useRightPane: () => ({ view: "create", actions: mockUseRightPane() }),
 }));
 vi.mock("../../pages/DailyReportForm", () => ({
   DailyReportForm: () => mockUseDailyReports(),

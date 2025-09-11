@@ -1,9 +1,9 @@
 import { Box, VStack, Text } from "@chakra-ui/react";
-import { memo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { memo } from "react";
 import { Button } from "../atoms";
 import type { UserInfo } from "../../types";
 import { MessageConst } from "../../constants/MessageConst";
+import { useRightPane } from "@/hooks/useRightPane";
 
 type ActionSectionProps = {
   user: UserInfo;
@@ -23,23 +23,15 @@ type ActionSectionProps = {
  * - React Router によるSPA内遷移
  */
 const ActionSectionComponent = ({ user }: ActionSectionProps) => {
-  const navigate = useNavigate();
+  const { actions } = useRightPane();
 
   // 上長・管理者かどうかの判定
   const canAccessSupervisorDashboard = user.role === "上長" || user.role === "管理者";
 
-  // ナビゲーションハンドラー
-  const handleSupervisorDashboard = useCallback(() => {
-    navigate("/supervisor");
-  }, [navigate]);
-
-  const handleCreateReport = useCallback(() => {
-    navigate("/report/create");
-  }, [navigate]);
-
-  const handleViewHistory = useCallback(() => {
-    navigate("/report/list");
-  }, [navigate]);
+  // 右ペイン状態更新ハンドラー（useRightPane内でメモ化済み）
+  const handleSupervisorDashboard = actions.showSupervisor;
+  const handleCreateReport = actions.showCreate;
+  const handleViewHistory = actions.showList;
 
   return (
     <Box p={4} bg="gray.50" borderRadius="md" w="full">

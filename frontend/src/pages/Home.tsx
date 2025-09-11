@@ -1,10 +1,12 @@
 import { Box, Heading, VStack, HStack } from "@chakra-ui/react";
-import { useMemo, memo } from "react";
+import { useMemo, memo, useCallback } from "react";
 import { UserInfoSection, DevModeSection, ActionSection } from "../components/organisms";
-import { useAuth } from "../hooks";
+import { useAuth, useRightPane } from "@/hooks";
 import { MessageConst } from "../constants/MessageConst";
 import { LogoutButton } from "@/components/molecules/LogoutButton";
 import { DailyReportForm } from "./DailyReportForm";
+import { DailyReportList } from "./DailyReportList";
+import { SupervisorDashboard } from "./SupervisorDashboard";
 
 /**
  * ホームページコンポーネント (Organism)
@@ -21,10 +23,30 @@ import { DailyReportForm } from "./DailyReportForm";
  */
 const HomeComponent = () => {
   const { user, logout } = useAuth();
+  const { view: rightPaneView } = useRightPane();
 
   // 開発モードの判定（メモ化）
   const isDevelopment = useMemo(() => import.meta.env.DEV, []);
   const useRealAPI = useMemo(() => import.meta.env.VITE_USE_REAL_API === "true", []);
+
+  // 右ペイン表示コンテンツのレンダリング（メモ化）
+  const renderRightPane = useCallback(() => {
+    switch (rightPaneView.type) {
+      case "create":
+        return <DailyReportForm />;
+      case "edit":
+        return <DailyReportForm isEditMode reportId={rightPaneView.reportId} />;
+      case "list":
+        return <DailyReportList />;
+      case "detail":
+        // 詳細画面は今後実装予定のため、とりあえず一覧表示に戻す
+        return <DailyReportList />;
+      case "supervisor":
+        return <SupervisorDashboard />;
+      default:
+        return <DailyReportForm />;
+    }
+  }, [rightPaneView]);
 
   return (
     <Box w="100vw" minH="100vh" bg="#F9FAFB">
@@ -51,7 +73,7 @@ const HomeComponent = () => {
 
         {/* 右側ペイン */}
         <Box flex="1" borderLeft="1px" borderColor="gray.200" bg="white" overflowY="auto" h="100vh">
-          <DailyReportForm />
+          {renderRightPane()}
         </Box>
       </HStack>
     </Box>

@@ -30,7 +30,6 @@ export const Toaster = () => {
               {toast.description && <Toast.Description>{toast.description}</Toast.Description>}
             </Stack>
             {toast.action && <Toast.ActionTrigger>{toast.action.label}</Toast.ActionTrigger>}
-            {toast.closable && <Toast.CloseTrigger />}
           </Toast.Root>
         )}
       </ChakraToaster>

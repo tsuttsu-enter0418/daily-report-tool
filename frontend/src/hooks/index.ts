@@ -30,3 +30,6 @@ export type {
   UseDeleteDialogOptions,
   UseDeleteDialogReturn,
 } from "./useDeleteDialog";
+
+export { useRightPane } from "./useRightPane";
+export type { UseRightPaneReturn } from "./useRightPane";
