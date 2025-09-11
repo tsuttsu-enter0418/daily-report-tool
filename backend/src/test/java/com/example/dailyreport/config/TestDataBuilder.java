@@ -1,45 +1,31 @@
 package com.example.dailyreport.config;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import com.example.dailyreport.dto.DailyReportRequest;
 import com.example.dailyreport.dto.LoginRequest;
 import com.example.dailyreport.entity.DailyReport;
 import com.example.dailyreport.entity.User;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 /**
  * テストデータ生成用ビルダークラス
- * 
- * 機能:
- * - 各種エンティティのテストデータ生成
- * - DTO・リクエストオブジェクトのテストデータ生成
- * - ビルダーパターンによる柔軟なデータ設定
- * - デフォルト値設定によるシンプルなテストデータ作成
- * 
- * 使用例:
- * ```java
- * // デフォルトユーザー作成
- * User user = TestDataBuilder.createDefaultUser().build();
- * 
- * // カスタムユーザー作成
- * User manager = TestDataBuilder.createDefaultUser()
- *     .username("manager")
- *     .role("上長")
- *     .build();
- * ```
- * 
- * 設計方針:
- * - 実際のプロダクションデータに近い形式
- * - テストケース間での一貫性保持
- * - 日本語データ対応
- * - バリデーション制約を考慮した値設定
+ *
+ * <p>機能: - 各種エンティティのテストデータ生成 - DTO・リクエストオブジェクトのテストデータ生成 - ビルダーパターンによる柔軟なデータ設定 -
+ * デフォルト値設定によるシンプルなテストデータ作成
+ *
+ * <p>使用例: ```java // デフォルトユーザー作成 User user = TestDataBuilder.createDefaultUser().build();
+ *
+ * <p>// カスタムユーザー作成 User manager = TestDataBuilder.createDefaultUser() .username("manager")
+ * .role("上長") .build(); ```
+ *
+ * <p>設計方針: - 実際のプロダクションデータに近い形式 - テストケース間での一貫性保持 - 日本語データ対応 - バリデーション制約を考慮した値設定
  */
 public class TestDataBuilder {
 
     /**
      * デフォルトユーザーのビルダーを作成
-     * 
+     *
      * @return User.UserBuilder デフォルト値が設定されたユーザービルダー
      */
     public static User.UserBuilder createDefaultUser() {
@@ -58,7 +44,7 @@ public class TestDataBuilder {
 
     /**
      * 管理者ユーザーのビルダーを作成
-     * 
+     *
      * @return User.UserBuilder 管理者設定のユーザービルダー
      */
     public static User.UserBuilder createAdminUser() {
@@ -77,7 +63,7 @@ public class TestDataBuilder {
 
     /**
      * 上長ユーザーのビルダーを作成
-     * 
+     *
      * @return User.UserBuilder 上長設定のユーザービルダー
      */
     public static User.UserBuilder createManagerUser() {
@@ -96,7 +82,7 @@ public class TestDataBuilder {
 
     /**
      * 部下ユーザーのビルダーを作成
-     * 
+     *
      * @return User.UserBuilder 部下設定のユーザービルダー
      */
     public static User.UserBuilder createEmployeeUser() {
@@ -115,7 +101,7 @@ public class TestDataBuilder {
 
     /**
      * デフォルト日報のビルダーを作成
-     * 
+     *
      * @return DailyReport.DailyReportBuilder デフォルト値が設定された日報ビルダー
      */
     public static DailyReport.DailyReportBuilder createDefaultDailyReport() {
@@ -133,7 +119,7 @@ public class TestDataBuilder {
 
     /**
      * 提出済み日報のビルダーを作成
-     * 
+     *
      * @return DailyReport.DailyReportBuilder 提出済み設定の日報ビルダー
      */
     public static DailyReport.DailyReportBuilder createSubmittedDailyReport() {
@@ -151,43 +137,38 @@ public class TestDataBuilder {
 
     /**
      * デフォルトログインリクエストを作成
-     * 
+     *
      * @return LoginRequest デフォルト値のログインリクエスト
      */
     public static LoginRequest createDefaultLoginRequest() {
         return new LoginRequest(
-                TestConfig.TestConstants.EMPLOYEE_USERNAME,
-                TestConfig.TestConstants.TEST_PASSWORD
-        );
+                TestConfig.TestConstants.EMPLOYEE_USERNAME, TestConfig.TestConstants.TEST_PASSWORD);
     }
 
     /**
      * 管理者ログインリクエストを作成
-     * 
+     *
      * @return LoginRequest 管理者ログインリクエスト
      */
     public static LoginRequest createAdminLoginRequest() {
         return new LoginRequest(
-                TestConfig.TestConstants.ADMIN_USERNAME,
-                TestConfig.TestConstants.TEST_PASSWORD
-        );
+                TestConfig.TestConstants.ADMIN_USERNAME, TestConfig.TestConstants.TEST_PASSWORD);
     }
 
     /**
      * 無効なログインリクエストを作成
-     * 
+     *
      * @return LoginRequest 無効なログインリクエスト
      */
     public static LoginRequest createInvalidLoginRequest() {
         return new LoginRequest(
                 TestConfig.TestConstants.INVALID_USERNAME,
-                TestConfig.TestConstants.INVALID_PASSWORD
-        );
+                TestConfig.TestConstants.INVALID_PASSWORD);
     }
 
     /**
      * 日報作成リクエストのビルダーを作成
-     * 
+     *
      * @return DailyReportRequest.DailyReportRequestBuilder デフォルト値の日報リクエストビルダー
      */
     public static DailyReportRequest.DailyReportRequestBuilder createDefaultDailyReportRequest() {
@@ -200,7 +181,7 @@ public class TestDataBuilder {
 
     /**
      * 更新用日報リクエストのビルダーを作成
-     * 
+     *
      * @return DailyReportRequest.DailyReportRequestBuilder 更新用の日報リクエストビルダー
      */
     public static DailyReportRequest.DailyReportRequestBuilder createUpdateDailyReportRequest() {
@@ -212,9 +193,8 @@ public class TestDataBuilder {
     }
 
     /**
-     * バリデーションエラー用日報リクエストのビルダーを作成
-     * （タイトルが長すぎる、内容が空など）
-     * 
+     * バリデーションエラー用日報リクエストのビルダーを作成 （タイトルが長すぎる、内容が空など）
+     *
      * @return DailyReportRequest.DailyReportRequestBuilder バリデーションエラー用リクエストビルダー
      */
     public static DailyReportRequest.DailyReportRequestBuilder createInvalidDailyReportRequest() {
