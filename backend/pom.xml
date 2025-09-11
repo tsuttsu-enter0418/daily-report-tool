@@ -118,6 +118,40 @@
                     </excludes>
                 </configuration>
             </plugin>
+            
+            <!-- Spotless フォーマッタープラグイン -->
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>2.43.0</version>
+                <configuration>
+                    <java>
+                        <!-- Java ファイルの対象指定 -->
+                        <includes>
+                            <include>src/main/java/**/*.java</include>
+                            <include>src/test/java/**/*.java</include>
+                        </includes>
+
+                        <!-- AOSP Style 適用 (4スペースインデント) -->
+                        <googleJavaFormat>
+                            <version>1.19.2</version>
+                            <style>AOSP</style>
+                            <reflowLongStrings>true</reflowLongStrings>
+                        </googleJavaFormat>
+
+                        <!-- 不要なインポートを削除 -->
+                        <removeUnusedImports />
+
+                        <!-- インポートの順序を統一 -->
+                        <importOrder>
+                            <order>java,javax,org,com</order>
+                        </importOrder>
+
+                        <!-- ファイル末尾の改行を統一 -->
+                        <endWithNewline />
+                    </java>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
