@@ -3,6 +3,8 @@ package com.example.dailyreport.dto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,10 +24,10 @@ import lombok.NoArgsConstructor;
 @Builder
 public class DailyReportResponse {
 
-    /** 日報ID */
+    /** 日報ID（フロントエンド側ではnumber型として扱われる） */
     private Long id;
 
-    /** 作成者ID */
+    /** 作成者ID（フロントエンド側ではnumber型として扱われる） */
     private Long userId;
 
     /** 作成者ユーザー名 */
@@ -44,6 +46,7 @@ public class DailyReportResponse {
     private String status;
 
     /** 対象日 */
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate reportDate;
 
     /** 提出日時 */

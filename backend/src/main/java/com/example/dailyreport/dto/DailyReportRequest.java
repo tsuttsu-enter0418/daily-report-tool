@@ -2,6 +2,8 @@ package com.example.dailyreport.dto;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -37,6 +39,7 @@ public class DailyReportRequest {
     private String workContent;
 
     /** 対象日 */
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @NotNull(message = "対象日は必須です")
     private LocalDate reportDate;
 
