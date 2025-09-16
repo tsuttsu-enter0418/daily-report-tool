@@ -1,5 +1,5 @@
-# Node.js 18を使用（LTS版で安定）
-FROM node:18-alpine
+# Node.js 20を使用（LTS版で安定）
+FROM node:20-alpine
 
 # 作業ディレクトリを設定
 WORKDIR /app
@@ -8,8 +8,8 @@ WORKDIR /app
 # 依存関係のキャッシュ効率化のため先にコピー
 COPY package*.json ./
 
-# 依存関係をインストール
-RUN npm install
+# 依存関係をインストール（キャッシュ効率化）
+RUN npm ci
 
 # アプリケーションコードを全てコピー
 COPY . .

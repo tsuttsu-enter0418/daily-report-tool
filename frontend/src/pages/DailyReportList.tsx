@@ -197,16 +197,13 @@ const DailyReportListComponent = () => {
               <Text color="gray.600" fontSize="md">
                 {filteredReports.length > 0
                   ? `${filteredReports.length} 件の日報が見つかりました`
-                  : "条件に一致する日報はありません"}
+                  : "日報はありません"}
               </Text>
               {filteredReports.length !== reports.length && (
                 <Text color="gray.500" fontSize="sm">
                   全 {reports.length} 件中
                 </Text>
               )}
-              <Button variant="primary" onClick={handleCreateNew}>
-                {MessageConst.ACTION.CREATE_REPORT}
-              </Button>
             </HStack>
           )}
 

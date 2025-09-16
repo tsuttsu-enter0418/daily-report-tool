@@ -18,7 +18,7 @@ import * as yup from "yup";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "../components/atoms";
 import { DatePickerField, DevModeIndicator } from "../components/molecules";
-import { useDailyReports, useToast } from "../hooks";
+import { useDailyReports, useRightPane, useToast } from "../hooks";
 import { MessageConst } from "../constants/MessageConst";
 import { useState, useCallback, useMemo, memo, useEffect } from "react";
 import type { DailyReportCreateRequest, DailyReportResponse } from "../types";
@@ -81,6 +81,9 @@ const DailyReportFormComponent = ({
   // 日報データ管理フック
   const { createReport, updateReport, getReport } = useDailyReports(undefined, false);
 
+  // 右ペイン操作
+  const { actions } = useRightPane();
+
   // reportIdをnumberに変換（propsが優先、なければuseParamsから取得）
   const reportId = useMemo(() => {
     if (propReportId !== undefined) {
@@ -96,9 +99,9 @@ const DailyReportFormComponent = ({
 
   const handleEdit = useCallback(
     (reportId: number) => {
-      navigate(`/report/edit/${reportId}`);
+      actions.showEdit(reportId);
     },
-    [navigate],
+    [actions],
   );
 
   // 今日の日付をYYYY-MM-DD形式で取得
