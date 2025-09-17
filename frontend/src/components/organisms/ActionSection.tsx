@@ -22,14 +22,14 @@ type ActionSectionProps = {
  * - 全ユーザー: 日報作成・履歴閲覧可能
  * - React Router によるSPA内遷移
  */
-const ActionSectionComponent = ({ user }: ActionSectionProps) => {
+const ActionSectionComponent = () => {
   const { actions } = useRightPane();
 
   // 上長・管理者かどうかの判定
-  const canAccessSupervisorDashboard = user.role === "上長" || user.role === "管理者";
+  // const canAccessSupervisorDashboard = user.role === "上長" || user.role === "管理者";
 
   // 右ペイン状態更新ハンドラー（useRightPane内でメモ化済み）
-  const handleSupervisorDashboard = actions.showSupervisor;
+  // const handleSupervisorDashboard = actions.showSupervisor;
   const handleCreateReport = actions.showCreate;
   const handleViewHistory = actions.showList;
 
@@ -40,7 +40,8 @@ const ActionSectionComponent = ({ user }: ActionSectionProps) => {
           利用可能な機能
         </Text>
         <VStack gap={3} align="start">
-          {canAccessSupervisorDashboard && (
+          {/* 上司ダッシュボード(開発予定) */}
+          {/* {canAccessSupervisorDashboard && (
             <Button
               variant="secondary"
               w="100%"
@@ -49,7 +50,7 @@ const ActionSectionComponent = ({ user }: ActionSectionProps) => {
             >
               {MessageConst.ACTION.VIEW_TEAM_REPORTS}
             </Button>
-          )}
+          )} */}
           <Button variant="secondary" w="100%" justifyContent="left" onClick={handleCreateReport}>
             {MessageConst.ACTION.CREATE_REPORT}
           </Button>

@@ -24,3 +24,6 @@ README.md
 # OS生成ファイル
 .DS_Store
 Thumbs.db
+
+# カバレッジレポート
+coverages

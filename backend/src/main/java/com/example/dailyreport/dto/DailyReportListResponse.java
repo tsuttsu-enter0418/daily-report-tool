@@ -1,30 +1,22 @@
 package com.example.dailyreport.dto;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * 日報一覧レスポンスDTO
- * 
- * 機能:
- * - 日報一覧情報の軽量レスポンスデータ送信
- * - 必要最小限の情報のみ含有（パフォーマンス最適化）
- * - リスト表示用のプレビュー情報提供
- * - 上司ダッシュボードでの表示に最適化
- * 
- * 使用場面:
- * - GET /api/daily-reports （一覧取得）
- * - GET /api/daily-reports/my （自分の日報一覧）
- * - GET /api/daily-reports/subordinates （部下の日報一覧）
- * 
- * 特徴:
- * - 作業内容はプレビュー版のみ（100文字制限）
- * - 必要な情報のみで軽量化
+ *
+ * <p>機能: - 日報一覧情報の軽量レスポンスデータ送信 - 必要最小限の情報のみ含有（パフォーマンス最適化） - リスト表示用のプレビュー情報提供 - 上司ダッシュボードでの表示に最適化
+ *
+ * <p>使用場面: - GET /api/daily-reports （一覧取得） - GET /api/daily-reports/my （自分の日報一覧） - GET
+ * /api/daily-reports/subordinates （部下の日報一覧）
+ *
+ * <p>特徴: - 作業内容はプレビュー版のみ（100文字制限） - 必要な情報のみで軽量化
  */
 @Data
 @NoArgsConstructor
@@ -64,6 +56,7 @@ public class DailyReportListResponse {
 
     /**
      * 下書きかどうかを判定
+     *
      * @return 下書きの場合true
      */
     public boolean isDraft() {
@@ -72,6 +65,7 @@ public class DailyReportListResponse {
 
     /**
      * 提出済みかどうかを判定
+     *
      * @return 提出済みの場合true
      */
     public boolean isSubmitted() {
@@ -79,18 +73,17 @@ public class DailyReportListResponse {
     }
 
     /**
-     * 表示用作成者名を取得
-     * displayNameがある場合はそれを、ない場合はusernameを返す
+     * 表示用作成者名を取得 displayNameがある場合はそれを、ない場合はusernameを返す
+     *
      * @return 表示用作成者名
      */
     public String getAuthorDisplayName() {
-        return displayName != null && !displayName.trim().isEmpty() 
-            ? displayName 
-            : username;
+        return displayName != null && !displayName.trim().isEmpty() ? displayName : username;
     }
 
     /**
      * ステータス表示用文字列を取得
+     *
      * @return ステータス文字列（提出済み/下書き）
      */
     public String getStatusDisplayText() {

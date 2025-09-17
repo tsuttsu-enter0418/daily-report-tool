@@ -1,35 +1,27 @@
 package com.example.dailyreport.unit.entity;
 
-import com.example.dailyreport.config.TestConfig;
-import com.example.dailyreport.config.TestDataBuilder;
-import com.example.dailyreport.entity.User;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import com.example.dailyreport.config.TestConfig;
+import com.example.dailyreport.config.TestDataBuilder;
+import com.example.dailyreport.entity.User;
 
 /**
  * Userエンティティの単体テストクラス
- * 
- * テスト対象:
- * - エンティティの基本動作（getter/setter）
- * - @PrePersist, @PreUpdate メソッドの動作
- * - Lombokアノテーションの動作確認
- * - デフォルト値設定の確認
- * - バリデーション制約の動作確認
- * 
- * テスト方針:
- * - Given-When-Then パターンを使用
- * - TestDataBuilderによるテストデータ生成
- * - エンティティレベルでの動作確認（データベース接続なし）
- * 
- * 注意事項:
- * - このテストはデータベースに接続しない純粋な単体テスト
- * - JPA関連の動作確認はRepositoryテストで実施
+ *
+ * <p>テスト対象: - エンティティの基本動作（getter/setter） - @PrePersist, @PreUpdate メソッドの動作 - Lombokアノテーションの動作確認 -
+ * デフォルト値設定の確認 - バリデーション制約の動作確認
+ *
+ * <p>テスト方針: - Given-When-Then パターンを使用 - TestDataBuilderによるテストデータ生成 - エンティティレベルでの動作確認（データベース接続なし）
+ *
+ * <p>注意事項: - このテストはデータベースに接続しない純粋な単体テスト - JPA関連の動作確認はRepositoryテストで実施
  */
 @DisplayName("User エンティティテスト")
 class UserTest {
@@ -61,13 +53,14 @@ class UserTest {
         @DisplayName("Builder パターン動作確認")
         void createUser_UsingBuilder_ShouldCreateCorrectUser() {
             // Given: Builderを使用してユーザーを作成
-            User builtUser = User.builder()
-                    .username("testbuilder")
-                    .email("builder@test.com")
-                    .password("encoded_password")
-                    .role("管理者")
-                    .displayName("テストビルダー")
-                    .build();
+            User builtUser =
+                    User.builder()
+                            .username("testbuilder")
+                            .email("builder@test.com")
+                            .password("encoded_password")
+                            .role("管理者")
+                            .displayName("テストビルダー")
+                            .build();
 
             // When: 値を確認
             // Then: 設定した値が正しく反映されている

@@ -233,7 +233,7 @@ cd backend
 
 # 4. 認証なしでAPI直接テスト
 curl http://localhost:8080/api/daily-reports/my
-curl http://localhost:8080/swagger-ui.html
+curl http://localhost:8080/swagger-ui/index.html
 ```
 
 **注意**：

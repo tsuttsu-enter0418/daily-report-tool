@@ -326,7 +326,8 @@
     "SHELL": "/opt/homebrew/bin/fish",
     "UV_CACHE_DIR": "~/.cache/uv",
     "UV_PYTHON_PREFERENCE": "managed",
-    "NODE_OPTIONS": "--max-old-space-size=4096"
+    "NODE_OPTIONS": "--max-old-space-size=4096",
+    "API_TIMEOUT_MS": "600000"
   },
   "preferredNotifChannel": "terminal_bell",
   "includeCoAuthoredBy": false
