@@ -1,6 +1,8 @@
 package com.example.dailyreport.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,9 +28,11 @@ public class LoginRequest {
 
     /** ログイン用ユーザー名 */
     @Schema(description = "ユーザー名", example = "admin", required = true)
+    @NotEmpty(message = "ユーザー名を入力してください。")
     private String username;
 
     /** プレーンテキストパスワード（認証時にハッシュ化と比較） */
     @Schema(description = "パスワード", example = "password", required = true)
+    @NotEmpty(message = "パスワードを入力してください。")
     private String password;
 }

@@ -2,10 +2,12 @@ package com.example.dailyreport.controller;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import javax.naming.Binding;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.dailyreport.dto.LoginRequest;
@@ -21,16 +23,22 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 /**
  * 認証関連のAPIエンドポイントを提供するコントローラー
  *
  * <p>
- * 主な機能: - ユーザーログイン認証 - JWT トークンの発行 - 認証エラーハンドリング
+ * 主な機能: 
+ * - ユーザーログイン認証 
+ * - JWT トークンの発行 
+ * - 認証エラーハンドリング
  *
  * <p>
- * エンドポイント: - POST /api/auth/login: ユーザーログイン - GET /api/auth/validate: JWTトークン有効性検証 - GET
- * /api/auth/me: 現在のユーザー情報取得
+ * エンドポイント: 
+ * - POST /api/auth/login: ユーザーログイン 
+ * - GET /api/auth/validate: JWTトークン有効性検証 
+ * - GET /api/auth/me: 現在のユーザー情報取得
  */
 @RestController
 @RequestMapping("/api/auth")
