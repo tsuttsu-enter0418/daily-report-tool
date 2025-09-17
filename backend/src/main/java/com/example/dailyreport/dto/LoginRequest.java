@@ -2,6 +2,7 @@ package com.example.dailyreport.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,6 +18,7 @@ import lombok.NoArgsConstructor;
  * デフォルトコンストラクタ生成（JSON用） - @AllArgsConstructor: 全フィールドコンストラクタ生成
  */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "ログインリクエスト情報")
