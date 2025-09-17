@@ -20,11 +20,11 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 class BaseEntity {
 
-    /** 日報作成日時 */
+    /** 作成日時 */
     @Column(name = "created_at", nullable = false)
     public LocalDateTime createdAt;
 
-    /** 日報更新日時 */
+    /** 更新日時 */
     @Column(name = "updated_at", nullable = false)
     public LocalDateTime updatedAt;
 
