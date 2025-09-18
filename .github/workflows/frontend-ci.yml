@@ -168,21 +168,51 @@ jobs:
           cache: "npm"
           cache-dependency-path: "${{ env.WORKING_DIR }}/package-lock.json"
 
+      # AWS認証情報の診断
+      - name: Debug AWS credentials
+        run: |
+          echo "🔍 AWS認証情報の診断中..."
+          echo "AWS_ACCESS_KEY_ID exists: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}"
+          echo "AWS_SECRET_ACCESS_KEY exists: ${{ secrets.AWS_SECRET_ACCESS_KEY != '' }}"
+          
+          # アクセスキーIDの最初の4文字のみ表示（セキュリティ考慮）
+          if [ -n "${{ secrets.AWS_ACCESS_KEY_ID }}" ]; then
+            echo "AWS_ACCESS_KEY_ID prefix: $(echo '${{ secrets.AWS_ACCESS_KEY_ID }}' | cut -c1-4)***"
+          else
+            echo "❌ AWS_ACCESS_KEY_ID が設定されていません"
+          fi
+
       # AWS認証設定
       - name: Configure AWS credentials
+        id: aws-auth
         uses: aws-actions/configure-aws-credentials@v4
         with:
           # GitHub SecretsにAWSの認証情報を設定
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1 # 東京リージョン
+        continue-on-error: true
 
       # AWS認証確認
       - name: Verify AWS credentials
+        if: steps.aws-auth.outcome == 'success'
         run: |
           echo "🔐 AWS認証を確認中..."
           aws sts get-caller-identity
           echo "✅ AWS認証成功"
+
+      # 認証失敗時の詳細情報
+      - name: AWS authentication failed
+        if: steps.aws-auth.outcome == 'failure'
+        run: |
+          echo "❌ AWS認証に失敗しました"
+          echo "🔧 修正手順:"
+          echo "1. GitHub リポジトリ → Settings → Secrets and variables → Actions"
+          echo "2. 以下のSecretsを追加:"
+          echo "   - AWS_ACCESS_KEY_ID: AWSアクセスキーID"
+          echo "   - AWS_SECRET_ACCESS_KEY: AWSシークレットアクセスキー"
+          echo "3. IAMユーザーがプログラマティックアクセス有効か確認"
+          exit 1
 
       # デプロイスクリプトの存在確認と実行権限付与
       - name: Verify and prepare deploy script
