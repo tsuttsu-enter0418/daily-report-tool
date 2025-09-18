@@ -20,8 +20,11 @@ jobs:
   ci:
     name: ci-job
     runs-on: ubuntu-latest
+    # デプロイジョブが参照できるよう出力を定義
+    outputs:
+      ci_success: ${{ steps.ci-results.outputs.ci_success }}
     env:
-      NODE_VERSION: "18"
+      NODE_VERSION: "20"
       WORKING_DIR: "frontend"
     steps:
       - name: Checkout repository
@@ -128,18 +131,19 @@ jobs:
              [ "${{ steps.test.outcome }}" == "success" ] && \
              [ "${{ steps.build.outcome }}" == "success" ]; then
             echo "ci_success=true" >> $GITHUB_OUTPUT
+            echo "✅ すべてのチェックが正常に完了しました！"
           else
             echo "ci_success=false" >> $GITHUB_OUTPUT
+            echo "❌ いずれかのステップが失敗しました。詳細はログを確認してください。"
           fi
 
-      - name: Final result check
+      # CI失敗時のみジョブを失敗させる
+      - name: Final CI check
         if: always()
         run: |
           if [ "${{ steps.ci-results.outputs.ci_success }}" != "true" ]; then
-            echo "❌ いずれかのステップが失敗しました。詳細はログを確認してください。"
+            echo "CI checks failed. Stopping workflow."
             exit 1
-          else
-            echo "✅ すべてのチェックが正常に完了しました！"
           fi
 
   # デプロイジョブ - mainブランチへのpushかつCIが成功した場合のみ実行
@@ -149,9 +153,9 @@ jobs:
     # CIジョブが完了してから実行
     needs: ci
     # mainブランチへのpushかつCIが成功した場合のみ実行
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.ci.result == 'success'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.ci.outputs.ci_success == 'true'
     env:
-      NODE_VERSION: "18"
+      NODE_VERSION: "20"
       WORKING_DIR: "frontend"
     steps:
       - name: Checkout repository
@@ -173,9 +177,22 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1 # 東京リージョン
 
-      # デプロイスクリプトに実行権限付与
-      - name: Make deploy script executable
-        run: chmod +x ./scripts/deploy-frontend.sh
+      # AWS認証確認
+      - name: Verify AWS credentials
+        run: |
+          echo "🔐 AWS認証を確認中..."
+          aws sts get-caller-identity
+          echo "✅ AWS認証成功"
+
+      # デプロイスクリプトの存在確認と実行権限付与
+      - name: Verify and prepare deploy script
+        run: |
+          if [ ! -f "./scripts/deploy-frontend.sh" ]; then
+            echo "❌ デプロイスクリプトが見つかりません: ./scripts/deploy-frontend.sh"
+            exit 1
+          fi
+          chmod +x ./scripts/deploy-frontend.sh
+          echo "✅ デプロイスクリプトの準備完了"
 
       # デプロイ実行
       - name: Deploy to AWS
