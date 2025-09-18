@@ -122,7 +122,7 @@ jobs:
           echo "詳細なログは「Artifacts」からダウンロードできます。" >> $GITHUB_STEP_SUMMARY
 
       # CI結果をjobの出力として設定（デプロイジョブで参照用）
-      - name: Set CI results and final check
+      - name: Set CI results as outputs
         id: ci-results
         if: always()
         run: |
@@ -135,6 +135,14 @@ jobs:
           else
             echo "ci_success=false" >> $GITHUB_OUTPUT
             echo "❌ いずれかのステップが失敗しました。詳細はログを確認してください。"
+          fi
+
+      # CI失敗時のみジョブを失敗させる
+      - name: Final CI check
+        if: always()
+        run: |
+          if [ "${{ steps.ci-results.outputs.ci_success }}" != "true" ]; then
+            echo "CI checks failed. Stopping workflow."
             exit 1
           fi
 
