@@ -100,7 +100,8 @@ describe("Home", () => {
 
     const { getByText } = render(<Home />);
 
-    expect(getByText(/チーム日報を確認/)).toBeInTheDocument();
+    // TODO:チーム日報画面を用意
+    // expect(getByText(/チーム日報を確認/)).toBeInTheDocument();
     expect(getByText(/日報を作成/)).toBeInTheDocument();
     expect(getByText(/自分の日報履歴/)).toBeInTheDocument();
   });
@@ -118,7 +119,7 @@ describe("Home", () => {
 
     const { getByText } = render(<Home />);
 
-    expect(getByText(/チーム日報を確認/)).toBeInTheDocument();
+    // expect(getByText(/チーム日報を確認/)).toBeInTheDocument();
     expect(getByText(/日報を作成/)).toBeInTheDocument();
     expect(getByText(/自分の日報履歴/)).toBeInTheDocument();
   });

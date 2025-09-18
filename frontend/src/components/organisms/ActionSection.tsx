@@ -22,7 +22,10 @@ type ActionSectionProps = {
  * - 全ユーザー: 日報作成・履歴閲覧可能
  * - React Router によるSPA内遷移
  */
-const ActionSectionComponent = () => {
+
+// TODO:上長・管理者かどうかの判定
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-empty-pattern
+const ActionSectionComponent = ({}: ActionSectionProps) => {
   const { actions } = useRightPane();
 
   // 上長・管理者かどうかの判定

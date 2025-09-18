@@ -136,12 +136,6 @@ describe("DailyReportList", () => {
 
       expect(screen.getByText(MessageConst.REPORT.LIST_TITLE)).toBeInTheDocument();
     });
-
-    it("新規作成ボタンが表示される", () => {
-      render(<DailyReportList />);
-
-      expect(screen.getByText(MessageConst.ACTION.CREATE_REPORT)).toBeInTheDocument();
-    });
   });
 
   describe("状態管理", () => {
@@ -201,16 +195,6 @@ describe("DailyReportList", () => {
   });
 
   describe("ナビゲーション機能", () => {
-    it("新規作成ボタンクリック時に新規作成アクションを実行する", async () => {
-      const user = userEvent.setup();
-      render(<DailyReportList />);
-
-      const createButton = screen.getByText(MessageConst.ACTION.CREATE_REPORT);
-      await user.click(createButton);
-
-      expect(mockUseRightPane.showCreate).toHaveBeenCalled();
-    });
-
     it("詳細ボタン押下時にトーストを表示", async () => {
       const user = userEvent.setup();
       render(<DailyReportList />);
@@ -378,15 +362,6 @@ describe("DailyReportList", () => {
         name: MessageConst.REPORT.LIST_TITLE,
       });
       expect(mainHeading).toBeInTheDocument();
-    });
-
-    it("ボタンに適切なアクセシブル名が設定されている", () => {
-      render(<DailyReportList />);
-
-      const createButton = screen.getByRole("button", {
-        name: MessageConst.ACTION.CREATE_REPORT,
-      });
-      expect(createButton).toBeInTheDocument();
     });
   });
 

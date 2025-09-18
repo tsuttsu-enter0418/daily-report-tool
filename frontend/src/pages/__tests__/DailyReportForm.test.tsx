@@ -24,6 +24,13 @@ vi.mock("react-router-dom", async () => {
 const mockCreateReport = vi.fn();
 const mockUpdateReport = vi.fn();
 const mockGetReport = vi.fn();
+const mocKActions = {
+  showCreate: vi.fn(),
+  showEdit: vi.fn(),
+  showList: vi.fn(),
+  showDetail: vi.fn(),
+  showSupervisor: vi.fn(),
+};
 const mockToast = {
   submitted: vi.fn(),
   updated: vi.fn(),
@@ -39,6 +46,10 @@ vi.mock("@/hooks", () => ({
     getReport: mockGetReport,
   }),
   useToast: () => mockToast,
+  useRightPane: () => ({
+    view: "create",
+    actions: mocKActions,
+  }),
 }));
 
 // 環境変数のモック

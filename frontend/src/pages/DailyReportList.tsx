@@ -1,6 +1,5 @@
 import { Box, Heading, VStack, HStack, Text, SimpleGrid } from "@chakra-ui/react";
 import { useState, useCallback, useMemo, memo } from "react";
-import { Button } from "../components/atoms";
 import {
   DeleteConfirmDialog,
   PersonalReportCard,

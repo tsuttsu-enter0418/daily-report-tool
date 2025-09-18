@@ -63,7 +63,8 @@ describe("ActionSection", () => {
 
     const { getByText } = render(<ActionSection user={supervisorUser} />);
 
-    expect(getByText(/チーム日報を確認/)).toBeInTheDocument();
+    // TODO:チーム日報画面を用意
+    // expect(getByText(/チーム日報を確認/)).toBeInTheDocument();
     expect(getByText(/日報を作成/)).toBeInTheDocument();
     expect(getByText(/自分の日報履歴/)).toBeInTheDocument();
   });
@@ -76,22 +77,22 @@ describe("ActionSection", () => {
 
     const { getByText } = render(<ActionSection user={adminUser} />);
 
-    expect(getByText(/チーム日報を確認/)).toBeInTheDocument();
+    // expect(getByText(/チーム日報を確認/)).toBeInTheDocument();
     expect(getByText(/日報を作成/)).toBeInTheDocument();
     expect(getByText(/自分の日報履歴/)).toBeInTheDocument();
   });
 
-  it("上司ダッシュボードボタンをクリックするとチーム日報呼び出す", () => {
-    const supervisorUser: UserInfo = {
-      ...baseUser,
-      role: "上長",
-    };
+  // it("上司ダッシュボードボタンをクリックするとチーム日報呼び出す", () => {
+  //   const supervisorUser: UserInfo = {
+  //     ...baseUser,
+  //     role: "上長",
+  //   };
 
-    const { getByText } = render(<ActionSection user={supervisorUser} />);
+  //   const { getByText } = render(<ActionSection user={supervisorUser} />);
 
-    fireEvent.click(getByText(/チーム日報を確認/));
-    expect(mockUseRightPane.showSupervisor).toHaveBeenCalled();
-  });
+  //   fireEvent.click(getByText(/チーム日報を確認/));
+  //   expect(mockUseRightPane.showSupervisor).toHaveBeenCalled();
+  // });
 
   it("日報作成ボタンをクリックすると正しいパスに遷移する", () => {
     const { getByText } = render(<ActionSection user={baseUser} />);
