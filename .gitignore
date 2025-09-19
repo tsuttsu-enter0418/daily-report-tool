@@ -49,9 +49,41 @@ Thumbs.db
 *.swo
 *~
 
+# Docker関連
+.dockerignore
+Dockerfile.dev
+docker-compose.override.yml
+docker-compose.prod.yml
+
+# AWS関連
+.aws/
+aws-credentials.json
+*.pem
+*.key
+ecr-login.sh
+
+# スクリプト実行ログ
+scripts/*.log
+scripts/output/
+build-logs/
+deploy-logs/
+
+# 一時的なビルドファイル
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+
+# セキュリティ関連
+secrets/
+private/
+credentials/
+.credentials
+
 # 個別ファイル除外
 frontend/部品手配システムマイグレーション.md
 AWS_SETUP_GUIDE.md
 CLOUDFRONT_CACHE_GUIDE.md
 DNS_CONNECTION_ISSUE_RESOLUTION.md
 JUNIT_IMPLEMENTATION_REPORT.md
+scripts/push-to-ecr.sh
