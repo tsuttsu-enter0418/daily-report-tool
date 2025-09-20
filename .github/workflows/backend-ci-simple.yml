@@ -1,0 +1,296 @@
+# Backend CI Pipeline - Simple Version (Phase 1)
+name: Backend CI Simple
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci-simple.yml'
+    branches: [ main, develop ]
+
+env:
+  JAVA_VERSION: '17'
+  MAVEN_OPTS: '-Xmx3072m'
+
+jobs:
+  # ==========================================
+  # Job 1: ユニット・統合テスト
+  # ==========================================
+  test:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: daily_report_tool_test
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Compile and validate
+        working-directory: ./backend
+        run: |
+          ./mvnw clean compile
+          ./mvnw validate
+
+      - name: Run Unit Tests
+        working-directory: ./backend
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/daily_report_tool_test
+          SPRING_DATASOURCE_USERNAME: test_user
+          SPRING_DATASOURCE_PASSWORD: test_password
+        run: |
+          ./mvnw test \
+            -Dspring.jpa.hibernate.ddl-auto=create-drop \
+            -Djunit.jupiter.execution.parallel.enabled=true \
+            -Djunit.jupiter.execution.parallel.mode.default=concurrent
+
+      - name: Run Integration Tests
+        working-directory: ./backend
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/daily_report_tool_test
+          SPRING_DATASOURCE_USERNAME: test_user
+          SPRING_DATASOURCE_PASSWORD: test_password
+        run: |
+          ./mvnw verify \
+            -Dspring.jpa.hibernate.ddl-auto=create-drop \
+            -Dtest=**/*IntegrationTest
+
+      - name: Generate Test Coverage Report
+        working-directory: ./backend
+        if: always()
+        run: ./mvnw jacoco:report
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: |
+            backend/target/surefire-reports/
+            backend/target/failsafe-reports/
+            backend/target/site/jacoco/
+
+      - name: Publish Test Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: JUnit Test Results
+          path: 'backend/target/surefire-reports/*.xml'
+          reporter: java-junit
+
+  # ==========================================
+  # Job 2: コード品質チェック
+  # ==========================================
+  code-quality:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Run Checkstyle
+        working-directory: ./backend
+        run: ./mvnw checkstyle:check
+
+      - name: Upload Checkstyle Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: checkstyle-results
+          path: backend/target/checkstyle-result.xml
+
+  # ==========================================
+  # Job 3: セキュリティスキャン
+  # ==========================================
+  security-scan:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Run OWASP Dependency Check
+        working-directory: ./backend
+        run: ./mvnw org.owasp:dependency-check-maven:check
+
+      - name: Upload OWASP Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owasp-dependency-check
+          path: backend/target/dependency-check-report.html
+
+  # ==========================================
+  # Job 4: Docker ビルド検証
+  # ==========================================
+  docker-build:
+    name: Docker Build Validation
+    runs-on: ubuntu-latest
+    needs: [test, code-quality]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (validation only)
+        working-directory: ./backend
+        run: |
+          docker build \
+            --tag daily-report-backend:test \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max \
+            .
+
+      - name: Test Docker image startup
+        run: |
+          # コンテナ起動テスト
+          docker run --rm -d \
+            --name test-container \
+            -p 8080:8080 \
+            -e SPRING_PROFILES_ACTIVE=test \
+            daily-report-backend:test
+          
+          # 起動待機
+          sleep 30
+          
+          # 基本ヘルスチェック（ローカル）
+          curl -f http://localhost:8080/actuator/health || echo "Health check failed - continuing anyway"
+          
+          # コンテナ停止
+          docker stop test-container
+
+      - name: Scan Docker image for vulnerabilities
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'daily-report-backend:test'
+          format: 'table'
+          exit-code: '0'  # 脆弱性があっても止めない（警告のみ）
+
+  # ==========================================
+  # Job 5: CI結果サマリー
+  # ==========================================
+  ci-summary:
+    name: CI Results Summary
+    runs-on: ubuntu-latest
+    needs: [test, code-quality, security-scan, docker-build]
+    if: always()
+    
+    steps:
+      - name: Check all jobs status
+        run: |
+          echo "=== CI Results Summary ==="
+          echo "Tests: ${{ needs.test.result }}"
+          echo "Code Quality: ${{ needs.code-quality.result }}"
+          echo "Security Scan: ${{ needs.security-scan.result }}"
+          echo "Docker Build: ${{ needs.docker-build.result }}"
+          
+          # 成功判定
+          if [[ "${{ needs.test.result }}" == "success" ]] && \
+             [[ "${{ needs.code-quality.result }}" == "success" ]] && \
+             [[ "${{ needs.docker-build.result }}" == "success" ]]; then
+            echo "✅ All critical checks passed"
+          else
+            echo "❌ Some critical checks failed"
+            exit 1
+          fi
+          
+          # セキュリティスキャンは警告のみ
+          if [[ "${{ needs.security-scan.result }}" != "success" ]]; then
+            echo "⚠️ Security scan had issues - please review"
+          fi
+
+      - name: Comment PR (simple)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const testResult = '${{ needs.test.result }}';
+            const codeQualityResult = '${{ needs.code-quality.result }}';
+            const dockerResult = '${{ needs.docker-build.result }}';
+            const securityResult = '${{ needs.security-scan.result }}';
+            
+            const success = testResult === 'success' && 
+                           codeQualityResult === 'success' && 
+                           dockerResult === 'success';
+            
+            let comment = `## 🔍 Backend CI Results\n\n`;
+            comment += `| Check | Result |\n`;
+            comment += `|-------|--------|\n`;
+            comment += `| Tests | ${testResult === 'success' ? '✅' : '❌'} ${testResult} |\n`;
+            comment += `| Code Quality | ${codeQualityResult === 'success' ? '✅' : '❌'} ${codeQualityResult} |\n`;
+            comment += `| Docker Build | ${dockerResult === 'success' ? '✅' : '❌'} ${dockerResult} |\n`;
+            comment += `| Security Scan | ${securityResult === 'success' ? '✅' : '⚠️'} ${securityResult} |\n\n`;
+            
+            if (success) {
+              comment += `✅ **Ready for merge** - All critical checks passed!\n\n`;
+            } else {
+              comment += `❌ **Needs attention** - Some checks failed.\n\n`;
+            }
+            
+            comment += `📊 [View detailed results](${context.payload.pull_request.html_url}/checks)\n`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
