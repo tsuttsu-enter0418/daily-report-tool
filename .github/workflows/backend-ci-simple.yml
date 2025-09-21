@@ -22,7 +22,7 @@ jobs:
     
     services:
       postgres:
-        image: postgres:15
+        image: postgres:17
         env:
           POSTGRES_DB: daily_report_tool_test
           POSTGRES_USER: test_user
@@ -44,18 +44,22 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
-
+      # Mavenの依存関係をキャッシュ（Actionsの機能）→速度向上
       - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:
+          # m2＝Mavenのキャッシュ
           path: ~/.m2
+          # キャッシュの一意のkeyを作成する→検索して一致すればそのキャッシュを使用
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          # キャッシュがない場合の予防措置
           restore-keys: ${{ runner.os }}-m2
 
       - name: Compile and validate
         working-directory: ./backend
         run: |
           ./mvnw clean compile
+          # pom.xmlの検証
           ./mvnw validate
 
       - name: Run Unit Tests
@@ -71,6 +75,7 @@ jobs:
             -Djunit.jupiter.execution.parallel.enabled=true \
             -Djunit.jupiter.execution.parallel.mode.default=concurrent
 
+      # 統合テスト（ただし、まだ統合テストのコードは書けていないので保留したい）
       - name: Run Integration Tests
         working-directory: ./backend
         env:
@@ -203,6 +208,7 @@ jobs:
       - name: Test Docker image startup
         run: |
           # コンテナ起動テスト
+          # ymlとproperties二つあるけど大丈夫？
           docker run --rm -d \
             --name test-container \
             -p 8080:8080 \
