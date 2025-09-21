@@ -69,6 +69,8 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/daily_report_tool_test
           SPRING_DATASOURCE_USERNAME: test_user
           SPRING_DATASOURCE_PASSWORD: test_password
+          SPRING_DATASOURCE_DRIVER: org.postgresql.Driver
+          HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
         run: |
           ./mvnw test \
             -Dspring.jpa.hibernate.ddl-auto=create-drop \
@@ -83,6 +85,8 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/daily_report_tool_test
           SPRING_DATASOURCE_USERNAME: test_user
           SPRING_DATASOURCE_PASSWORD: test_password
+          SPRING_DATASOURCE_DRIVER: org.postgresql.Driver
+          HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
         run: |
           ./mvnw verify \
             -Dspring.jpa.hibernate.ddl-auto=create-drop \
