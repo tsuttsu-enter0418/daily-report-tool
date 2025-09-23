@@ -2,97 +2,22 @@
 
 React + Spring Boot + PostgreSQL で構築された企業向け日報管理システム
 
-## 🚀 クイックスタート
-
-### フロントエンド開発（推奨）
-
-実 API 統合完成により、モックまたは実 API を選択可能：
-
-```bash
-cd frontend
-npm install
-npm run dev          # モックAPIで起動 → http://localhost:3000
-npm run dev:api      # 実APIで起動（要バックエンド起動）
-```
-
-### フルスタック開発
-
-```bash
-docker-compose up    # 全サービス起動（推奨：完全動作確認）
-```
+## 背景・目的
+### 初めての個人開発
+ほぼ経験はないが学んでみたいと思った技術でシステムを構築したかったため
+### 日報を作成することによるメリットを生み出したい
+日報を出すことで報連相による上司からの的確なフィードバックを受けたり、日報を出した自身が振り返りを行うことで次に繋げることができると思う。  
+一方、実務の中で日報を提出しない後輩は「煩わしい」や「意味がない」といった意見があった。
+そこで、日報を出すことによる恩恵を受けやすいシステムを作ろうと考えた
 
 ## 📋 機能
 
 ✅ **ログイン認証**
-
 - JWT 認証によるセキュアなログイン
 - ユーザー名: `admin` / パスワード: `password`
-- Cookie 自動保存でログイン状態維持
-
-✅ **開発環境**
-
-- モック API: フロントエンド独立開発
-- 実 API 連携: バックエンド連携開発
-- Docker: フルスタック開発
-
-✅ **アーキテクチャ改善**
-
-- アトミックデザイン実装（Button/Toast の Atom 化）
-- カスタムフック導入（useLogin, useAuth）
-- 統一メッセージ管理（MessageConst）
-- ChakraUI v3.2 完全対応
-
-✅ **状態管理**
-
-- Jotai による全画面ユーザー情報参照
-- ローカルストレージ同期でページリロード対応
-- 認証状態の一元管理
-
-✅ **開発効率向上**
-
-- Lombok によるボイラープレートコード削減
-- OpenAPI/Swagger による自動 API 仕様書生成
-- type エイリアス優先による柔軟な型定義
-- モック API による独立開発環境
-
-✅ **上司ダッシュボード**
-
-- 部下の日報一覧表示・管理機能
-- ステータスフィルタリング（完了/保留/全件）
-- レスポンシブ対応（モバイル 1 列、タブレット 2 列、PC3 列）
-- アバター付きカード UI で直感的な進捗確認
-
-✅ **暖色系フレッシュデザイン**
-
-- オレンジ・アンバー・イエロー基調のカラーパレット
-- ホバーアニメーションとシャドウ効果
-- 統一された StatusBadge カラーシステム
-
-✅ **最新技術対応**
-
-- ChakraUI v3.2 完全対応（TypeScript エラー解消）
-- Vitest 設定修正（テスト環境構築完了）
-- 実 API 統合完成（モック → リアル API 移行完了）
-- **コード品質向上完了**（ESLint エラー 97%削減：232→3・型安全性強化）
-- **テスト品質大幅向上完了**（API サービステスト改善・ChakraProvider エラー修正・実 API テスト完全実装）
-- **アクセシビリティ強化完了**（Spinner コンポーネント aria-label 追加・WCAG 準拠向上）
-- **テスト安定性向上完了**（ProtectedRoute テストタイムアウト解決・非同期処理最適化）
-- **コンポーネント共通化完了**（DatePickerField・DevModeIndicator の Molecule 化・再利用性向上）
-- **包括的テスト実装完了**（DailyReportForm 18 テストケース・フォーム機能完全カバレッジ）
-
-✅ **日報管理機能完成**
-
-- 日報作成・編集・削除・詳細表示の完全 CRUD 実装
-- ステータス管理（下書き ⇔ 提出済み）リアルタイム変更
-- 高度な検索機能（タイトル・内容・日付フィルタリング）
-- セキュアな削除機能（確認ダイアログ + データ保護）
-
-✅ **UX/UI 強化**
-
-- Toast 通知システム（成功・エラー・警告・情報対応）
-- 確認ダイアログシステム（操作安全性向上）
-- 権限制御強化（本人・上司・管理者の適切なアクセス制御）
-- ローディング状態とエラーハンドリング統一
+- SPA
+✅ **ホーム画面**
+✅ **日報作成**
 
 ## 🛠 技術スタック
 
@@ -106,20 +31,6 @@ docker-compose up    # 全サービス起動（推奨：完全動作確認）
 - **Axios** (HTTP 通信・API 統合)
 - **カスタムフック** (useToast, useDailyReports, useAuth 等)
 
-### テスト環境（大幅向上完了）
-
-- **Vitest** (単体テスト・統合テスト)
-- **React Testing Library** (UI コンポーネントテスト)
-- **fetch モック** (実 API 挙動シミュレーション)
-- **ChakraProvider 統合** (テストユーティリティ自動ラップ)
-- **テストファイル構成**:
-  - `apiService.test.ts` - シンプルモック API テスト (11 テスト成功)
-  - `realApi.test.ts` - 完全実 API テスト (12 テスト成功)
-  - `DailyReportForm.test.tsx` - 包括的フォームテスト (18 テストケース)
-  - `ProtectedRoute.test.tsx` - タイムアウト問題解決済み統合テスト
-  - `Login.test.tsx` - ログイン機能統合テスト
-  - `DeleteConfirmDialog.test.tsx` - ChakraProvider 対応統合テスト
-
 ### バックエンド
 
 - **Spring Boot 3.2** + **Java 17**
@@ -129,24 +40,26 @@ docker-compose up    # 全サービス起動（推奨：完全動作確認）
 - **Lombok** (ボイラープレート削減)
 - **SpringDoc OpenAPI** (API 仕様書生成)
 
-### データベース・インフラ
 
+### テスト環境
+
+- **Vitest** (単体テスト・統合テスト)
+- **React Testing Library** (UI コンポーネントテスト)
+- **fetch モック** (実 API 挙動シミュレーション)
+- **ChakraProvider 統合** (テストユーティリティ自動ラップ)
+- **JUnit**(Java テストツール)
+
+### データベース・インフラ
 - **PostgreSQL 15**
-- **pgAdmin 4** (PostgreSQL GUI 管理ツール)
 - **Docker Compose** (コンテナ管理)
 - **Maven** (依存関係管理)
 
 ### 開発・設計手法
 
 - **アトミックデザイン** (コンポーネント設計)
-- **Clean Architecture** 意識
-- **type エイリアス優先** (TypeScript 型定義)
-- **実 API 統合** (モックから完全移行)
-- **暖色系デザインシステム** (統一された UI/UX)
 - **レスポンシブデザイン** (SimpleGrid レイアウト)
 - **確認ダイアログパターン** (安全な操作確認)
 - **Toast 通知システム** (統一されたフィードバック)
-- **カスタムフック活用** (ロジック分離・再利用性向上)
 - **コード品質重視** (ESLint strict・型安全性・本番最適化)
 
 ## 📁 プロジェクト構成
@@ -156,34 +69,60 @@ daily-report-tool/
 ├── frontend/                  # React アプリケーション
 │   ├── src/
 │   │   ├── components/        # アトミックデザイン構成
-│   │   │   ├── atoms/         # 最小単位コンポーネント (Button等)
-│   │   │   ├── molecules/     # 小機能コンポーネント (DatePickerField, DevModeIndicator, SearchForm, DeleteConfirmDialog等)
-│   │   │   └── ui/            # ChakraUI設定
-│   │   ├── hooks/             # カスタムフック (useToast, useDailyReports等)
-│   │   ├── stores/            # Jotai状態管理
-│   │   ├── types/             # TypeScript型定義 (api.ts, components.ts等)
+│   │   │   ├── atoms/         # 最小単位コンポーネント (Button, HomeButton, Toast)
+│   │   │   ├── molecules/     # 小機能コンポーネント (DatePickerField, DevModeIndicator, SearchForm等)
+│   │   │   ├── organisms/     # 複合機能コンポーネント (ActionSection, DevModeSection等)
+│   │   │   └── ui/            # ChakraUI設定 (provider, toaster, color-mode等)
+│   │   ├── hooks/             # カスタムフック (useToast, useDailyReports, useAuth等)
+│   │   │   └── __tests__/     # フックのテスト
+│   │   ├── stores/            # Jotai状態管理 (userStore等)
+│   │   ├── types/             # TypeScript型定義 (api.ts, components.ts, forms.ts)
 │   │   ├── services/          # API通信・実API統合
-│   │   ├── constants/         # 定数・メッセージ
-│   │   └── pages/             # ページコンポーネント (詳細画面, 検索機能等)
+│   │   │   └── __tests__/     # APIテスト (mockApi, realApi, apiService)
+│   │   ├── constants/         # 定数・メッセージ (MessageConst)
+│   │   ├── pages/             # ページコンポーネント (詳細画面, 検索機能等)
+│   │   │   └── __tests__/     # ページテスト
+│   │   ├── utils/             # ユーティリティ関数
+│   │   │   └── validations/   # バリデーション関数
+│   │   ├── test/              # テストユーティリティ
+│   │   └── atoms/             # 追加のAtom状態管理
+│   ├── coverage/              # テストカバレッジレポート
 │   └── package.json
 ├── backend/                   # Spring Boot アプリケーション
-│   ├── src/main/java/com/example/dailyreport/
-│   │   ├── controller/        # REST API コントローラー
-│   │   │   ├── BaseController.java      # 共通認証処理基底クラス
-│   │   │   ├── AuthController.java      # 認証API
-│   │   │   └── DailyReportController.java # 日報管理API
-│   │   ├── service/           # ビジネスロジック
-│   │   ├── entity/            # JPA エンティティ (Lombok使用)
-│   │   ├── dto/               # データ転送オブジェクト
-│   │   ├── repository/        # データアクセス層
-│   │   ├── security/          # 認証・認可設定
-│   │   └── config/            # 設定クラス (OpenAPI等)
+│   ├── src/
+│   │   ├── main/java/com/example/dailyreport/
+│   │   │   ├── controller/    # REST API コントローラー
+│   │   │   │   ├── BaseController.java      # 共通認証処理基底クラス
+│   │   │   │   ├── AuthController.java      # 認証API
+│   │   │   │   └── DailyReportController.java # 日報管理API
+│   │   │   ├── service/       # ビジネスロジック
+│   │   │   ├── entity/        # JPA エンティティ (Lombok使用)
+│   │   │   ├── dto/           # データ転送オブジェクト
+│   │   │   ├── repository/    # データアクセス層
+│   │   │   ├── security/      # 認証・認可設定
+│   │   │   └── config/        # 設定クラス (OpenAPI等)
+│   │   ├── test/java/com/example/dailyreport/
+│   │   │   ├── unit/          # 単体テスト
+│   │   │   │   ├── controller/  # コントローラーテスト
+│   │   │   │   ├── service/     # サービステスト
+│   │   │   │   ├── repository/  # リポジトリテスト
+│   │   │   │   ├── security/    # セキュリティテスト
+│   │   │   │   └── entity/      # エンティティテスト
+│   │   │   ├── integration/   # 統合テスト
+│   │   │   └── config/        # テスト設定
+│   │   └── main/resources/    # 設定ファイル
 │   └── pom.xml
 ├── database/                  # PostgreSQL 初期化
 │   └── init.sql
+├── docs/                      # プロジェクトドキュメント
+│   ├── CI-CD-*.md            # CI/CD関連ドキュメント
+│   └── github-issues-*.md    # GitHub Issues テンプレート
+├── scripts/                   # デプロイメントスクリプト
+│   ├── deploy-frontend.sh    # フロントエンドデプロイ
+│   └── push-to-ecr.sh       # ECRプッシュスクリプト
 ├── docker-compose.yml         # Docker 構成
 ├── CLAUDE.md                  # 開発ガイドライン
-├── TESTING_GUIDE.md           # テスト手法ガイド
+├── DATABASE_DESIGN.md         # データベース設計書
 └── README.md
 ```
 
@@ -193,11 +132,19 @@ daily-report-tool/
 
 ```bash
 cd frontend
-npm run dev              # モックAPI使用（推奨）
+npm run dev              # 基本開発モード（環境変数による API 切替）
+npm run dev:mock         # 明示的にモックAPI使用
 npm run dev:api          # 実API使用（要バックエンド起動）
 npm run build            # 本番ビルド
+npm run build:prod       # 本番環境用ビルド
 npm run lint             # ESLint実行
+npm run lint:fix         # ESLint自動修正
+npm run format           # Prettier フォーマット実行
+npm run format:check     # フォーマット確認
+npm run typecheck        # TypeScript型チェック
+npm run check:all        # lint, format:check, typecheck 一括実行
 npm run test             # テスト実行 (改善完了: 全テスト成功・タイムアウト問題解決済み)
+npm run test:watch       # ウォッチモードテスト
 npm run test:coverage    # カバレッジ付きテスト
 npm test -- realApi      # 実APIテストのみ実行 (12テスト)
 npm test -- apiService   # モックAPIテストのみ実行 (11テスト)
@@ -208,11 +155,19 @@ npm test -- apiService   # モックAPIテストのみ実行 (11テスト)
 ```bash
 cd backend
 ./mvnw spring-boot:run   # Spring Boot起動
-./mvnw clean compile    # コンパイル
-./mvnw test             # テスト実行
+./mvnw clean compile     # コンパイル
+./mvnw test              # テスト実行
 
-# Swagger UI アクセス
-# http://localhost:8080/swagger-ui.html
+# コード品質・フォーマット
+./mvnw spotless:check    # コードフォーマット確認
+./mvnw spotless:apply    # コードフォーマット実行
+
+# テストカバレッジ
+./mvnw test jacoco:report  # テスト実行 + カバレッジレポート生成
+
+# API仕様書アクセス
+# Swagger UI: http://localhost:8080/swagger-ui.html
+# OpenAPI JSON: http://localhost:8080/v3/api-docs
 ```
 
 ### デバッグモード（JWT 認証無効化）
@@ -271,7 +226,7 @@ docker-compose up database pgadmin  # DB管理環境（PostgreSQL + pgAdmin）
 ### pgAdmin（データベース管理）
 
 - **URL**: http://localhost:5050
-- **Email**: admin@example.com
+- **Email**: admin1@example.com
 - **Password**: admin123
 
 ### PostgreSQL（データベース）
@@ -320,7 +275,7 @@ PostgreSQL + pgAdmin でデータベース管理:
 docker-compose up database pgadmin
 
 # pgAdmin アクセス: http://localhost:5050
-# Email: admin@example.com / Password: admin123
+# Email: admin1@example.com / Password: admin123
 # PostgreSQL接続: Host=database, Port=5432, DB=daily_report_tool, User=admin, Pass=reportAdmin
 ```
 
