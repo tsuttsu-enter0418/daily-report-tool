@@ -252,6 +252,7 @@ class SecurityConfigTest {
     class ErrorHandlingAndEdgeCaseTests {
 
         @Test
+        @WithMockUser(username = "admin")
         @DisplayName("境界値: 存在しないエンドポイントへのアクセス")
         void nonExistentEndpoint_ShouldReturn404() throws Exception {
             // デバッグモードでは認証をスキップし、存在しないエンドポイントは404を返す

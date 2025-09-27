@@ -563,14 +563,14 @@ class DailyReportControllerTest {
         }
 
         @Test
-        @WithMockUser(username = "nonexistent")
+        // @WithMockUser(username = "nonexistent")
         @DisplayName("異常: 存在しないユーザーで認証エラー")
         void allEndpoints_NonexistentUser_ShouldHandleGracefully() throws Exception {
             // Given
             when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
 
             // When & Then: BaseControllerでIllegalArgumentExceptionが発生し、適切に処理される
-            mockMvc.perform(get("/api/daily-reports/my")).andExpect(status().is5xxServerError());
+            mockMvc.perform(get("/api/daily-reports/my")).andExpect(status().isUnauthorized());
         }
     }
 

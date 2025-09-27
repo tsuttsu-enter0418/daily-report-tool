@@ -239,7 +239,7 @@ class UserRepositoryTest {
         @DisplayName("一意制約違反 - 重複ユーザー名")
         void save_DuplicateUsername_ShouldThrowException() {
             // Given: 既存と同じユーザー名の新しいユーザー
-            User duplicateUser = User.builder().username("testuser001") // 既存と重複
+            User duplicateUser = User.builder().username("testuser_" + dateTimeString) // 既存と重複
                     .email("different@company.com").password("password").role("部下")
                     .displayName("重複ユーザー").build();
 
