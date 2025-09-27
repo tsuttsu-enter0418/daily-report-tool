@@ -1,16 +1,24 @@
 package com.example.dailyreport.unit.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -20,7 +28,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
-
 import com.example.dailyreport.config.TestConfig;
 import com.example.dailyreport.dto.DailyReportListResponse;
 import com.example.dailyreport.dto.DailyReportRequest;
@@ -34,21 +41,26 @@ import com.example.dailyreport.service.DailyReportService;
 /**
  * DailyReportServiceクラスのユニットテスト
  *
- * <p>テスト対象: - CRUD操作（作成・取得・更新・削除） - 権限制御（本人・上司のみアクセス） - ビジネスルール（1日1件制限等）
- * - バリデーション処理 - ステータス管理（下書き・提出済み） - エラーハンドリング
+ * <p>
+ * テスト対象: - CRUD操作（作成・取得・更新・削除） - 権限制御（本人・上司のみアクセス） - ビジネスルール（1日1件制限等） - バリデーション処理 -
+ * ステータス管理（下書き・提出済み） - エラーハンドリング
  *
- * <p>テスト方針: - Mockitoによる依存関係のモック化 - 正常系・異常系の網羅的テスト - 権限制御ロジックの詳細テスト - エッジケース対応の確認
+ * <p>
+ * テスト方針: - Mockitoによる依存関係のモック化 - 正常系・異常系の網羅的テスト - 権限制御ロジックの詳細テスト - エッジケース対応の確認
  */
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
 @DisplayName("DailyReportService - 日報ビジネスロジック")
 class DailyReportServiceTest {
 
-    @Mock private DailyReportRepository dailyReportRepository;
+    @Mock
+    private DailyReportRepository dailyReportRepository;
 
-    @Mock private UserRepository userRepository;
+    @Mock
+    private UserRepository userRepository;
 
-    @InjectMocks private DailyReportService dailyReportService;
+    @InjectMocks
+    private DailyReportService dailyReportService;
 
     private User testUser;
     private User supervisorUser;
@@ -59,61 +71,34 @@ class DailyReportServiceTest {
     @BeforeEach
     void setUp() {
         // テストユーザー作成
-        testUser =
-                User.builder()
-                        .id(1L)
-                        .username(TestConfig.TestConstants.EMPLOYEE_USERNAME)
-                        .email(TestConfig.TestConstants.EMPLOYEE_EMAIL)
-                        .role(TestConfig.TestConstants.EMPLOYEE_ROLE)
-                        .displayName("田中太郎")
-                        .supervisorId(2L)
-                        .isActive(true)
-                        .build();
+        testUser = User.builder().id(1L).username(TestConfig.TestConstants.EMPLOYEE_USERNAME)
+                .email(TestConfig.TestConstants.EMPLOYEE_EMAIL)
+                .role(TestConfig.TestConstants.EMPLOYEE_ROLE).displayName("田中太郎").supervisorId(2L)
+                .isActive(true).build();
 
         // 上司ユーザー作成
-        supervisorUser =
-                User.builder()
-                        .id(2L)
-                        .username(TestConfig.TestConstants.MANAGER_USERNAME)
-                        .email(TestConfig.TestConstants.MANAGER_EMAIL)
-                        .role(TestConfig.TestConstants.MANAGER_ROLE)
-                        .displayName("佐藤課長")
-                        .isActive(true)
-                        .build();
+        supervisorUser = User.builder().id(2L).username(TestConfig.TestConstants.MANAGER_USERNAME)
+                .email(TestConfig.TestConstants.MANAGER_EMAIL)
+                .role(TestConfig.TestConstants.MANAGER_ROLE).displayName("佐藤課長").isActive(true)
+                .build();
 
         // 他のユーザー作成
-        otherUser =
-                User.builder()
-                        .id(3L)
-                        .username("other_user")
-                        .email("other@company.com")
-                        .role(TestConfig.TestConstants.EMPLOYEE_ROLE)
-                        .displayName("山田次郎")
-                        .supervisorId(4L)
-                        .isActive(true)
-                        .build();
+        otherUser = User.builder().id(3L).username("other_user").email("other@company.com")
+                .role(TestConfig.TestConstants.EMPLOYEE_ROLE).displayName("山田次郎").supervisorId(4L)
+                .isActive(true).build();
 
         // テスト日報作成
-        testDailyReport =
-                DailyReport.builder()
-                        .id(1L)
-                        .userId(testUser.getId())
-                        .title(TestConfig.TestConstants.TEST_REPORT_TITLE)
-                        .workContent(TestConfig.TestConstants.TEST_REPORT_CONTENT)
-                        .status(TestConfig.TestConstants.STATUS_DRAFT)
-                        .reportDate(LocalDate.now())
-                        .createdAt(LocalDateTime.now())
-                        .updatedAt(LocalDateTime.now())
-                        .build();
+        testDailyReport = DailyReport.builder().id(1L).userId(testUser.getId())
+                .title(TestConfig.TestConstants.TEST_REPORT_TITLE)
+                .workContent(TestConfig.TestConstants.TEST_REPORT_CONTENT)
+                .status(TestConfig.TestConstants.STATUS_DRAFT).reportDate(LocalDate.now())
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now()).build();
 
         // 有効なリクエスト作成
-        validRequest =
-                DailyReportRequest.builder()
-                        .title(TestConfig.TestConstants.TEST_REPORT_TITLE)
-                        .workContent(TestConfig.TestConstants.TEST_REPORT_CONTENT)
-                        .status(TestConfig.TestConstants.STATUS_DRAFT)
-                        .reportDate(LocalDate.now())
-                        .build();
+        validRequest = DailyReportRequest.builder()
+                .title(TestConfig.TestConstants.TEST_REPORT_TITLE)
+                .workContent(TestConfig.TestConstants.TEST_REPORT_CONTENT)
+                .status(TestConfig.TestConstants.STATUS_DRAFT).reportDate(LocalDate.now()).build();
     }
 
     @Nested
@@ -124,9 +109,8 @@ class DailyReportServiceTest {
         @DisplayName("正常: 有効なリクエストで日報作成成功")
         void createDailyReport_ValidRequest_ShouldReturnCreatedReport() {
             // Given
-            when(dailyReportRepository.existsByUserIdAndReportDate(
-                            testUser.getId(), validRequest.getReportDate()))
-                    .thenReturn(false);
+            when(dailyReportRepository.existsByUserIdAndReportDate(testUser.getId(),
+                    validRequest.getReportDate())).thenReturn(false);
             when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
             when(dailyReportRepository.save(any(DailyReport.class))).thenReturn(testDailyReport);
 
@@ -141,8 +125,8 @@ class DailyReportServiceTest {
             assertEquals(testDailyReport.getWorkContent(), result.getWorkContent());
             assertEquals(testUser.getUsername(), result.getUsername());
 
-            verify(dailyReportRepository).existsByUserIdAndReportDate(
-                    testUser.getId(), validRequest.getReportDate());
+            verify(dailyReportRepository).existsByUserIdAndReportDate(testUser.getId(),
+                    validRequest.getReportDate());
             verify(userRepository).findById(testUser.getId());
             verify(dailyReportRepository).save(any(DailyReport.class));
         }
@@ -152,16 +136,11 @@ class DailyReportServiceTest {
         void createDailyReport_SubmittedStatus_ShouldSetSubmittedAt() {
             // Given
             validRequest.setStatus(TestConfig.TestConstants.STATUS_SUBMITTED);
-            DailyReport submittedReport =
-                    DailyReport.builder()
-                            .id(1L)
-                            .userId(testUser.getId())
-                            .title(validRequest.getTitle())
-                            .workContent(validRequest.getWorkContent())
-                            .status(TestConfig.TestConstants.STATUS_SUBMITTED)
-                            .reportDate(validRequest.getReportDate())
-                            .submittedAt(LocalDateTime.now())
-                            .build();
+            DailyReport submittedReport = DailyReport.builder().id(1L).userId(testUser.getId())
+                    .title(validRequest.getTitle()).workContent(validRequest.getWorkContent())
+                    .status(TestConfig.TestConstants.STATUS_SUBMITTED)
+                    .reportDate(validRequest.getReportDate()).submittedAt(LocalDateTime.now())
+                    .build();
 
             when(dailyReportRepository.existsByUserIdAndReportDate(any(), any())).thenReturn(false);
             when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
@@ -181,16 +160,13 @@ class DailyReportServiceTest {
         @DisplayName("異常: 1日1件制限違反で例外発生")
         void createDailyReport_DuplicateDate_ShouldThrowException() {
             // Given
-            when(dailyReportRepository.existsByUserIdAndReportDate(
-                            testUser.getId(), validRequest.getReportDate()))
-                    .thenReturn(true);
+            when(dailyReportRepository.existsByUserIdAndReportDate(testUser.getId(),
+                    validRequest.getReportDate())).thenReturn(true);
 
             // When & Then
-            IllegalArgumentException exception =
-                    assertThrows(
-                            IllegalArgumentException.class,
-                            () -> dailyReportService.createDailyReport(testUser.getId(), validRequest),
-                            "1日1件制限違反でIllegalArgumentException例外が発生");
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                    () -> dailyReportService.createDailyReport(testUser.getId(), validRequest),
+                    "1日1件制限違反でIllegalArgumentException例外が発生");
 
             assertEquals("指定日の日報は既に存在します", exception.getMessage());
             verify(dailyReportRepository, never()).save(any());
@@ -204,11 +180,9 @@ class DailyReportServiceTest {
             when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
             // When & Then
-            IllegalArgumentException exception =
-                    assertThrows(
-                            IllegalArgumentException.class,
-                            () -> dailyReportService.createDailyReport(999L, validRequest),
-                            "存在しないユーザーでIllegalArgumentException例外が発生");
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                    () -> dailyReportService.createDailyReport(999L, validRequest),
+                    "存在しないユーザーでIllegalArgumentException例外が発生");
 
             assertEquals("ユーザーが見つかりません", exception.getMessage());
         }
@@ -222,26 +196,17 @@ class DailyReportServiceTest {
         @DisplayName("正常: 本人による日報更新成功")
         void updateDailyReport_OwnerUpdate_ShouldReturnUpdatedReport() {
             // Given
-            DailyReportRequest updateRequest =
-                    DailyReportRequest.builder()
-                            .title("更新されたタイトル")
-                            .workContent(TestConfig.TestConstants.UPDATED_REPORT_CONTENT)
-                            .status(TestConfig.TestConstants.STATUS_SUBMITTED)
-                            .reportDate(LocalDate.now())
-                            .build();
+            DailyReportRequest updateRequest = DailyReportRequest.builder().title("更新されたタイトル")
+                    .workContent(TestConfig.TestConstants.UPDATED_REPORT_CONTENT)
+                    .status(TestConfig.TestConstants.STATUS_SUBMITTED).reportDate(LocalDate.now())
+                    .build();
 
-            DailyReport updatedReport =
-                    DailyReport.builder()
-                            .id(testDailyReport.getId())
-                            .userId(testDailyReport.getUserId())
-                            .title(updateRequest.getTitle())
-                            .workContent(updateRequest.getWorkContent())
-                            .status(updateRequest.getStatus())
-                            .reportDate(testDailyReport.getReportDate())
-                            .submittedAt(LocalDateTime.now())
-                            .createdAt(testDailyReport.getCreatedAt())
-                            .updatedAt(LocalDateTime.now())
-                            .build();
+            DailyReport updatedReport = DailyReport.builder().id(testDailyReport.getId())
+                    .userId(testDailyReport.getUserId()).title(updateRequest.getTitle())
+                    .workContent(updateRequest.getWorkContent()).status(updateRequest.getStatus())
+                    .reportDate(testDailyReport.getReportDate()).submittedAt(LocalDateTime.now())
+                    .createdAt(testDailyReport.getCreatedAt()).updatedAt(LocalDateTime.now())
+                    .build();
 
             when(dailyReportRepository.findById(testDailyReport.getId()))
                     .thenReturn(Optional.of(testDailyReport));
@@ -249,9 +214,8 @@ class DailyReportServiceTest {
             when(dailyReportRepository.save(any(DailyReport.class))).thenReturn(updatedReport);
 
             // When
-            DailyReportResponse result =
-                    dailyReportService.updateDailyReport(
-                            testDailyReport.getId(), testUser.getId(), updateRequest);
+            DailyReportResponse result = dailyReportService
+                    .updateDailyReport(testDailyReport.getId(), testUser.getId(), updateRequest);
 
             // Then
             assertNotNull(result);
@@ -268,13 +232,10 @@ class DailyReportServiceTest {
             testDailyReport.setStatus(TestConfig.TestConstants.STATUS_SUBMITTED);
             testDailyReport.setSubmittedAt(LocalDateTime.now());
 
-            DailyReportRequest updateRequest =
-                    DailyReportRequest.builder()
-                            .title(validRequest.getTitle())
-                            .workContent(validRequest.getWorkContent())
-                            .reportDate(validRequest.getReportDate())
-                            .status(TestConfig.TestConstants.STATUS_DRAFT)
-                            .build();
+            DailyReportRequest updateRequest = DailyReportRequest.builder()
+                    .title(validRequest.getTitle()).workContent(validRequest.getWorkContent())
+                    .reportDate(validRequest.getReportDate())
+                    .status(TestConfig.TestConstants.STATUS_DRAFT).build();
 
             when(dailyReportRepository.findById(testDailyReport.getId()))
                     .thenReturn(Optional.of(testDailyReport));
@@ -283,9 +244,8 @@ class DailyReportServiceTest {
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
             // When
-            DailyReportResponse result =
-                    dailyReportService.updateDailyReport(
-                            testDailyReport.getId(), testUser.getId(), updateRequest);
+            DailyReportResponse result = dailyReportService
+                    .updateDailyReport(testDailyReport.getId(), testUser.getId(), updateRequest);
 
             // Then
             assertNotNull(result);
@@ -301,13 +261,10 @@ class DailyReportServiceTest {
                     .thenReturn(Optional.of(testDailyReport));
 
             // When & Then
-            IllegalArgumentException exception =
-                    assertThrows(
-                            IllegalArgumentException.class,
-                            () ->
-                                    dailyReportService.updateDailyReport(
-                                            testDailyReport.getId(), otherUser.getId(), validRequest),
-                            "権限のないユーザーでIllegalArgumentException例外が発生");
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                    () -> dailyReportService.updateDailyReport(testDailyReport.getId(),
+                            otherUser.getId(), validRequest),
+                    "権限のないユーザーでIllegalArgumentException例外が発生");
 
             assertEquals("権限がありません", exception.getMessage());
             verify(dailyReportRepository, never()).save(any());
@@ -320,11 +277,10 @@ class DailyReportServiceTest {
             when(dailyReportRepository.findById(999L)).thenReturn(Optional.empty());
 
             // When & Then
-            IllegalArgumentException exception =
-                    assertThrows(
-                            IllegalArgumentException.class,
-                            () -> dailyReportService.updateDailyReport(999L, testUser.getId(), validRequest),
-                            "存在しない日報でIllegalArgumentException例外が発生");
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class, () -> dailyReportService.updateDailyReport(999L,
+                            testUser.getId(), validRequest),
+                    "存在しない日報でIllegalArgumentException例外が発生");
 
             assertEquals("日報が見つかりません", exception.getMessage());
         }
@@ -343,8 +299,8 @@ class DailyReportServiceTest {
             when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
 
             // When
-            Optional<DailyReportResponse> result =
-                    dailyReportService.getDailyReportById(testDailyReport.getId(), testUser.getId());
+            Optional<DailyReportResponse> result = dailyReportService
+                    .getDailyReportById(testDailyReport.getId(), testUser.getId());
 
             // Then
             assertTrue(result.isPresent(), "本人による日報詳細取得が成功");
@@ -361,9 +317,8 @@ class DailyReportServiceTest {
             when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
 
             // When
-            Optional<DailyReportResponse> result =
-                    dailyReportService.getDailyReportById(
-                            testDailyReport.getId(), supervisorUser.getId());
+            Optional<DailyReportResponse> result = dailyReportService
+                    .getDailyReportById(testDailyReport.getId(), supervisorUser.getId());
 
             // Then
             assertTrue(result.isPresent(), "上司による部下日報詳細取得が成功");
@@ -379,8 +334,8 @@ class DailyReportServiceTest {
             when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
 
             // When
-            Optional<DailyReportResponse> result =
-                    dailyReportService.getDailyReportById(testDailyReport.getId(), otherUser.getId());
+            Optional<DailyReportResponse> result = dailyReportService
+                    .getDailyReportById(testDailyReport.getId(), otherUser.getId());
 
             // Then
             assertTrue(result.isEmpty(), "権限のないユーザーによる取得は空を返却");
@@ -430,15 +385,13 @@ class DailyReportServiceTest {
         void getMyDailyReports_WithStatusFilter_ShouldReturnFilteredReports() {
             // Given
             List<DailyReport> draftReports = Arrays.asList(testDailyReport);
-            when(dailyReportRepository.findByUserIdAndStatusOrderByReportDateDesc(
-                            testUser.getId(), TestConfig.TestConstants.STATUS_DRAFT))
-                    .thenReturn(draftReports);
+            when(dailyReportRepository.findByUserIdAndStatusOrderByReportDateDesc(testUser.getId(),
+                    TestConfig.TestConstants.STATUS_DRAFT)).thenReturn(draftReports);
             when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
 
             // When
-            List<DailyReportListResponse> result =
-                    dailyReportService.getMyDailyReports(
-                            testUser.getId(), TestConfig.TestConstants.STATUS_DRAFT);
+            List<DailyReportListResponse> result = dailyReportService
+                    .getMyDailyReports(testUser.getId(), TestConfig.TestConstants.STATUS_DRAFT);
 
             // Then
             assertNotNull(result);
@@ -502,9 +455,9 @@ class DailyReportServiceTest {
 
             when(userRepository.findBySupervisorId(supervisorUser.getId()))
                     .thenReturn(subordinates);
-            when(dailyReportRepository.findByUserIdInOrderByReportDateDescUserIdAsc(
-                            Arrays.asList(testUser.getId())))
-                    .thenReturn(reports);
+            when(dailyReportRepository
+                    .findByUserIdInOrderByReportDateDescUserIdAsc(Arrays.asList(testUser.getId())))
+                            .thenReturn(reports);
 
             // When
             List<DailyReportListResponse> result =
@@ -527,13 +480,12 @@ class DailyReportServiceTest {
             when(userRepository.findBySupervisorId(supervisorUser.getId()))
                     .thenReturn(subordinates);
             when(dailyReportRepository.findByUserIdInAndStatusOrderByReportDateDescUserIdAsc(
-                            Arrays.asList(testUser.getId()), TestConfig.TestConstants.STATUS_DRAFT))
-                    .thenReturn(draftReports);
+                    Arrays.asList(testUser.getId()), TestConfig.TestConstants.STATUS_DRAFT))
+                            .thenReturn(draftReports);
 
             // When
-            List<DailyReportListResponse> result =
-                    dailyReportService.getSubordinateReports(
-                            supervisorUser.getId(), TestConfig.TestConstants.STATUS_DRAFT);
+            List<DailyReportListResponse> result = dailyReportService.getSubordinateReports(
+                    supervisorUser.getId(), TestConfig.TestConstants.STATUS_DRAFT);
 
             // Then
             assertNotNull(result);
@@ -555,7 +507,8 @@ class DailyReportServiceTest {
             // Then
             assertNotNull(result);
             assertTrue(result.isEmpty(), "部下がいない場合は空リストを返却");
-            verify(dailyReportRepository, never()).findByUserIdInOrderByReportDateDescUserIdAsc(any());
+            verify(dailyReportRepository, never())
+                    .findByUserIdInOrderByReportDateDescUserIdAsc(any());
         }
     }
 
@@ -572,11 +525,8 @@ class DailyReportServiceTest {
             doNothing().when(dailyReportRepository).delete(testDailyReport);
 
             // When
-            assertDoesNotThrow(
-                    () ->
-                            dailyReportService.deleteDailyReport(
-                                    testDailyReport.getId(), testUser.getId()),
-                    "本人による日報削除が例外なく実行される");
+            assertDoesNotThrow(() -> dailyReportService.deleteDailyReport(testDailyReport.getId(),
+                    testUser.getId()), "本人による日報削除が例外なく実行される");
 
             // Then
             verify(dailyReportRepository).findById(testDailyReport.getId());
@@ -591,13 +541,10 @@ class DailyReportServiceTest {
                     .thenReturn(Optional.of(testDailyReport));
 
             // When & Then
-            IllegalArgumentException exception =
-                    assertThrows(
-                            IllegalArgumentException.class,
-                            () ->
-                                    dailyReportService.deleteDailyReport(
-                                            testDailyReport.getId(), otherUser.getId()),
-                            "権限のないユーザーでIllegalArgumentException例外が発生");
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class, () -> dailyReportService
+                            .deleteDailyReport(testDailyReport.getId(), otherUser.getId()),
+                    "権限のないユーザーでIllegalArgumentException例外が発生");
 
             assertEquals("権限がありません", exception.getMessage());
             verify(dailyReportRepository, never()).delete(any());
@@ -610,11 +557,9 @@ class DailyReportServiceTest {
             when(dailyReportRepository.findById(999L)).thenReturn(Optional.empty());
 
             // When & Then
-            IllegalArgumentException exception =
-                    assertThrows(
-                            IllegalArgumentException.class,
-                            () -> dailyReportService.deleteDailyReport(999L, testUser.getId()),
-                            "存在しない日報でIllegalArgumentException例外が発生");
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                    () -> dailyReportService.deleteDailyReport(999L, testUser.getId()),
+                    "存在しない日報でIllegalArgumentException例外が発生");
 
             assertEquals("日報が見つかりません", exception.getMessage());
             verify(dailyReportRepository, never()).delete(any());
@@ -629,8 +574,8 @@ class DailyReportServiceTest {
         @DisplayName("正常: 本日の日報が存在する場合trueを返却")
         void hasTodayReport_ReportExists_ShouldReturnTrue() {
             // Given
-            when(dailyReportRepository.existsByUserIdAndReportDate(testUser.getId(), LocalDate.now()))
-                    .thenReturn(true);
+            when(dailyReportRepository.existsByUserIdAndReportDate(testUser.getId(),
+                    LocalDate.now())).thenReturn(true);
 
             // When
             boolean result = dailyReportService.hasTodayReport(testUser.getId());
@@ -643,8 +588,8 @@ class DailyReportServiceTest {
         @DisplayName("正常: 本日の日報が存在しない場合falseを返却")
         void hasTodayReport_ReportNotExists_ShouldReturnFalse() {
             // Given
-            when(dailyReportRepository.existsByUserIdAndReportDate(testUser.getId(), LocalDate.now()))
-                    .thenReturn(false);
+            when(dailyReportRepository.existsByUserIdAndReportDate(testUser.getId(),
+                    LocalDate.now())).thenReturn(false);
 
             // When
             boolean result = dailyReportService.hasTodayReport(testUser.getId());
@@ -675,30 +620,24 @@ class DailyReportServiceTest {
             assertEquals(validRequest.getTitle(), created.getTitle());
 
             // Given: 更新フェーズ
-            DailyReportRequest updateRequest =
-                    DailyReportRequest.builder()
-                            .title("更新されたタイトル")
-                            .workContent(validRequest.getWorkContent())
-                            .reportDate(validRequest.getReportDate())
-                            .status(TestConfig.TestConstants.STATUS_SUBMITTED)
-                            .build();
+            DailyReportRequest updateRequest = DailyReportRequest.builder().title("更新されたタイトル")
+                    .workContent(validRequest.getWorkContent())
+                    .reportDate(validRequest.getReportDate())
+                    .status(TestConfig.TestConstants.STATUS_SUBMITTED).build();
             when(dailyReportRepository.findById(testDailyReport.getId()))
                     .thenReturn(Optional.of(testDailyReport));
 
             // When: 更新
-            DailyReportResponse updated =
-                    dailyReportService.updateDailyReport(
-                            testDailyReport.getId(), testUser.getId(), updateRequest);
+            DailyReportResponse updated = dailyReportService
+                    .updateDailyReport(testDailyReport.getId(), testUser.getId(), updateRequest);
 
             // Then: 更新確認
             assertNotNull(updated);
             assertEquals("更新されたタイトル", updated.getTitle());
 
             // When: 削除
-            assertDoesNotThrow(
-                    () ->
-                            dailyReportService.deleteDailyReport(
-                                    testDailyReport.getId(), testUser.getId()));
+            assertDoesNotThrow(() -> dailyReportService.deleteDailyReport(testDailyReport.getId(),
+                    testUser.getId()));
 
             // Then: 各操作が適切に実行された確認
             verify(dailyReportRepository, times(2)).save(any(DailyReport.class));
@@ -714,8 +653,8 @@ class DailyReportServiceTest {
             when(userRepository.findById(testUser.getId())).thenReturn(Optional.empty());
 
             // When
-            Optional<DailyReportResponse> result =
-                    dailyReportService.getDailyReportById(testDailyReport.getId(), testUser.getId());
+            Optional<DailyReportResponse> result = dailyReportService
+                    .getDailyReportById(testDailyReport.getId(), testUser.getId());
 
             // Then
             assertTrue(result.isPresent(), "ユーザー情報なしでも日報は取得できる");
@@ -732,19 +671,18 @@ class DailyReportServiceTest {
             when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
 
             // When & Then: 本人アクセス
-            Optional<DailyReportResponse> ownerResult =
-                    dailyReportService.getDailyReportById(testDailyReport.getId(), testUser.getId());
+            Optional<DailyReportResponse> ownerResult = dailyReportService
+                    .getDailyReportById(testDailyReport.getId(), testUser.getId());
             assertTrue(ownerResult.isPresent(), "本人はアクセス可能");
 
             // When & Then: 上司アクセス
-            Optional<DailyReportResponse> supervisorResult =
-                    dailyReportService.getDailyReportById(
-                            testDailyReport.getId(), supervisorUser.getId());
+            Optional<DailyReportResponse> supervisorResult = dailyReportService
+                    .getDailyReportById(testDailyReport.getId(), supervisorUser.getId());
             assertTrue(supervisorResult.isPresent(), "上司はアクセス可能");
 
             // When & Then: 他人アクセス
-            Optional<DailyReportResponse> otherResult =
-                    dailyReportService.getDailyReportById(testDailyReport.getId(), otherUser.getId());
+            Optional<DailyReportResponse> otherResult = dailyReportService
+                    .getDailyReportById(testDailyReport.getId(), otherUser.getId());
             assertTrue(otherResult.isEmpty(), "関係ないユーザーはアクセス不可");
         }
     }

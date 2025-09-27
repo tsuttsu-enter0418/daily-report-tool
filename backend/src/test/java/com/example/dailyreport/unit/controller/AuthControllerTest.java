@@ -1,13 +1,17 @@
 package com.example.dailyreport.unit.controller;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,9 +23,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-
 import com.example.dailyreport.config.TestConfig;
 import com.example.dailyreport.dto.LoginRequest;
 import com.example.dailyreport.dto.LoginResponse;
@@ -34,22 +36,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * AuthControllerクラスのユニットテスト
  *
  * <p>
- * テスト対象: - POST /api/auth/login: ユーザーログイン認証 
- *  - GET /api/auth/validate: JWTトークンの有効性検証 
- *  - GET /api/auth/me: 現在のユーザー情報取得
+ * テスト対象: - POST /api/auth/login: ユーザーログイン認証 - GET /api/auth/validate: JWTトークンの有効性検証 - GET
+ * /api/auth/me: 現在のユーザー情報取得
  *
  * <p>
- * テスト方針: 
- * - WebMvcTestによるWebレイヤーテスト 
- * - AuthServiceをモック化してコントローラー動作をテスト 
- * - 正常系・異常系の包括的テスト -
+ * テスト方針: - WebMvcTestによるWebレイヤーテスト - AuthServiceをモック化してコントローラー動作をテスト - 正常系・異常系の包括的テスト -
  * JSON形式のリクエスト・レスポンス検証
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@TestPropertySource(properties = {"jwt.auth.enabled=true", // Unit testでも認証を有効化
-        "debug.default.user.username=admin"})
 @DisplayName("AuthController - 認証API")
 class AuthControllerTest {
 
@@ -96,6 +92,10 @@ class AuthControllerTest {
         // BaseController用のUserRepositoryモック設定
         when(userRepository.findByUsername(TestConfig.TestConstants.ADMIN_USERNAME))
                 .thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername(TestConfig.TestConstants.EMPLOYEE_USERNAME))
+                .thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername(TestConfig.TestConstants.MANAGER_USERNAME))
+                .thenReturn(Optional.of(testUser));
     }
 
     @Nested
@@ -121,7 +121,7 @@ class AuthControllerTest {
                     .andExpect(jsonPath("$.email").value(testUser.getEmail()))
                     .andExpect(jsonPath("$.role").value(testUser.getRole()))
                     .andExpect(jsonPath("$.displayName").value(testUser.getDisplayName()));
-            // authService.authenticateUserが1回呼び出される    
+            // authService.authenticateUserが1回呼び出される
             verify(authService).authenticateUser(any(LoginRequest.class));
             // responsOKの場合
         }
@@ -161,7 +161,6 @@ class AuthControllerTest {
                     .andExpect(jsonPath("$.status").value("400"));
 
             verify(authService).authenticateUser(any(LoginRequest.class));
-
         }
 
         @Test

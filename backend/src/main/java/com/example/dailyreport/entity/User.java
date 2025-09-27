@@ -1,7 +1,13 @@
 package com.example.dailyreport.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -50,6 +56,7 @@ public class User extends BaseEntity {
     private String password;
 
     /** ユーザーの役職（管理者、上長、部下） */
+    @Builder.Default
     @Column(nullable = false, length = 20)
     private String role = "部下";
 
@@ -62,6 +69,7 @@ public class User extends BaseEntity {
     private Long supervisorId;
 
     /** アクティブフラグ（論理削除用） */
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 }

@@ -1,10 +1,9 @@
 package com.example.dailyreport.unit.repository;
 
-import static org.assertj.core.api.Assertions.*;
-
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.List;
 import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,15 +14,16 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-
 import com.example.dailyreport.entity.User;
 import com.example.dailyreport.repository.UserRepository;
 
 /**
  * UserRepositoryの単体テスト
- * 
+ *
+ * <p>
  * テスト対象: - findByUsername メソッド - findByEmail メソッド - findBySupervisorId メソッド - カスタムクエリメソッドの動作確認
- * 
+ *
+ * <p>
  * 使用技術: - @DataJpaTest: JPA Repository層のスライステスト - TestEntityManager: JPA テスト用のエンティティ管理 - H2
  * Database: インメモリテストDB
  */
@@ -239,7 +239,7 @@ class UserRepositoryTest {
         @DisplayName("一意制約違反 - 重複ユーザー名")
         void save_DuplicateUsername_ShouldThrowException() {
             // Given: 既存と同じユーザー名の新しいユーザー
-            User duplicateUser = User.builder().username("testuser001") // 既存と重複
+            User duplicateUser = User.builder().username("testuser_" + dateTimeString) // 既存と重複
                     .email("different@company.com").password("password").role("部下")
                     .displayName("重複ユーザー").build();
 

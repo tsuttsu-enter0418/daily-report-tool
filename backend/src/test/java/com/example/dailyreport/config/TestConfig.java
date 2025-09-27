@@ -10,11 +10,14 @@ import org.springframework.test.context.ActiveProfiles;
 /**
  * JUnitテスト用の共通設定クラス
  *
- * <p>機能: - テスト専用のBean設定 - テスト環境でのPasswordEncoder設定 - 共通テストユーティリティの提供 - モックオブジェクトの設定
+ * <p>
+ * 機能: - テスト専用のBean設定 - テスト環境でのPasswordEncoder設定 - 共通テストユーティリティの提供 - モックオブジェクトの設定
  *
- * <p>使用方法: - テストクラスで @Import(TestConfig.class) で読み込み - または @SpringBootTest で自動読み込み
+ * <p>
+ * 使用方法: - テストクラスで @Import(TestConfig.class) で読み込み - または @SpringBootTest で自動読み込み
  *
- * <p>注意事項: - テスト環境でのみ使用されるConfiguration - プロダクション環境では読み込まれない - @TestConfiguration により自動的にテスト環境として認識
+ * <p>
+ * 注意事項: - テスト環境でのみ使用されるConfiguration - プロダクション環境では読み込まれない - @TestConfiguration により自動的にテスト環境として認識
  */
 @TestConfiguration
 @ActiveProfiles("test")
@@ -23,7 +26,8 @@ public class TestConfig {
     /**
      * テスト用PasswordEncoderの設定
      *
-     * <p>プロダクション環境と同じBCryptPasswordEncoderを使用するが、 テスト用の軽量設定（strength=4）で高速化
+     * <p>
+     * プロダクション環境と同じBCryptPasswordEncoderを使用するが、 テスト用の軽量設定（strength=4）で高速化
      *
      * @return BCryptPasswordEncoder テスト用パスワードエンコーダー
      */
@@ -53,7 +57,8 @@ public class TestConfig {
         public static final long TEST_JWT_EXPIRATION = 3600000L;
 
         /** テスト用有効JWTトークン（モック用） */
-        public static final String VALID_JWT_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token";
+        public static final String VALID_JWT_TOKEN =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token";
 
         /** 管理者ユーザー情報 */
         public static final String ADMIN_USERNAME = "admin";

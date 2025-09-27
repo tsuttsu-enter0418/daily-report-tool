@@ -2,7 +2,6 @@ package com.example.dailyreport.config;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
 import com.example.dailyreport.dto.DailyReportRequest;
 import com.example.dailyreport.dto.LoginRequest;
 import com.example.dailyreport.entity.DailyReport;
@@ -12,25 +11,18 @@ import com.example.dailyreport.entity.User;
  * テストデータ生成用ビルダークラス
  *
  * <p>
- * 機能: - 各種エンティティのテストデータ生成 
- * - DTO・リクエストオブジェクトのテストデータ生成 
- * - ビルダーパターンによる柔軟なデータ設定 
- * - デフォルト値設定によるシンプルなテストデータ作成
+ * 機能: - 各種エンティティのテストデータ生成 - DTO・リクエストオブジェクトのテストデータ生成 - ビルダーパターンによる柔軟なデータ設定 -
+ * デフォルト値設定によるシンプルなテストデータ作成
  *
  * <p>
- * 使用例:
- * ```java // デフォルトユーザー作成 User user = TestDataBuilder.createDefaultUser().build();
+ * 使用例: ```java // デフォルトユーザー作成 User user = TestDataBuilder.createDefaultUser().build();
  *
  * <p>
  * // カスタムユーザー作成 User manager = TestDataBuilder.createDefaultUser() .username("manager") .role("上長")
  * .build(); ```
  *
  * <p>
- * 設計方針: 
- * - 実際のプロダクションデータに近い形式 
- * - テストケース間での一貫性保持 
- * - 日本語データ対応 
- * - バリデーション制約を考慮した値設定
+ * 設計方針: - 実際のプロダクションデータに近い形式 - テストケース間での一貫性保持 - 日本語データ対応 - バリデーション制約を考慮した値設定
  */
 public class TestDataBuilder {
 

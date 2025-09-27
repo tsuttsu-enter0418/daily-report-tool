@@ -1,12 +1,13 @@
 package com.example.dailyreport.unit.security;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.lang.reflect.Method;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -16,9 +17,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-
 import com.example.dailyreport.config.TestConfig;
 import com.example.dailyreport.security.JwtAuthenticationFilter;
 import com.example.dailyreport.security.JwtUtil;
@@ -86,13 +87,16 @@ class JwtAuthenticationFilterTest {
         }
 
         @Test
-        @DisplayName("正常: /api/auth/**配下の任意のパスは認証をスキップ")
-        void authSubPath_ShouldSkipAuthentication() throws Exception {
-            // When & Then
+        @WithMockUser(username = "admin")
+        @DisplayName("正常: /api/auth/**配下のパスは認証状態に関係なくJWT処理をスキップ")
+        void authSubPath_ShouldSkipJwtProcessing() throws Exception {
+            // 認証済み状態でもJWT認証フィルターの処理はスキップされる
+            // 認証スキップパス（/api/auth/**）では、JwtUtilの検証処理が呼ばれない
             mockMvc.perform(
                     get("/api/auth/refresh-token").header("Authorization", "Bearer " + validToken))
                     .andExpect(status().isNotFound()); // エンドポイント不存在
 
+            // JwtUtilは呼ばれない（JWT処理スキップのため）
             verifyNoInteractions(jwtUtil);
         }
     }
@@ -105,8 +109,7 @@ class JwtAuthenticationFilterTest {
         @DisplayName("正常: Authorizationヘッダーが存在しない場合は認証をスキップ")
         void noAuthorizationHeader_ShouldSkipAuthentication() throws Exception {
             // When & Then - 認証スキップパスのテスト（実際の認証は統合テストで）
-            mockMvc.perform(get("/api/auth/login")
-                    .contentType("application/json")
+            mockMvc.perform(get("/api/auth/login").contentType("application/json")
                     .content("{\"username\":\"test\",\"password\":\"test\"}"))
                     .andExpect(status().is4xxClientError()); // 認証スキップパスなので処理される
 
@@ -117,11 +120,9 @@ class JwtAuthenticationFilterTest {
         @DisplayName("正常: Bearer形式でないAuthorizationヘッダーは認証をスキップ")
         void nonBearerToken_ShouldSkipAuthentication() throws Exception {
             // When & Then - 認証スキップパスのテスト
-            mockMvc.perform(
-                    post("/api/auth/login")
-                            .header("Authorization", "Basic dXNlcjpwYXNz")
-                            .contentType("application/json")
-                            .content("{\"username\":\"test\",\"password\":\"test\"}"))
+            mockMvc.perform(post("/api/auth/login").header("Authorization", "Basic dXNlcjpwYXNz")
+                    .contentType("application/json")
+                    .content("{\"username\":\"test\",\"password\":\"test\"}"))
                     .andExpect(status().is4xxClientError()); // 認証スキップパスなので処理される
 
             verifyNoInteractions(jwtUtil);
@@ -202,9 +203,7 @@ class JwtAuthenticationFilterTest {
             assertEquals(longToken, extractedToken, "長いトークンも正しく抽出される");
         }
 
-        /**
-         * Reflectionを使用してprivateメソッドextractTokenFromRequestを呼び出し
-         */
+        /** Reflectionを使用してprivateメソッドextractTokenFromRequestを呼び出し */
         private String invokeExtractTokenFromRequest(MockHttpServletRequest request)
                 throws Exception {
             Method method = JwtAuthenticationFilter.class.getDeclaredMethod(
@@ -222,13 +221,11 @@ class JwtAuthenticationFilterTest {
         @DisplayName("統合: 認証スキップパスでのフィルター動作")
         void authSkipPaths_ShouldNotInvokeJwtUtil() throws Exception {
             // 認証スキップパス（/api/auth/**）でのフィルター動作確認
-            
+
             // ログインエンドポイント - 有効なトークンありでも認証スキップ
-            mockMvc.perform(
-                    post("/api/auth/login")
-                            .header("Authorization", "Bearer " + validToken)
-                            .contentType("application/json")
-                            .content("{\"username\":\"test\",\"password\":\"test\"}"))
+            mockMvc.perform(post("/api/auth/login").header("Authorization", "Bearer " + validToken)
+                    .contentType("application/json")
+                    .content("{\"username\":\"test\",\"password\":\"test\"}"))
                     .andExpect(status().is4xxClientError()); // バリデーションエラー
 
             // 認証スキップパスでは JwtUtil は呼ばれない
@@ -240,11 +237,9 @@ class JwtAuthenticationFilterTest {
         void tokenExtraction_ShouldWorkCorrectly() throws Exception {
             // extractTokenFromRequestメソッドのテストは別途実施済み
             // ここでは認証スキップパスでのフィルター統合動作を確認
-            
-            mockMvc.perform(
-                    post("/api/auth/login")
-                            .contentType("application/json")
-                            .content("{\"username\":\"test\",\"password\":\"test\"}"))
+
+            mockMvc.perform(post("/api/auth/login").contentType("application/json")
+                    .content("{\"username\":\"test\",\"password\":\"test\"}"))
                     .andExpect(status().is4xxClientError());
 
             verifyNoInteractions(jwtUtil);

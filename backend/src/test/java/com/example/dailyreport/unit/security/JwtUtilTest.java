@@ -1,9 +1,11 @@
 package com.example.dailyreport.unit.security;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.lang.reflect.Field;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -11,19 +13,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
-
 import com.example.dailyreport.config.TestConfig;
 import com.example.dailyreport.security.JwtUtil;
-
 import io.jsonwebtoken.JwtException;
 
 /**
  * JwtUtilクラスのユニットテスト
  *
- * <p>テスト対象: - トークンの生成・検証機能 - ユーザー情報の抽出機能 - トークンの期限切れチェック機能 - エラーハンドリング機能
+ * <p>
+ * テスト対象: - トークンの生成・検証機能 - ユーザー情報の抽出機能 - トークンの期限切れチェック機能 - エラーハンドリング機能
  *
- * <p>テスト方針: - 正常系・異常系の網羅的テスト - 実際のJWTライブラリを使用した統合テスト - リフレクションによるプライベートフィールドの設定
- * - TestConfigの定数を使用した一貫性のあるテスト
+ * <p>
+ * テスト方針: - 正常系・異常系の網羅的テスト - 実際のJWTライブラリを使用した統合テスト - リフレクションによるプライベートフィールドの設定 -
+ * TestConfigの定数を使用した一貫性のあるテスト
  */
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
@@ -124,7 +126,8 @@ class JwtUtilTest {
         void getUsernameFromToken_ValidToken_ShouldReturnUsername() {
             // Given
             String expectedUsername = TestConfig.TestConstants.ADMIN_USERNAME;
-            String token = jwtUtil.generateToken(expectedUsername, TestConfig.TestConstants.ADMIN_ROLE);
+            String token =
+                    jwtUtil.generateToken(expectedUsername, TestConfig.TestConstants.ADMIN_ROLE);
 
             // When
             String actualUsername = jwtUtil.getUsernameFromToken(token);
@@ -176,7 +179,8 @@ class JwtUtilTest {
         void getRoleFromToken_ValidToken_ShouldReturnRole() {
             // Given
             String expectedRole = TestConfig.TestConstants.MANAGER_ROLE;
-            String token = jwtUtil.generateToken(TestConfig.TestConstants.MANAGER_USERNAME, expectedRole);
+            String token =
+                    jwtUtil.generateToken(TestConfig.TestConstants.MANAGER_USERNAME, expectedRole);
 
             // When
             String actualRole = jwtUtil.getRoleFromToken(token);
@@ -216,8 +220,8 @@ class JwtUtilTest {
         @DisplayName("正常: 有効なトークンの検証成功")
         void validateToken_ValidToken_ShouldReturnTrue() {
             // Given
-            String token = jwtUtil.generateToken(
-                    TestConfig.TestConstants.ADMIN_USERNAME, TestConfig.TestConstants.ADMIN_ROLE);
+            String token = jwtUtil.generateToken(TestConfig.TestConstants.ADMIN_USERNAME,
+                    TestConfig.TestConstants.ADMIN_ROLE);
 
             // When
             boolean isValid = jwtUtil.validateToken(token);
@@ -269,9 +273,10 @@ class JwtUtilTest {
         @DisplayName("異常: 改ざんされたトークンの検証失敗")
         void validateToken_TamperedToken_ShouldReturnFalse() {
             // Given
-            String validToken = jwtUtil.generateToken(
-                    TestConfig.TestConstants.ADMIN_USERNAME, TestConfig.TestConstants.ADMIN_ROLE);
-            String tamperedToken = validToken.substring(0, validToken.length() - 10) + "tampered123";
+            String validToken = jwtUtil.generateToken(TestConfig.TestConstants.ADMIN_USERNAME,
+                    TestConfig.TestConstants.ADMIN_ROLE);
+            String tamperedToken =
+                    validToken.substring(0, validToken.length() - 10) + "tampered123";
 
             // When
             boolean isValid = jwtUtil.validateToken(tamperedToken);
@@ -289,8 +294,8 @@ class JwtUtilTest {
         @DisplayName("正常: 有効期限内のトークンは期限切れではない")
         void isTokenExpired_ValidToken_ShouldReturnFalse() {
             // Given
-            String token = jwtUtil.generateToken(
-                    TestConfig.TestConstants.ADMIN_USERNAME, TestConfig.TestConstants.ADMIN_ROLE);
+            String token = jwtUtil.generateToken(TestConfig.TestConstants.ADMIN_USERNAME,
+                    TestConfig.TestConstants.ADMIN_ROLE);
 
             // When
             boolean isExpired = jwtUtil.isTokenExpired(token);
@@ -330,7 +335,8 @@ class JwtUtilTest {
         void isTokenExpired_ExpiredToken_ShouldReturnTrue() throws Exception {
             // Given: 極短い有効期限（1ミリ秒）でJwtUtilを設定
             JwtUtil shortExpirationJwtUtil = new JwtUtil();
-            setPrivateField(shortExpirationJwtUtil, "secret", TestConfig.TestConstants.TEST_JWT_SECRET);
+            setPrivateField(shortExpirationJwtUtil, "secret",
+                    TestConfig.TestConstants.TEST_JWT_SECRET);
             setPrivateField(shortExpirationJwtUtil, "expiration", 1L); // 1ミリ秒
 
             String token = shortExpirationJwtUtil.generateToken(
@@ -374,15 +380,16 @@ class JwtUtilTest {
         void tokenWithDifferentSecret_ShouldBeInvalid() throws Exception {
             // Given: 異なる秘密鍵でJwtUtilを作成（256 bits以上の安全な長さ）
             JwtUtil differentSecretJwtUtil = new JwtUtil();
-            setPrivateField(differentSecretJwtUtil, "secret", "differentSecretKeyForSecurityTestPurpose32BytesMin");
-            setPrivateField(differentSecretJwtUtil, "expiration", TestConfig.TestConstants.TEST_JWT_EXPIRATION);
+            setPrivateField(differentSecretJwtUtil, "secret",
+                    "differentSecretKeyForSecurityTestPurpose32BytesMin");
+            setPrivateField(differentSecretJwtUtil, "expiration",
+                    TestConfig.TestConstants.TEST_JWT_EXPIRATION);
 
             String tokenWithDifferentSecret = differentSecretJwtUtil.generateToken(
                     TestConfig.TestConstants.ADMIN_USERNAME, TestConfig.TestConstants.ADMIN_ROLE);
 
             // When & Then: 元のJwtUtilでは無効なトークンとして扱われる
-            assertFalse(jwtUtil.validateToken(tokenWithDifferentSecret),
-                    "異なる秘密鍵で生成されたトークンは無効");
+            assertFalse(jwtUtil.validateToken(tokenWithDifferentSecret), "異なる秘密鍵で生成されたトークンは無効");
             assertTrue(jwtUtil.isTokenExpired(tokenWithDifferentSecret),
                     "異なる秘密鍵で生成されたトークンは期限切れとして扱われる");
         }
