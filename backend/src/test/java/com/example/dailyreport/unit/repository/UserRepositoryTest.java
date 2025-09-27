@@ -1,10 +1,9 @@
 package com.example.dailyreport.unit.repository;
 
-import static org.assertj.core.api.Assertions.*;
-
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.List;
 import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,15 +14,16 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-
 import com.example.dailyreport.entity.User;
 import com.example.dailyreport.repository.UserRepository;
 
 /**
  * UserRepositoryの単体テスト
- * 
+ *
+ * <p>
  * テスト対象: - findByUsername メソッド - findByEmail メソッド - findBySupervisorId メソッド - カスタムクエリメソッドの動作確認
- * 
+ *
+ * <p>
  * 使用技術: - @DataJpaTest: JPA Repository層のスライステスト - TestEntityManager: JPA テスト用のエンティティ管理 - H2
  * Database: インメモリテストDB
  */

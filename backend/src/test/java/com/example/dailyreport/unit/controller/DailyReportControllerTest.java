@@ -1,18 +1,26 @@
 package com.example.dailyreport.unit.controller;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
-
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -24,9 +32,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-
 import com.example.dailyreport.config.TestConfig;
 import com.example.dailyreport.dto.DailyReportListResponse;
 import com.example.dailyreport.dto.DailyReportRequest;
@@ -50,10 +56,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@TestPropertySource(properties = {
-    "jwt.auth.enabled=true",  // Unit testでも認証を有効化
-    "debug.default.user.username=admin"
-})
 @DisplayName("DailyReportController - 日報REST API")
 class DailyReportControllerTest {
 
@@ -154,8 +156,7 @@ class DailyReportControllerTest {
             when(userRepository.findByUsername("employee1")).thenReturn(Optional.of(testUser));
 
             // When & Then
-            mockMvc.perform(post("/api/daily-reports")
-                    .with(csrf())  // CSRF token追加
+            mockMvc.perform(post("/api/daily-reports").with(csrf()) // CSRF token追加
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(invalidRequest)))
                     .andExpect(status().isBadRequest());
@@ -174,22 +175,20 @@ class DailyReportControllerTest {
                             .thenThrow(new IllegalArgumentException("指定日の日報は既に存在します"));
 
             // When & Then
-            mockMvc.perform(post("/api/daily-reports")
-                    .with(csrf())  // CSRF token追加
+            mockMvc.perform(post("/api/daily-reports").with(csrf()) // CSRF token追加
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(validRequest)))
                     .andExpect(status().isBadRequest());
         }
 
         @Test
-        @DisplayName("異常: 認証なしで403返却")
-        void createDailyReport_NoAuthentication_ShouldReturn403() throws Exception {
+        @DisplayName("異常: 認証なしで401返却")
+        void createDailyReport_NoAuthentication_ShouldReturn401() throws Exception {
             // When & Then
-            mockMvc.perform(post("/api/daily-reports")
-                    .with(csrf())  // CSRF token追加
+            mockMvc.perform(post("/api/daily-reports").with(csrf()) // CSRF token追加
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(validRequest)))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
 
             verify(dailyReportService, never()).createDailyReport(any(), any());
         }
@@ -273,8 +272,7 @@ class DailyReportControllerTest {
                     any(DailyReportRequest.class))).thenReturn(updatedResponse);
 
             // When & Then
-            mockMvc.perform(put("/api/daily-reports/1")
-                    .with(csrf())  // CSRF token追加
+            mockMvc.perform(put("/api/daily-reports/1").with(csrf()) // CSRF token追加
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(updateRequest)))
                     .andExpect(status().isOk())
@@ -298,8 +296,7 @@ class DailyReportControllerTest {
                             .thenThrow(new IllegalArgumentException("権限がありません"));
 
             // When & Then
-            mockMvc.perform(put("/api/daily-reports/1")
-                    .with(csrf())  // CSRF token追加
+            mockMvc.perform(put("/api/daily-reports/1").with(csrf()) // CSRF token追加
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(validRequest)))
                     .andExpect(status().isNotFound());
@@ -319,8 +316,7 @@ class DailyReportControllerTest {
             when(userRepository.findByUsername("employee1")).thenReturn(Optional.of(testUser));
 
             // When & Then
-            mockMvc.perform(put("/api/daily-reports/1")
-                    .with(csrf())  // CSRF token追加
+            mockMvc.perform(put("/api/daily-reports/1").with(csrf()) // CSRF token追加
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(invalidRequest)))
                     .andExpect(status().isBadRequest());
@@ -536,8 +532,7 @@ class DailyReportControllerTest {
         @DisplayName("異常: 全エンドポイントで認証なしは403返却")
         void allEndpoints_NoAuthentication_ShouldReturn403() throws Exception {
             // 日報作成
-            mockMvc.perform(post("/api/daily-reports")
-                    .with(csrf())  // CSRF token追加
+            mockMvc.perform(post("/api/daily-reports").with(csrf()) // CSRF token追加
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(validRequest)))
                     .andExpect(status().isUnauthorized());
@@ -546,15 +541,14 @@ class DailyReportControllerTest {
             mockMvc.perform(get("/api/daily-reports/1")).andExpect(status().isUnauthorized());
 
             // 日報更新
-            mockMvc.perform(put("/api/daily-reports/1")
-                    .with(csrf())  // CSRF token追加
+            mockMvc.perform(put("/api/daily-reports/1").with(csrf()) // CSRF token追加
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(validRequest)))
                     .andExpect(status().isUnauthorized());
 
             // 日報削除
-            mockMvc.perform(delete("/api/daily-reports/1")
-                    .with(csrf())).andExpect(status().isUnauthorized());
+            mockMvc.perform(delete("/api/daily-reports/1").with(csrf()))
+                    .andExpect(status().isUnauthorized());
 
             // 自分の日報一覧
             mockMvc.perform(get("/api/daily-reports/my")).andExpect(status().isUnauthorized());
@@ -600,8 +594,7 @@ class DailyReportControllerTest {
                     any(DailyReportRequest.class))).thenReturn(testResponse);
 
             // When & Then
-            mockMvc.perform(post("/api/daily-reports")
-                    .with(csrf())  // CSRF token追加
+            mockMvc.perform(post("/api/daily-reports").with(csrf()) // CSRF token追加
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(maxLengthRequest)))
                     .andExpect(status().isCreated());
@@ -618,8 +611,7 @@ class DailyReportControllerTest {
             when(dailyReportService.createDailyReport(eq(testUser.getId()),
                     any(DailyReportRequest.class))).thenReturn(testResponse);
 
-            mockMvc.perform(post("/api/daily-reports")
-                    .with(csrf())  // CSRF token追加
+            mockMvc.perform(post("/api/daily-reports").with(csrf()) // CSRF token追加
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(validRequest)))
                     .andExpect(status().isCreated());
@@ -634,8 +626,7 @@ class DailyReportControllerTest {
             when(dailyReportService.updateDailyReport(eq(1L), eq(testUser.getId()),
                     any(DailyReportRequest.class))).thenReturn(testResponse);
 
-            mockMvc.perform(put("/api/daily-reports/1")
-                    .with(csrf())  // CSRF token追加
+            mockMvc.perform(put("/api/daily-reports/1").with(csrf()) // CSRF token追加
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(validRequest)))
                     .andExpect(status().isOk());
@@ -643,8 +634,8 @@ class DailyReportControllerTest {
             // 削除
             doNothing().when(dailyReportService).deleteDailyReport(1L, testUser.getId());
 
-            mockMvc.perform(delete("/api/daily-reports/1")
-                    .with(csrf())).andExpect(status().isNoContent());
+            mockMvc.perform(delete("/api/daily-reports/1").with(csrf()))
+                    .andExpect(status().isNoContent());
 
             // 各操作が実行されたことを確認
             verify(dailyReportService).createDailyReport(eq(testUser.getId()),

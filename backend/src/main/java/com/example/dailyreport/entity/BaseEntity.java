@@ -10,9 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-/**
- * エンティティの共通項目を定義するクラス
- */
+/** エンティティの共通項目を定義するクラス */
 @Data
 @MappedSuperclass
 @SuperBuilder
@@ -38,7 +36,6 @@ class BaseEntity {
         if (updatedAt == null) {
             updatedAt = now;
         }
-
     }
 
     /** JPA エンティティの更新前処理 更新日時を自動設定 */

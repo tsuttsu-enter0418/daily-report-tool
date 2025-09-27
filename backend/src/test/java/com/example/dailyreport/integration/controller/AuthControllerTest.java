@@ -1,21 +1,23 @@
 package com.example.dailyreport.integration.controller;
 
-import static com.example.dailyreport.config.TestConfig.TestConstants.*;
-
+import static com.example.dailyreport.config.TestConfig.TestConstants.ADMIN_EMAIL;
+import static com.example.dailyreport.config.TestConfig.TestConstants.ADMIN_ROLE;
+import static com.example.dailyreport.config.TestConfig.TestConstants.ADMIN_USERNAME;
+import static com.example.dailyreport.config.TestConfig.TestConstants.INVALID_PASSWORD;
+import static com.example.dailyreport.config.TestConfig.TestConstants.INVALID_USERNAME;
+import static com.example.dailyreport.config.TestConfig.TestConstants.TEST_PASSWORD;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import com.example.dailyreport.config.TestConfig;
-import com.example.dailyreport.dto.LoginRequest;
-import com.example.dailyreport.dto.LoginResponse;
-import com.example.dailyreport.entity.User;
-import com.example.dailyreport.repository.UserRepository;
-import com.example.dailyreport.service.AuthService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,12 +27,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Optional;
+import com.example.dailyreport.config.TestConfig;
+import com.example.dailyreport.dto.LoginRequest;
+import com.example.dailyreport.dto.LoginResponse;
+import com.example.dailyreport.entity.User;
+import com.example.dailyreport.repository.UserRepository;
+import com.example.dailyreport.service.AuthService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * AuthController統合テスト
@@ -47,9 +53,8 @@ import java.util.Optional;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@TestPropertySource(properties = {
-    "jwt.auth.enabled=true",  // 実際の設定を使用
-    "debug.default.user.username=admin"  // BaseController用
+@TestPropertySource(properties = {"jwt.auth.enabled=true", // 実際の設定を使用
+        "debug.default.user.username=admin" // BaseController用
 })
 @DisplayName("AuthController 統合テスト")
 class AuthControllerTest {
@@ -87,7 +92,7 @@ class AuthControllerTest {
         testUser.setEmail(ADMIN_EMAIL);
         testUser.setRole(ADMIN_ROLE);
         testUser.setDisplayName(ADMIN_USERNAME);
-        
+
         // BaseController用のUserRepositoryモック設定
         when(userRepository.findByUsername(ADMIN_USERNAME)).thenReturn(Optional.of(testUser));
     }
@@ -104,8 +109,7 @@ class AuthControllerTest {
                 .thenReturn(successLoginResponse);
 
         // When & Then
-        mockMvc.perform(post("/api/auth/login")
-                .with(csrf())  // CSRF token追加
+        mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validLoginRequest))).andDo(print())
                 .andExpect(status().isOk())
@@ -126,8 +130,7 @@ class AuthControllerTest {
                 .thenThrow(new RuntimeException("ユーザーが見つかりません"));
 
         // When & Then
-        mockMvc.perform(post("/api/auth/login")
-                .with(csrf())  // CSRF token追加
+        mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidLoginRequest))).andDo(print())
                 .andExpect(status().isBadRequest())
@@ -140,21 +143,18 @@ class AuthControllerTest {
     @DisplayName("ログイン失敗 - 空のリクエストボディ")
     void login_EmptyRequestBody_ReturnsBadRequest() throws Exception {
         // When & Then
-        mockMvc.perform(
-                post("/api/auth/login")
-                .with(csrf())  // CSRF token追加
-                .contentType(MediaType.APPLICATION_JSON).content("{}"))
-                .andDo(print()).andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
+                .contentType(MediaType.APPLICATION_JSON).content("{}")).andDo(print())
+                .andExpect(status().isBadRequest());
     }
 
     @Test
     @DisplayName("ログイン失敗 - JSONフォーマットエラー")
     void login_InvalidJsonFormat_ReturnsBadRequest() throws Exception {
         // When & Then
-        mockMvc.perform(post("/api/auth/login")
-                .with(csrf())  // CSRF token追加
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("invalid json")).andDo(print()).andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
+                .contentType(MediaType.APPLICATION_JSON).content("invalid json")).andDo(print())
+                .andExpect(status().isBadRequest());
     }
 
     // =================================================
@@ -209,8 +209,7 @@ class AuthControllerTest {
 
         // When & Then - 複数回リクエストを送信
         for (int i = 0; i < 10; i++) {
-            mockMvc.perform(post("/api/auth/login")
-                    .with(csrf())  // CSRF token追加
+            mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(validLoginRequest)))
                     .andExpect(status().isOk());
@@ -230,8 +229,7 @@ class AuthControllerTest {
                 .thenThrow(new RuntimeException("ユーザー名が長すぎます"));
 
         // When & Then
-        mockMvc.perform(post("/api/auth/login")
-                .with(csrf())  // CSRF token追加
+        mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(longUsernameRequest))).andDo(print())
                 .andExpect(status().isBadRequest())
