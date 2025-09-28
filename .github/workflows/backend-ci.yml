@@ -101,6 +101,15 @@ jobs:
                     -Dspring.jpa.hibernate.ddl-auto=create-drop \
                     -Djunit.jupiter.execution.parallel.enabled=false
 
+            - name: debug jacco exist
+              working-directory: ./backend
+              if: always()
+              run: |
+                  echo "--- Listing files in target/site/jacoco/ ---"
+                  ls -al target/site/jacoco/ || true
+                  echo "--- Listing jacoco.exec data file ---"
+                  ls -al target/jacoco.exec || true
+
             - name: Run Integration Tests
               working-directory: ./backend
               env:
@@ -110,10 +119,10 @@ jobs:
                     -Dspring.jpa.hibernate.ddl-auto=create-drop \
                     -Dtest=**/integration/**/*Test
 
-            - name: Generate Test Reports
-              working-directory: ./backend
-              if: always()
-              run: ./mvnw jacoco:report
+            # - name: Generate Test Reports
+            #   working-directory: ./backend
+            #   if: always()
+            #   run: ./mvnw jacoco:report
 
             - name: Upload Test Results
               uses: actions/upload-artifact@v4
