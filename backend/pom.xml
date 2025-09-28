@@ -200,11 +200,17 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>8.4.0</version>
+                <version>12.1.0</version>
                 <configuration>
                     <format>ALL</format>
                     <failBuildOnCVSS>8</failBuildOnCVSS>
                     <outputDirectory>${project.build.directory}/dependency-check</outputDirectory>
+                    <!-- NVD API 2.0 対応設定 -->
+                    <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
+                    <nvdMaxRetryCount>10</nvdMaxRetryCount>
+                    <nvdApiDelay>4000</nvdApiDelay>
+                    <!-- APIキーなしでもローカルDBで動作可能 -->
+                    <skipNvdUpdate>false</skipNvdUpdate>
                 </configuration>
             </plugin>
 
