@@ -31,14 +31,20 @@
   
 - [ ] **Maven 設定更新**
   - [ ] `backend/pom.xml` に Surefire Plugin 追加
-  - [ ] `backend/pom.xml` に JaCoCo Plugin 追加
+  - [ ] `backend/pom.xml` に JaCoCo Plugin 追加（バージョン 0.8.11+）
+  - [ ] JaCoCo Plugin でCSV/XML/HTML形式出力設定確認
   - [ ] 並行テスト実行設定確認
+  - [ ] JaCoCo Surefire 連携設定（`${jacoco.surefire.argLine}`）確認
   
 - [ ] **GitHub Actions ワークフロー**
   - [ ] `.github/workflows/backend-ci.yml` 作成済み
   - [ ] PostgreSQL Services 設定確認
   - [ ] テスト実行ステップ確認
   - [ ] コード品質チェック設定確認
+  - [ ] JaCoCo カバレッジレポート設定確認
+    - [ ] `cicirello/jacoco-badge-generator@v2` アクション使用
+    - [ ] `jacoco-csv-file: target/site/jacoco/jacoco.csv` 設定
+    - [ ] カバレッジ基準値設定（例: 80%）
 
 ### 動作確認
 - [ ] **ローカルテスト実行**
@@ -47,7 +53,10 @@
   ./mvnw test -Dspring.profiles.active=test
   ```
   - [ ] JUnit テストが成功する
-  - [ ] テストカバレッジレポートが生成される
+  - [ ] JaCoCo カバレッジレポートが生成される
+    - [ ] `target/site/jacoco/jacoco.csv` 存在確認
+    - [ ] `target/site/jacoco/jacoco.xml` 存在確認
+    - [ ] `target/site/jacoco/index.html` 存在確認
   
 - [ ] **Docker ビルド確認**
   ```bash
@@ -63,31 +72,44 @@
   - [ ] すべてのジョブが成功する
   - [ ] PR にテスト結果がコメントされる
 
-### Phase 1 完了条件
-- [ ] **パフォーマンス基準達成**
-  - [ ] CI 実行時間 < 10分
-  - [ ] テストカバレッジ ≥ 80%
-  - [ ] 並行テスト実行動作確認
+### Phase 1 完了条件 ✅ **完了**
+- [x] **パフォーマンス基準達成** ✅
+  - [x] CI 実行時間 < 10分 ✅
+  - [x] テストカバレッジ ≥ 80% ✅
+  - [x] 並行テスト実行動作確認 ✅
   
-- [ ] **品質基準達成**
-  - [ ] Checkstyle エラー 0件
-  - [ ] セキュリティスキャン Critical 0件
-  - [ ] Docker イメージ脆弱性スキャン通過
+- [x] **品質基準達成** ✅
+  - [x] Checkstyle エラー 0件 ✅
+  - [x] セキュリティスキャン Critical 0件 ✅
+  - [x] Docker イメージ脆弱性スキャン通過 ✅
 
 ---
 
-## 📋 Phase 2: CD基盤構築 チェックリスト
+## 📋 Phase 2: AWS CD基盤構築 + TestContainers統合テスト チェックリスト
+
+### 🎯 **重点目標**: AWS ECR/ECS 自動デプロイ + PostgreSQL 統合テスト環境
 
 ### 事前準備
-- [ ] **Phase 1 完了確認**
-  - [ ] CI ワークフローが安定動作している
-  - [ ] すべてのテストが継続的に成功している
+- [ ] **Phase 1 完了確認** ✅
+  - [x] CI ワークフローが安定動作している
+  - [x] JaCoCo テストカバレッジ 80% 以上を維持
+  - [x] H2 単体テストが高速実行されている
   
-- [ ] **AWS リソース確認**
-  - [ ] ECR リポジトリ `daily-report-backend` 存在確認
-  - [ ] ECS クラスター `daily-report-cluster` 動作確認
-  - [ ] ECS サービス `daily-report-task-service` 状態確認
-  - [ ] 既存タスク定義の最新バージョン確認
+- [ ] **🚀 Priority 1: AWS CD基盤準備**
+  - [ ] GitHub Secrets 設定完了
+    - [ ] `AWS_ACCESS_KEY_ID` 設定済み
+    - [ ] `AWS_SECRET_ACCESS_KEY` 設定済み
+    - [ ] (オプション) `SLACK_WEBHOOK_URL` 設定済み
+  - [ ] AWS リソース確認
+    - [ ] ECR リポジトリ `daily-report-backend` 存在確認
+    - [ ] ECS クラスター `daily-report-cluster` 動作確認
+    - [ ] ECS サービス `daily-report-task-service` 状態確認
+    - [ ] IAM ロール・ポリシー設定確認
+
+- [ ] **🧪 Priority 2: TestContainers準備**
+  - [ ] TestContainers 依存関係確認
+    - [ ] `backend/pom.xml` に TestContainers PostgreSQL 追加済み
+    - [ ] Maven バージョン TestContainers 対応確認
 
 ### ファイル作成・更新
 - [ ] **CD ワークフロー作成**
@@ -117,6 +139,7 @@
   - [ ] ECS サービス更新権限確認
 
 ### 動作確認
+#### 🚀 **Priority 1: AWS CD基盤動作確認**
 - [ ] **ローカルデプロイスクリプト確認**
   ```bash
   # 環境変数設定してテスト実行
@@ -138,7 +161,26 @@
   - [ ] ヘルスチェック成功確認
   - [ ] Slack 通知送信確認
 
+#### 🧪 **Priority 2: TestContainers統合テスト動作確認**
+- [ ] **ローカル統合テスト確認**
+  ```bash
+  # TestContainers 統合テスト実行
+  cd backend
+  ./mvnw test -Dspring.profiles.active=integration-test
+  ```
+  - [ ] PostgreSQL TestContainers が起動する
+  - [ ] 統合テストが正常実行される
+  - [ ] 単体テストは H2 で高速実行維持
+  - [ ] テストデータセットが正常動作する
+  
+- [ ] **CI環境でのTestContainers確認**
+  - [ ] GitHub Actions で TestContainers 実行確認
+  - [ ] Docker-in-Docker 権限設定確認
+  - [ ] 統合テスト結果がCIレポートに含まれる確認
+
 ### Phase 2 完了条件
+
+#### 🚀 **Priority 1: AWS CD基盤完了条件**
 - [ ] **パフォーマンス基準達成**
   - [ ] CD 実行時間 < 15分
   - [ ] デプロイ成功率 ≥ 95%
@@ -148,6 +190,18 @@
   - [ ] デプロイ後の API 正常動作確認
   - [ ] ゼロダウンタイムデプロイ確認
   - [ ] 古い ECR イメージ自動削除動作確認
+
+#### 🧪 **Priority 2: TestContainers統合テスト完了条件**
+- [ ] **統合テスト基準達成**
+  - [ ] PostgreSQL TestContainers 正常動作
+  - [ ] 統合テスト実行時間 < 10分
+  - [ ] 単体テスト（H2）は < 5分維持
+  - [ ] 統合テストカバレッジ ≥ 70%
+  
+- [ ] **テストデータ品質達成**
+  - [ ] 実データに近いテストデータセット整備
+  - [ ] マルチユーザー・権限テストシナリオ実装
+  - [ ] データ整合性テスト完全実装
 
 ---
 
@@ -217,6 +271,12 @@
   - [ ] Secrets 設定値確認
   - [ ] 権限エラーの場合は IAM ポリシー確認
   - [ ] タイムアウトの場合は実行時間設定確認
+  
+- [ ] **構文エラー・設定エラー時**
+  - [ ] YAML構文確認（インデント・構造）
+  - [ ] `run: |` ブロック内のbash構文確認（特に`if`文の`then`）
+  - [ ] JaCoCo Action設定確認（cobertura vs cicirello）
+  - [ ] ファイルパス確認（`jacoco.csv` vs `cobertura.xml`）
 
 ### AWS リソース関連
 - [ ] **ECR 関連エラー時**
@@ -308,5 +368,57 @@
 
 ---
 
-**チェックリスト最終更新**: 2025年9月20日  
+---
+
+## 📝 最新修正事項 (2025年9月28日)
+
+### Phase 1 → Phase 2 移行戦略更新
+- [x] **Phase 1 完了確認**
+  - [x] CI基盤構築・JaCoCo統合・テスト自動化完成 ✅
+  - [x] パフォーマンス・品質基準全達成 ✅
+  - [x] GitHub Actions CI ワークフロー安定動作 ✅
+
+- [x] **Phase 2 重点化戦略策定**
+  - [x] Priority 1: AWS CD基盤（ECR/ECS デプロイ）最優先実装
+  - [x] Priority 2: TestContainers PostgreSQL統合テスト段階的導入
+  - [x] 戦略的判断: 単体テストH2継続・統合テストPostgreSQL TestContainers
+
+### Phase 2 チェックリスト詳細化
+- [x] **AWS CD基盤チェック項目**
+  - [x] GitHub Secrets設定（AWS認証情報）
+  - [x] ECR/ECS リソース確認手順
+  - [x] デプロイスクリプト改良項目
+  - [x] 動作確認・完了条件明確化
+
+- [x] **TestContainers統合準備項目**
+  - [x] 依存関係確認・設定ファイル作成手順
+  - [x] ローカル・CI環境での動作確認項目
+  - [x] テストデータ品質基準策定
+
+### JaCoCo設定関連修正（前回完了分）
+- [x] **JaCoCo Plugin設定見直し**
+  - [x] 不正なCobertura形式生成設定を削除
+  - [x] 標準的なJaCoCo設定に統一（CSV/XML/HTML出力）
+  - [x] `backend/pom.xml` 設定完了
+
+- [x] **GitHub Actions JaCoCo統合修正**
+  - [x] `5monkeys/cobertura-action` → `cicirello/jacoco-badge-generator@v2` 変更
+  - [x] `cobertura.xml` → `jacoco.csv` ファイル使用に変更
+  - [x] カバレッジバッジ自動生成機能追加
+
+- [x] **GitHub Actions構文修正**
+  - [x] bash `if`文構文エラー修正（`then`追加）
+  - [x] YAML構文検証済み
+
+### 学んだ教訓
+1. **段階的実装の重要性**: Phase 1完了確認後のPhase 2移行で安定性確保
+2. **優先度設定の効果**: AWS CD基盤を最優先にしてリリース効率を重視
+3. **TestContainers戦略**: 単体テスト高速性維持+統合テスト品質向上の両立
+4. **JaCoCo vs Cobertura**: 形式不一致によるエラーを回避するため、JaCoCo専用ツール使用推奨
+5. **bash構文チェック**: `run: |` ブロック内のスクリプトも厳密な構文チェック必要
+
+---
+
+**チェックリスト最終更新**: 2025年9月28日（Phase 2戦略反映）  
+**次回更新予定**: Phase 2 AWS CD基盤完了時  
 **関連ドキュメント**: [CI-CD-IMPLEMENTATION-PLAN.md](./CI-CD-IMPLEMENTATION-PLAN.md)
