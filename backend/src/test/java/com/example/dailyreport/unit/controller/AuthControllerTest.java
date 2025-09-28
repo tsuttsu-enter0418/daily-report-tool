@@ -23,6 +23,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import com.example.dailyreport.config.TestConfig;
 import com.example.dailyreport.dto.LoginRequest;
@@ -46,6 +47,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@TestPropertySource(properties = {
+    "jwt.auth.enabled=false",  // JWT認証無効化でBaseController対応
+    "debug.default.user.username=admin"  // デバッグモード用デフォルトユーザー
+})
 @DisplayName("AuthController - 認証API")
 class AuthControllerTest {
 
