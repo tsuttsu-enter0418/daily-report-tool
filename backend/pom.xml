@@ -141,8 +141,12 @@
                         <id>report</id>
                         <phase>test</phase>
                         <goals>
-                            <goal>report-cobertura</goal>
+                            <goal>report</goal>
                         </goals>
+                        <configuration>
+                            <formats>XML</formats>
+                            <outputFile>target/site/jacoco/cobertura.xml</outputFile>
+                        </configuration>
                     </execution>
                 </executions>
                 <configuration>

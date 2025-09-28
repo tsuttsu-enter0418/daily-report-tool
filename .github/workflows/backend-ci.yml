@@ -101,17 +101,20 @@ jobs:
                     -Dspring.jpa.hibernate.ddl-auto=create-drop \
                     -Djunit.jupiter.execution.parallel.enabled=false
 
-            - name: Generate Test Reports
+            - name: Generate Cobertura Report
               working-directory: ./backend
               if: always()
-              run: ./mvnw jacoco:report
+              run: |
+                  # pom.xmlで設定したformats/outputFileを使ってcobertura.xmlを生成
+                  ./mvnw jacoco:report
 
             - name: debug jacco exist
               working-directory: ./backend
               if: always()
               run: |
                   echo "--- Listing files in target/site/jacoco/ ---"
-                  ls -al target/site/jacoco/ || true
+                  # cobertura.xmlが生成されているはず
+                  ls -al target/site/jacoco/cobertura.xml || true
                   echo "--- Listing jacoco.exec data file ---"
                   ls -al target/jacoco.exec || true
 
@@ -146,7 +149,7 @@ jobs:
               if: github.event_name == 'pull_request'
               uses: 5monkeys/cobertura-action@master
               with:
-                  path: backend/target/site/jacoco/jacoco.xml
+                  path: backend/target/site/jacoco/cobertura.xml
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
                   minimum_coverage: 80
 
