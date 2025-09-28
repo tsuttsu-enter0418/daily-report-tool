@@ -113,7 +113,8 @@ jobs:
               if: always()
               run: |
                   echo "--- Listing files in target/site/jacoco/ ---"
-                  # jacoco.xmlが生成されているはず
+                  # jacoco.csv、jacoco.xmlが生成されているはず
+                  ls -al target/site/jacoco/jacoco.csv || true
                   ls -al target/site/jacoco/jacoco.xml || true
                   echo "--- Listing jacoco.exec data file ---"
                   ls -al target/jacoco.exec || true
@@ -147,11 +148,13 @@ jobs:
 
             - name: Code Coverage Comment
               if: github.event_name == 'pull_request'
-              uses: 5monkeys/cobertura-action@master
+              uses: cicirello/jacoco-badge-generator@v2
               with:
-                  path: backend/target/site/jacoco/jacoco.xml
-                  repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  minimum_coverage: 80
+                  jacoco-csv-file: backend/target/site/jacoco/jacoco.csv
+                  badges-directory: .github/badges
+                  generate-branches-badge: true
+                  generate-summary: true
+                  fail-if-coverage-less-than: 80
 
     # ==========================================
     # TODO: Job 3: Dockerイメージビルド検証（将来実装）
