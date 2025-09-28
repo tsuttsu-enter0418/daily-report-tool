@@ -239,9 +239,13 @@ class AuthControllerTest {
     @Test
     @DisplayName("大量リクエスト処理テスト")
     void login_HighVolumeRequests_HandlesGracefully() throws Exception {
-        // Given
+        // Given - より具体的なモック設定
         when(authService.authenticateUser(any(LoginRequest.class)))
                 .thenReturn(successLoginResponse);
+        
+        // デバッグ用：リクエスト内容確認
+        System.out.println("validLoginRequest: " + objectMapper.writeValueAsString(validLoginRequest));
+        System.out.println("successLoginResponse: " + objectMapper.writeValueAsString(successLoginResponse));
 
         // When & Then - 複数回リクエストを送信
         for (int i = 0; i < 10; i++) {
@@ -250,7 +254,10 @@ class AuthControllerTest {
                                     .with(csrf()) // CSRF token追加
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(validLoginRequest)))
-                    .andExpect(status().isOk());
+                    .andDo(print()) // レスポンス詳細をログ出力
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.token").value("test.jwt.token"));
         }
 
         verify(authService, times(10)).authenticateUser(any(LoginRequest.class));
