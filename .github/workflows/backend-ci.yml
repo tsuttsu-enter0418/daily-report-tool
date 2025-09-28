@@ -70,6 +70,10 @@ jobs:
   test:
     name: Unit & Integration Tests
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+      contents: read
     
 
     steps:
@@ -138,6 +142,8 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           minimum_coverage: 80
 
+
+
   # ==========================================
   # Job 3: Dockerイメージビルド検証
   # ==========================================
@@ -202,6 +208,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [code-quality, test, docker-build-test]
     if: always()
+    permissions:
+      pull-requests: write
+      contents: read
     
     steps:
       - name: Check all jobs status
