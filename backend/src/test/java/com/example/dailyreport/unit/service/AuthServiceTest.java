@@ -9,7 +9,9 @@ import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import com.example.dailyreport.dto.LoginRequest;
 import com.example.dailyreport.dto.LoginResponse;
 import com.example.dailyreport.entity.User;
@@ -29,30 +32,23 @@ import com.example.dailyreport.service.AuthService;
 /**
  * AuthServiceの単体テスト
  *
- * <p>
- * テスト対象: - authenticateUser メソッド - ユーザー認証ロジック - パスワード検証 - JWTトークン生成 - エラーハンドリング
+ * <p>テスト対象: - authenticateUser メソッド - ユーザー認証ロジック - パスワード検証 - JWTトークン生成 - エラーハンドリング
  *
- * <p>
- * モック対象: - UserRepository: ユーザー検索をモック化 - PasswordEncoder: パスワード検証をモック化 - JwtUtil: JWT生成をモック化
+ * <p>モック対象: - UserRepository: ユーザー検索をモック化 - PasswordEncoder: パスワード検証をモック化 - JwtUtil: JWT生成をモック化
  *
- * <p>
- * テストパターン: - 正常系: 有効な認証情報での成功ケース - 異常系: 無効な認証情報での失敗ケース - 境界値: 特殊な値での動作確認
+ * <p>テストパターン: - 正常系: 有効な認証情報での成功ケース - 異常系: 無効な認証情報での失敗ケース - 境界値: 特殊な値での動作確認
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AuthService 単体テスト")
 class AuthServiceTest {
 
-    @Mock
-    private UserRepository userRepository;
+    @Mock private UserRepository userRepository;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+    @Mock private PasswordEncoder passwordEncoder;
 
-    @Mock
-    private JwtUtil jwtUtil;
+    @Mock private JwtUtil jwtUtil;
 
-    @InjectMocks
-    private AuthService authService;
+    @InjectMocks private AuthService authService;
 
     private LoginRequest validLoginRequest;
     private User validUser;
@@ -64,9 +60,16 @@ class AuthServiceTest {
         validLoginRequest =
                 LoginRequest.builder().username("testuser").password("password123").build();
 
-        validUser = User.builder().id(1L).username("testuser").email("testuser@company.com")
-                .password("$2a$10$encoded.password.hash").role("部下").displayName("テストユーザー")
-                .isActive(true).build();
+        validUser =
+                User.builder()
+                        .id(1L)
+                        .username("testuser")
+                        .email("testuser@company.com")
+                        .password("$2a$10$encoded.password.hash")
+                        .role("部下")
+                        .displayName("テストユーザー")
+                        .isActive(true)
+                        .build();
 
         generatedToken = "jwt.token.example.123";
     }
@@ -105,9 +108,16 @@ class AuthServiceTest {
         @DisplayName("displayNameがnullの場合はusernameをフォールバック")
         void authenticateUser_NullDisplayName_ShouldFallbackToUsername() {
             // Given: displayNameがnullのユーザー
-            User userWithNullDisplayName = User.builder().id(1L).username("testuser")
-                    .email("testuser@company.com").password("encoded.password").role("部下")
-                    .displayName(null).isActive(true).build();
+            User userWithNullDisplayName =
+                    User.builder()
+                            .id(1L)
+                            .username("testuser")
+                            .email("testuser@company.com")
+                            .password("encoded.password")
+                            .role("部下")
+                            .displayName(null)
+                            .isActive(true)
+                            .build();
 
             when(userRepository.findByUsername("testuser"))
                     .thenReturn(Optional.of(userWithNullDisplayName));
@@ -127,9 +137,15 @@ class AuthServiceTest {
         void authenticateUser_EmptyDisplayName_ShouldFallbackToUsername() {
             // Given: displayNameが空文字のユーザー
             User userWithEmptyDisplayName =
-                    User.builder().id(1L).username("testuser").email("testuser@company.com")
-                            .password("encoded.password").role("部下").displayName("   ") // 空白のみ
-                            .isActive(true).build();
+                    User.builder()
+                            .id(1L)
+                            .username("testuser")
+                            .email("testuser@company.com")
+                            .password("encoded.password")
+                            .role("部下")
+                            .displayName("   ") // 空白のみ
+                            .isActive(true)
+                            .build();
 
             when(userRepository.findByUsername("testuser"))
                     .thenReturn(Optional.of(userWithEmptyDisplayName));
@@ -148,9 +164,16 @@ class AuthServiceTest {
         @DisplayName("管理者ロールでの認証成功")
         void authenticateUser_AdminRole_ShouldAuthenticateSuccessfully() {
             // Given: 管理者ユーザー
-            User adminUser = User.builder().id(2L).username("admin").email("admin@company.com")
-                    .password("encoded.admin.password").role("管理者").displayName("管理者")
-                    .isActive(true).build();
+            User adminUser =
+                    User.builder()
+                            .id(2L)
+                            .username("admin")
+                            .email("admin@company.com")
+                            .password("encoded.admin.password")
+                            .role("管理者")
+                            .displayName("管理者")
+                            .isActive(true)
+                            .build();
 
             LoginRequest adminLoginRequest =
                     LoginRequest.builder().username("admin").password("adminpassword").build();
@@ -175,6 +198,19 @@ class AuthServiceTest {
     class ErrorTest {
 
         @Test
+        @DisplayName("input無しの不正入力で認証失敗")
+        void authenticateUser_NoInput_ShouldThrownException() {
+            // Given：input無し
+            LoginRequest invalidUserRequest =
+                    LoginRequest.builder().username("").password("").build();
+
+            // When&Then：例外発生を検証
+            assertThatThrownBy(() -> authService.authenticateUser(invalidUserRequest))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessage("不正な値です");
+        }
+
+        @Test
         @DisplayName("存在しないユーザー名で認証失敗")
         void authenticateUser_UserNotFound_ShouldThrowException() {
             // Given: 存在しないユーザー
@@ -185,7 +221,8 @@ class AuthServiceTest {
 
             // When & Then: 例外発生を検証
             assertThatThrownBy(() -> authService.authenticateUser(invalidUserRequest))
-                    .isInstanceOf(RuntimeException.class).hasMessage("ユーザーが見つかりません");
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessage("ユーザーが見つかりません");
 
             // パスワード検証やJWT生成が実行されないことを確認
             verify(passwordEncoder, never()).matches(anyString(), anyString());
@@ -205,7 +242,8 @@ class AuthServiceTest {
 
             // When & Then: 例外発生を検証
             assertThatThrownBy(() -> authService.authenticateUser(wrongPasswordRequest))
-                    .isInstanceOf(RuntimeException.class).hasMessage("パスワードが正しくありません");
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessage("パスワードが正しくありません");
 
             // JWT生成が実行されないことを確認
             verify(jwtUtil, never()).generateToken(anyString(), anyString());
@@ -223,7 +261,8 @@ class AuthServiceTest {
 
             // When & Then: 例外発生を検証
             assertThatThrownBy(() -> authService.authenticateUser(nullPasswordRequest))
-                    .isInstanceOf(RuntimeException.class).hasMessage("パスワードが正しくありません");
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessage("パスワードが正しくありません");
         }
 
         @Test
@@ -238,7 +277,8 @@ class AuthServiceTest {
 
             // When & Then: 例外発生を検証
             assertThatThrownBy(() -> authService.authenticateUser(emptyPasswordRequest))
-                    .isInstanceOf(RuntimeException.class).hasMessage("パスワードが正しくありません");
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessage("パスワードが正しくありません");
         }
     }
 
@@ -306,9 +346,16 @@ class AuthServiceTest {
             LoginRequest longUsernameRequest =
                     LoginRequest.builder().username(longUsername).password("password").build();
 
-            User longUsernameUser = User.builder().id(1L).username(longUsername)
-                    .email("longuser@company.com").password("encoded.password").role("部下")
-                    .displayName("長い名前のユーザー").isActive(true).build();
+            User longUsernameUser =
+                    User.builder()
+                            .id(1L)
+                            .username(longUsername)
+                            .email("longuser@company.com")
+                            .password("encoded.password")
+                            .role("部下")
+                            .displayName("長い名前のユーザー")
+                            .isActive(true)
+                            .build();
 
             when(userRepository.findByUsername(longUsername))
                     .thenReturn(Optional.of(longUsernameUser));
@@ -332,9 +379,16 @@ class AuthServiceTest {
             LoginRequest japaneseUsernameRequest =
                     LoginRequest.builder().username(japaneseUsername).password("password").build();
 
-            User japaneseUsernameUser = User.builder().id(1L).username(japaneseUsername)
-                    .email("tanaka@company.com").password("encoded.password").role("上長")
-                    .displayName("田中 太郎").isActive(true).build();
+            User japaneseUsernameUser =
+                    User.builder()
+                            .id(1L)
+                            .username(japaneseUsername)
+                            .email("tanaka@company.com")
+                            .password("encoded.password")
+                            .role("上長")
+                            .displayName("田中 太郎")
+                            .isActive(true)
+                            .build();
 
             when(userRepository.findByUsername(japaneseUsername))
                     .thenReturn(Optional.of(japaneseUsernameUser));

@@ -2,6 +2,7 @@ package com.example.dailyreport.security;
 
 import java.io.IOException;
 import java.util.Collections;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,26 +21,24 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * JWT認証フィルター
  *
- * <p>
- * 機能: - HTTPリクエストのAuthorizationヘッダーからJWTトークンを抽出 - JwtUtilを使用してトークンの有効性を検証 - 有効なトークンの場合、Spring
+ * <p>機能: - HTTPリクエストのAuthorizationヘッダーからJWTトークンを抽出 - JwtUtilを使用してトークンの有効性を検証 - 有効なトークンの場合、Spring
  * SecurityのSecurityContextに認証情報を設定 - 無効または存在しないトークンの場合は何もしない
  *
- * <p>
- * フィルター動作: - /api/auth/**パスは認証をスキップ（ログイン処理のため） - Authorizationヘッダーが存在しない場合はスキップ -
+ * <p>フィルター動作: - /api/auth/**パスは認証をスキップ（ログイン処理のため） - Authorizationヘッダーが存在しない場合はスキップ -
  * Bearer形式でないトークンはスキップ - 有効なJWTトークンからユーザー名と権限を抽出してSecurityContextに設定
  *
- * <p>
- * セキュリティ考慮事項: - トークン検証失敗時はログ出力してリクエストを継続 - 認証情報はリクエスト毎にクリア - 権限情報もJWTトークンから設定
+ * <p>セキュリティ考慮事項: - トークン検証失敗時はログ出力してリクエストを継続 - 認証情報はリクエスト毎にクリア - 権限情報もJWTトークンから設定
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    @Autowired private JwtUtil jwtUtil;
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
         // /api/auth/loginパスのみ認証をスキップ（ログイン処理のため）
@@ -66,12 +66,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     // 認証オブジェクト作成
                     UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(username, null,
-                                    Collections.singletonList(authority));
+                            new UsernamePasswordAuthenticationToken(
+                                    username, null, Collections.singletonList(authority));
 
                     // リクエスト詳細情報を設定
-                    authentication
-                            .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    authentication.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request));
 
                     // SecurityContextに認証情報を設定
                     SecurityContextHolder.getContext().setAuthentication(authentication);

@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -24,17 +25,17 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.cors.CorsConfigurationSource;
+
 import com.example.dailyreport.config.TestConfig;
 import com.example.dailyreport.security.SecurityConfig;
 
 /**
  * SecurityConfigクラスのユニットテスト
  *
- * <p>
- * テスト対象: - セキュリティフィルターチェーンの設定 - JWT認証の有効/無効制御 - CORS設定 - CSRF設定 - 認証・認可設定 - パスワードエンコーダー設定 - 公開パスの設定
+ * <p>テスト対象: - セキュリティフィルターチェーンの設定 - JWT認証の有効/無効制御 - CORS設定 - CSRF設定 - 認証・認可設定 - パスワードエンコーダー設定 -
+ * 公開パスの設定
  *
- * <p>
- * テスト方針: - SpringBootTestによるフルコンテキストテスト - MockMvcによるHTTPレイヤーテスト - 実際のセキュリティフィルターチェーンを使用 -
+ * <p>テスト方針: - SpringBootTestによるフルコンテキストテスト - MockMvcによるHTTPレイヤーテスト - 実際のセキュリティフィルターチェーンを使用 -
  * 認証有効/無効モードの両方をテスト - CORS・CSRF設定の動作確認
  */
 @SpringBootTest
@@ -43,17 +44,13 @@ import com.example.dailyreport.security.SecurityConfig;
 @DisplayName("SecurityConfig - Spring Security設定")
 class SecurityConfigTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
-    @Autowired
-    private SecurityConfig securityConfig;
+    @Autowired private SecurityConfig securityConfig;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Autowired private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private CorsConfigurationSource corsConfigurationSource;
+    @Autowired private CorsConfigurationSource corsConfigurationSource;
 
     private String testPassword;
 
@@ -71,7 +68,8 @@ class SecurityConfigTest {
         void passwordEncoder_ShouldBeBCryptPasswordEncoder() {
             // When & Then
             assertNotNull(passwordEncoder, "PasswordEncoderがnullではない");
-            assertTrue(passwordEncoder.getClass().getSimpleName().contains("BCrypt"),
+            assertTrue(
+                    passwordEncoder.getClass().getSimpleName().contains("BCrypt"),
                     "BCryptPasswordEncoderが設定されている");
         }
 
@@ -87,10 +85,11 @@ class SecurityConfigTest {
             // Then
             assertNotNull(encodedPassword, "エンコードされたパスワードがnullではない");
             assertNotEquals(rawPassword, encodedPassword, "エンコード前後でパスワードが異なる");
-            assertTrue(passwordEncoder.matches(rawPassword, encodedPassword),
+            assertTrue(
+                    passwordEncoder.matches(rawPassword, encodedPassword),
                     "エンコードされたパスワードと元パスワードが一致する");
-            assertFalse(passwordEncoder.matches("wrongpassword", encodedPassword),
-                    "間違ったパスワードは一致しない");
+            assertFalse(
+                    passwordEncoder.matches("wrongpassword", encodedPassword), "間違ったパスワードは一致しない");
         }
 
         @Test
@@ -133,9 +132,11 @@ class SecurityConfigTest {
         @DisplayName("正常: APIエンドポイントでCORSヘッダーが設定される")
         void corsConfiguration_ShouldSetCorsHeaders() throws Exception {
             // When & Then
-            mockMvc.perform(options("/api/auth/login").header("Origin", "http://localhost:3000")
-                    .header("Access-Control-Request-Method", "POST")
-                    .header("Access-Control-Request-Headers", "Content-Type"))
+            mockMvc.perform(
+                            options("/api/auth/login")
+                                    .header("Origin", "http://localhost:3000")
+                                    .header("Access-Control-Request-Method", "POST")
+                                    .header("Access-Control-Request-Headers", "Content-Type"))
                     .andExpect(status().isOk())
                     .andExpect(header().exists("Access-Control-Allow-Origin"))
                     .andExpect(header().exists("Access-Control-Allow-Methods"))
@@ -147,8 +148,10 @@ class SecurityConfigTest {
         void corsConfiguration_ShouldAllowConfiguredOrigins() throws Exception {
             // When & Then
             mockMvc.perform(get("/api/auth/login").header("Origin", "http://localhost:3000"))
-                    .andExpect(header().string("Access-Control-Allow-Origin",
-                            "http://localhost:3000"));
+                    .andExpect(
+                            header().string(
+                                            "Access-Control-Allow-Origin",
+                                            "http://localhost:3000"));
         }
     }
 
@@ -160,8 +163,10 @@ class SecurityConfigTest {
         @DisplayName("正常: 公開エンドポイントは認証なしでアクセス可能")
         void publicEndpoints_ShouldBeAccessibleWithoutAuthentication() throws Exception {
             // ログインエンドポイント
-            mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"username\":\"test\",\"password\":\"test\"}"))
+            mockMvc.perform(
+                            post("/api/auth/login")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content("{\"username\":\"test\",\"password\":\"test\"}"))
                     .andExpect(status().is4xxClientError()); // 400 or 401 (認証は通るがバリデーションエラー)
 
             // Swagger UI
@@ -195,8 +200,10 @@ class SecurityConfigTest {
         @DisplayName("正常: CSRFが無効化されている")
         void csrf_ShouldBeDisabled() throws Exception {
             // CSRFトークンなしでPOSTリクエストが可能
-            mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"username\":\"test\",\"password\":\"test\"}"))
+            mockMvc.perform(
+                            post("/api/auth/login")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content("{\"username\":\"test\",\"password\":\"test\"}"))
                     .andExpect(status().is4xxClientError()); // CSRFエラーではなく、認証・バリデーションエラー
         }
     }
@@ -210,9 +217,9 @@ class SecurityConfigTest {
         void sessionManagement_ShouldBeStateless() throws Exception {
             // ログインエンドポイントはPOSTのみ対応なのでGETは405エラー
             mockMvc.perform(get("/api/auth/login")).andExpect(status().isMethodNotAllowed()); // GET
-                                                                                              // method
-                                                                                              // not
-                                                                                              // supported
+            // method
+            // not
+            // supported
         }
     }
 
@@ -231,8 +238,11 @@ class SecurityConfigTest {
             mockMvc.perform(get("/api/daily-reports/my")).andExpect(status().isOk());
 
             // 3. ログインエンドポイントへのアクセス（認証不要）
-            mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"username\":\"invaliduser\",\"password\":\"invalidpass\"}"))
+            mockMvc.perform(
+                            post("/api/auth/login")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(
+                                            "{\"username\":\"invaliduser\",\"password\":\"invalidpass\"}"))
                     .andExpect(status().is4xxClientError()); // バリデーションエラーまたは認証エラー
         }
 
@@ -262,23 +272,31 @@ class SecurityConfigTest {
         @Test
         @DisplayName("境界値: 不正なContentTypeでのリクエスト")
         void invalidContentType_ShouldBeHandledCorrectly() throws Exception {
-            mockMvc.perform(post("/api/auth/login").contentType(MediaType.TEXT_PLAIN)
-                    .content("invalid content")).andExpect(status().is4xxClientError());
+            mockMvc.perform(
+                            post("/api/auth/login")
+                                    .contentType(MediaType.TEXT_PLAIN)
+                                    .content("invalid content"))
+                    .andExpect(status().is4xxClientError());
         }
 
         @Test
         @DisplayName("境界値: 空のリクエストボディ")
         void emptyRequestBody_ShouldBeHandledCorrectly() throws Exception {
             mockMvc.perform(
-                    post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(""))
+                            post("/api/auth/login")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(""))
                     .andExpect(status().is4xxClientError());
         }
 
         @Test
         @DisplayName("境界値: 不正なJSON形式のリクエスト")
         void invalidJsonRequest_ShouldBeHandledCorrectly() throws Exception {
-            mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                    .content("{invalid json")).andExpect(status().is4xxClientError());
+            mockMvc.perform(
+                            post("/api/auth/login")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content("{invalid json"))
+                    .andExpect(status().is4xxClientError());
         }
     }
 
@@ -294,7 +312,9 @@ class SecurityConfigTest {
 
             // PasswordEncoder Bean
             assertNotNull(passwordEncoder, "PasswordEncoderがSpringコンテキストに登録されている");
-            assertEquals("BCryptPasswordEncoder", passwordEncoder.getClass().getSimpleName(),
+            assertEquals(
+                    "BCryptPasswordEncoder",
+                    passwordEncoder.getClass().getSimpleName(),
                     "BCryptPasswordEncoderが設定されている");
 
             // CorsConfigurationSource Bean

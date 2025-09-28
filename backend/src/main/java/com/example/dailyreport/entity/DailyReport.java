@@ -2,6 +2,7 @@ package com.example.dailyreport.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -22,24 +23,24 @@ import lombok.experimental.SuperBuilder;
 /**
  * 日報情報を管理するエンティティクラス
  *
- * <p>
- * 機能: - 日報の基本情報を保存（ID、ユーザーID、タイトル、作業内容、ステータス） - 日報の対象日と提出日時管理 - ステータス管理（下書き/提出済み） -
+ * <p>機能: - 日報の基本情報を保存（ID、ユーザーID、タイトル、作業内容、ステータス） - 日報の対象日と提出日時管理 - ステータス管理（下書き/提出済み） -
  * 作業内容の文字数制限（1000文字以内） - 1日1件制限の実装（ユーザーID + 対象日でユニーク） - 作成・更新日時の自動記録 - Lombokによるボイラープレートコード削減
  *
- * <p>
- * データベーステーブル: daily_reports 関連: - users テーブルとの多対1の関係（user_id）
+ * <p>データベーステーブル: daily_reports 関連: - users テーブルとの多対1の関係（user_id）
  *
- * <p>
- * 制約: - 1日1件制限: UNIQUE(user_id, report_date) - 作業内容文字数制限: work_content <= 1000文字
+ * <p>制約: - 1日1件制限: UNIQUE(user_id, report_date) - 作業内容文字数制限: work_content <= 1000文字
  *
- * <p>
- * Lombok注釈: - @Data: getter/setter、toString、equals、hashCode自動生成 - @NoArgsConstructor:
+ * <p>Lombok注釈: - @Data: getter/setter、toString、equals、hashCode自動生成 - @NoArgsConstructor:
  * デフォルトコンストラクタ生成 - @AllArgsConstructor: 全フィールドコンストラクタ生成 - @Builder: Builderパターン対応
  */
 @Entity
-@Table(name = "daily_reports",
+@Table(
+        name = "daily_reports",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_user_date", columnNames = {"user_id", "report_date"})})
+            @UniqueConstraint(
+                    name = "uk_user_date",
+                    columnNames = {"user_id", "report_date"})
+        })
 @Data
 @SuperBuilder
 @NoArgsConstructor

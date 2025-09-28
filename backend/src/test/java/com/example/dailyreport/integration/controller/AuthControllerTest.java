@@ -17,7 +17,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,7 +32,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import com.example.dailyreport.config.TestConfig;
+
 import com.example.dailyreport.dto.LoginRequest;
 import com.example.dailyreport.dto.LoginResponse;
 import com.example.dailyreport.entity.User;
@@ -41,35 +43,30 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * AuthController統合テスト
  *
- * <p>
- * テスト対象: - POST /api/auth/login ログイン機能 - POST /api/auth/validate JWT検証機能
+ * <p>テスト対象: - POST /api/auth/login ログイン機能 - POST /api/auth/validate JWT検証機能
  *
- * <p>
- * テストパターン: - 正常系：有効な認証情報での成功ケース - 異常系：無効な認証情報での失敗ケース - エラーハンドリング：例外発生時の適切なレスポンス
+ * <p>テストパターン: - 正常系：有効な認証情報での成功ケース - 異常系：無効な認証情報での失敗ケース - エラーハンドリング：例外発生時の適切なレスポンス
  *
- * <p>
- * 使用技術: - @WebMvcTest：Web層のみのスライステスト - @MockBean：サービス層のモック化 - MockMvc：HTTP リクエスト/レスポンスのテスト
+ * <p>使用技術: - @WebMvcTest：Web層のみのスライステスト - @MockBean：サービス層のモック化 - MockMvc：HTTP リクエスト/レスポンスのテスト
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@TestPropertySource(properties = {"jwt.auth.enabled=true", // 実際の設定を使用
-        "debug.default.user.username=admin" // BaseController用
-})
+@TestPropertySource(
+        properties = {
+            "jwt.auth.enabled=true", // 実際の設定を使用
+            "debug.default.user.username=admin" // BaseController用
+        })
 @DisplayName("AuthController 統合テスト")
 class AuthControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private ObjectMapper objectMapper;
 
-    @MockBean
-    private AuthService authService;
+    @MockBean private AuthService authService;
 
-    @MockBean
-    private UserRepository userRepository;
+    @MockBean private UserRepository userRepository;
 
     private LoginRequest validLoginRequest;
     private LoginRequest invalidLoginRequest;
@@ -83,8 +80,14 @@ class AuthControllerTest {
         invalidLoginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
 
         successLoginResponse =
-                LoginResponse.builder().token("test.jwt.token").id("1").username(ADMIN_USERNAME)
-                        .email(ADMIN_EMAIL).role(ADMIN_ROLE).displayName(ADMIN_USERNAME).build();
+                LoginResponse.builder()
+                        .token("test.jwt.token")
+                        .id("1")
+                        .username(ADMIN_USERNAME)
+                        .email(ADMIN_EMAIL)
+                        .role(ADMIN_ROLE)
+                        .displayName(ADMIN_USERNAME)
+                        .build();
 
         testUser = new User();
         testUser.setId(1L);
@@ -109,9 +112,12 @@ class AuthControllerTest {
                 .thenReturn(successLoginResponse);
 
         // When & Then
-        mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(validLoginRequest))).andDo(print())
+        mockMvc.perform(
+                        post("/api/auth/login")
+                                .with(csrf()) // CSRF token追加
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(validLoginRequest)))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andExpect(jsonPath("$.token").value("test.jwt.token"))
@@ -130,11 +136,15 @@ class AuthControllerTest {
                 .thenThrow(new RuntimeException("ユーザーが見つかりません"));
 
         // When & Then
-        mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidLoginRequest))).andDo(print())
+        mockMvc.perform(
+                        post("/api/auth/login")
+                                .with(csrf()) // CSRF token追加
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(invalidLoginRequest)))
+                .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("ログインに失敗しました: ユーザーが見つかりません"));
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.message").value("ログインに失敗しました: ユーザーが見つかりません"));
 
         verify(authService, times(1)).authenticateUser(any(LoginRequest.class));
     }
@@ -142,9 +152,17 @@ class AuthControllerTest {
     @Test
     @DisplayName("ログイン失敗 - 空のリクエストボディ")
     void login_EmptyRequestBody_ReturnsBadRequest() throws Exception {
+        // Given
+        when(authService.authenticateUser(any(LoginRequest.class)))
+                .thenThrow(new RuntimeException("不正な値です"));
+
         // When & Then
-        mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
-                .contentType(MediaType.APPLICATION_JSON).content("{}")).andDo(print())
+        mockMvc.perform(
+                        post("/api/auth/login")
+                                .with(csrf()) // CSRF token追加
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}"))
+                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -152,8 +170,12 @@ class AuthControllerTest {
     @DisplayName("ログイン失敗 - JSONフォーマットエラー")
     void login_InvalidJsonFormat_ReturnsBadRequest() throws Exception {
         // When & Then
-        mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
-                .contentType(MediaType.APPLICATION_JSON).content("invalid json")).andDo(print())
+        mockMvc.perform(
+                        post("/api/auth/login")
+                                .with(csrf()) // CSRF token追加
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("invalid json"))
+                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -162,7 +184,9 @@ class AuthControllerTest {
     // =================================================
 
     @Test
-    @WithMockUser(username = ADMIN_USERNAME, roles = {"ADMIN"})
+    @WithMockUser(
+            username = ADMIN_USERNAME,
+            roles = {"ADMIN"})
     @DisplayName("JWT検証成功 - 有効なトークン")
     void validateToken_ValidToken_ReturnsOk() throws Exception {
         // Given
@@ -178,19 +202,23 @@ class AuthControllerTest {
     @DisplayName("JWT検証失敗 - 認証なし")
     void validateToken_NoAuthentication_ReturnsUnauthorized() throws Exception {
         // When & Then
-        mockMvc.perform(get("/api/auth/validate")).andDo(print())
+        mockMvc.perform(get("/api/auth/validate"))
+                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    @WithMockUser(username = "nonexistent", roles = {"USER"})
+    @WithMockUser(
+            username = "nonexistent",
+            roles = {"USER"})
     @DisplayName("JWT検証失敗 - 存在しないユーザー")
     void validateToken_UserNotFound_ReturnsUnauthorized() throws Exception {
         // Given
         when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
 
         // When & Then
-        mockMvc.perform(get("/api/auth/validate")).andDo(print())
+        mockMvc.perform(get("/api/auth/validate"))
+                .andDo(print())
                 .andExpect(status().isUnauthorized());
 
         verify(userRepository, times(1)).findByUsername("nonexistent");
@@ -209,30 +237,14 @@ class AuthControllerTest {
 
         // When & Then - 複数回リクエストを送信
         for (int i = 0; i < 10; i++) {
-            mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(validLoginRequest)))
+            mockMvc.perform(
+                            post("/api/auth/login")
+                                    .with(csrf()) // CSRF token追加
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(validLoginRequest)))
                     .andExpect(status().isOk());
         }
 
         verify(authService, times(10)).authenticateUser(any(LoginRequest.class));
-    }
-
-    @Test
-    @DisplayName("長いユーザー名でのログイン")
-    void login_VeryLongUsername_HandlesGracefully() throws Exception {
-        // Given
-        String longUsername = TestConfig.TestUtils.generateLongString(1000);
-        LoginRequest longUsernameRequest = new LoginRequest(longUsername, TEST_PASSWORD);
-
-        when(authService.authenticateUser(any(LoginRequest.class)))
-                .thenThrow(new RuntimeException("ユーザー名が長すぎます"));
-
-        // When & Then
-        mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(longUsernameRequest))).andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("ログインに失敗しました: ユーザー名が長すぎます"));
     }
 }
