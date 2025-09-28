@@ -96,8 +96,11 @@ class AuthControllerTest {
         testUser.setRole(ADMIN_ROLE);
         testUser.setDisplayName(ADMIN_USERNAME);
 
-        // BaseController用のUserRepositoryモック設定
+        // BaseController用のUserRepositoryモック設定（全テストケース対応）
         when(userRepository.findByUsername(ADMIN_USERNAME)).thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername("admin")).thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
+        when(userRepository.findByUsername(INVALID_USERNAME)).thenReturn(Optional.empty());
     }
 
     // =================================================
@@ -193,7 +196,10 @@ class AuthControllerTest {
         when(userRepository.findByUsername(ADMIN_USERNAME)).thenReturn(Optional.of(testUser));
 
         // When & Then
-        mockMvc.perform(get("/api/auth/validate")).andDo(print()).andExpect(status().isOk());
+        mockMvc.perform(get("/api/auth/validate")
+                .with(csrf())) // CSRF token追加（統一性のため）
+                .andDo(print())
+                .andExpect(status().isOk());
 
         verify(userRepository, times(1)).findByUsername(ADMIN_USERNAME);
     }
@@ -202,7 +208,8 @@ class AuthControllerTest {
     @DisplayName("JWT検証失敗 - 認証なし")
     void validateToken_NoAuthentication_ReturnsUnauthorized() throws Exception {
         // When & Then
-        mockMvc.perform(get("/api/auth/validate"))
+        mockMvc.perform(get("/api/auth/validate")
+                .with(csrf())) // CSRF token追加（統一性のため）
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -217,7 +224,8 @@ class AuthControllerTest {
         when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
 
         // When & Then
-        mockMvc.perform(get("/api/auth/validate"))
+        mockMvc.perform(get("/api/auth/validate")
+                .with(csrf())) // CSRF token追加（統一性のため）
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
 
