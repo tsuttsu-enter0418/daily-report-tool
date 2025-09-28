@@ -74,8 +74,7 @@ jobs:
               run: |
                   ./mvnw test \
                     -Dspring.jpa.hibernate.ddl-auto=create-drop \
-                    -Djunit.jupiter.execution.parallel.enabled=true \
-                    -Djunit.jupiter.execution.parallel.mode.default=concurrent
+                    -Djunit.jupiter.execution.parallel.enabled=false
 
             # 統合テスト（ただし、まだ統合テストのコードは書けていないので保留したい）
             - name: Run Integration Tests
