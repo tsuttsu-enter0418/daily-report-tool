@@ -76,7 +76,7 @@ jobs:
                     -Dspring.jpa.hibernate.ddl-auto=create-drop \
                     -Djunit.jupiter.execution.parallel.enabled=false
 
-            # 統合テスト（ただし、まだ統合テストのコードは書けていないので保留したい）
+            # 統合テスト（integrationパッケージ内のテストを実行）
             - name: Run Integration Tests
               working-directory: ./backend
               env:
@@ -89,7 +89,7 @@ jobs:
               run: |
                   ./mvnw verify \
                     -Dspring.jpa.hibernate.ddl-auto=create-drop \
-                    -Dtest=**/*IntegrationTest
+                    -Dtest=**/integration/**/*Test
 
             - name: Generate Test Coverage Report
               working-directory: ./backend
@@ -172,7 +172,7 @@ jobs:
                   path: ~/.m2
                   key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                   restore-keys: ${{ runner.os }}-m2
-            
+
             # OWASP依存関係チェック用データベースキャッシュ
             - name: Cache OWASP NVD Database
               uses: actions/cache@v4

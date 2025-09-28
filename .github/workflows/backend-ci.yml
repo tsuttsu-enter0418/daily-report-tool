@@ -125,7 +125,7 @@ jobs:
         run: |
           ./mvnw verify \
             -Dspring.jpa.hibernate.ddl-auto=create-drop \
-            -Dtest=**/*IntegrationTest
+            -Dtest=**/integration/**/*Test
 
       - name: Generate Test Reports
         working-directory: ./backend
