@@ -71,20 +71,6 @@ jobs:
     name: Unit & Integration Tests
     runs-on: ubuntu-latest
     
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: daily_report_tool_test
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
 
     steps:
       - name: Checkout code
@@ -107,9 +93,6 @@ jobs:
         working-directory: ./backend
         env:
           SPRING_PROFILES_ACTIVE: test
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/daily_report_tool_test
-          SPRING_DATASOURCE_USERNAME: test_user
-          SPRING_DATASOURCE_PASSWORD: test_password
         run: |
           ./mvnw test \
             -Dspring.jpa.hibernate.ddl-auto=create-drop \
@@ -119,9 +102,6 @@ jobs:
         working-directory: ./backend
         env:
           SPRING_PROFILES_ACTIVE: test
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/daily_report_tool_test
-          SPRING_DATASOURCE_USERNAME: test_user
-          SPRING_DATASOURCE_PASSWORD: test_password
         run: |
           ./mvnw verify \
             -Dspring.jpa.hibernate.ddl-auto=create-drop \
