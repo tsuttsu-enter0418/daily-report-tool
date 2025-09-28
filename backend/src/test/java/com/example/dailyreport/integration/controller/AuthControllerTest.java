@@ -17,9 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +30,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-
 import com.example.dailyreport.dto.LoginRequest;
 import com.example.dailyreport.dto.LoginResponse;
 import com.example.dailyreport.entity.User;
@@ -43,30 +40,35 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * AuthController統合テスト
  *
- * <p>テスト対象: - POST /api/auth/login ログイン機能 - POST /api/auth/validate JWT検証機能
+ * <p>
+ * テスト対象: - POST /api/auth/login ログイン機能 - POST /api/auth/validate JWT検証機能
  *
- * <p>テストパターン: - 正常系：有効な認証情報での成功ケース - 異常系：無効な認証情報での失敗ケース - エラーハンドリング：例外発生時の適切なレスポンス
+ * <p>
+ * テストパターン: - 正常系：有効な認証情報での成功ケース - 異常系：無効な認証情報での失敗ケース - エラーハンドリング：例外発生時の適切なレスポンス
  *
- * <p>使用技術: - @WebMvcTest：Web層のみのスライステスト - @MockBean：サービス層のモック化 - MockMvc：HTTP リクエスト/レスポンスのテスト
+ * <p>
+ * 使用技術: - @WebMvcTest：Web層のみのスライステスト - @MockBean：サービス層のモック化 - MockMvc：HTTP リクエスト/レスポンスのテスト
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@TestPropertySource(
-        properties = {
-            "jwt.auth.enabled=true", // 実際の設定を使用
-            "debug.default.user.username=admin" // BaseController用
-        })
+@TestPropertySource(properties = {"jwt.auth.enabled=true", // 実際の設定を使用
+        "debug.default.user.username=admin" // BaseController用
+})
 @DisplayName("AuthController 統合テスト")
 class AuthControllerTest {
 
-    @Autowired private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @Autowired private ObjectMapper objectMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @MockBean private AuthService authService;
+    @MockBean
+    private AuthService authService;
 
-    @MockBean private UserRepository userRepository;
+    @MockBean
+    private UserRepository userRepository;
 
     private LoginRequest validLoginRequest;
     private LoginRequest invalidLoginRequest;
@@ -80,14 +82,8 @@ class AuthControllerTest {
         invalidLoginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
 
         successLoginResponse =
-                LoginResponse.builder()
-                        .token("test.jwt.token")
-                        .id("1")
-                        .username(ADMIN_USERNAME)
-                        .email(ADMIN_EMAIL)
-                        .role(ADMIN_ROLE)
-                        .displayName(ADMIN_USERNAME)
-                        .build();
+                LoginResponse.builder().token("test.jwt.token").id("1").username(ADMIN_USERNAME)
+                        .email(ADMIN_EMAIL).role(ADMIN_ROLE).displayName(ADMIN_USERNAME).build();
 
         testUser = new User();
         testUser.setId(1L);
@@ -111,16 +107,12 @@ class AuthControllerTest {
     @DisplayName("ログイン成功 - 有効な認証情報")
     void login_ValidCredentials_ReturnsSuccess() throws Exception {
         // Given
-        when(authService.authenticateUser(any(LoginRequest.class)))
-                .thenReturn(successLoginResponse);
+        when(authService.authenticateUser(validLoginRequest)).thenReturn(successLoginResponse);
 
         // When & Then
-        mockMvc.perform(
-                        post("/api/auth/login")
-                                .with(csrf()) // CSRF token追加
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(validLoginRequest)))
-                .andDo(print())
+        mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(validLoginRequest))).andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andExpect(jsonPath("$.token").value("test.jwt.token"))
@@ -135,16 +127,13 @@ class AuthControllerTest {
     @DisplayName("ログイン失敗 - 無効な認証情報")
     void login_InvalidCredentials_ReturnsBadRequest() throws Exception {
         // Given
-        when(authService.authenticateUser(any(LoginRequest.class)))
+        when(authService.authenticateUser(invalidLoginRequest))
                 .thenThrow(new RuntimeException("ユーザーが見つかりません"));
 
         // When & Then
-        mockMvc.perform(
-                        post("/api/auth/login")
-                                .with(csrf()) // CSRF token追加
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(invalidLoginRequest)))
-                .andDo(print())
+        mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidLoginRequest))).andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andExpect(jsonPath("$.message").value("ログインに失敗しました: ユーザーが見つかりません"));
@@ -160,12 +149,8 @@ class AuthControllerTest {
                 .thenThrow(new RuntimeException("不正な値です"));
 
         // When & Then
-        mockMvc.perform(
-                        post("/api/auth/login")
-                                .with(csrf()) // CSRF token追加
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("{}"))
-                .andDo(print())
+        mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
+                .contentType(MediaType.APPLICATION_JSON).content("{}")).andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -173,12 +158,8 @@ class AuthControllerTest {
     @DisplayName("ログイン失敗 - JSONフォーマットエラー")
     void login_InvalidJsonFormat_ReturnsBadRequest() throws Exception {
         // When & Then
-        mockMvc.perform(
-                        post("/api/auth/login")
-                                .with(csrf()) // CSRF token追加
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("invalid json"))
-                .andDo(print())
+        mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
+                .contentType(MediaType.APPLICATION_JSON).content("invalid json")).andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -187,19 +168,15 @@ class AuthControllerTest {
     // =================================================
 
     @Test
-    @WithMockUser(
-            username = ADMIN_USERNAME,
-            roles = {"ADMIN"})
+    @WithMockUser(username = ADMIN_USERNAME, roles = {"ADMIN"})
     @DisplayName("JWT検証成功 - 有効なトークン")
     void validateToken_ValidToken_ReturnsOk() throws Exception {
         // Given
         when(userRepository.findByUsername(ADMIN_USERNAME)).thenReturn(Optional.of(testUser));
 
         // When & Then
-        mockMvc.perform(get("/api/auth/validate")
-                .with(csrf())) // CSRF token追加（統一性のため）
-                .andDo(print())
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/auth/validate").with(csrf())) // CSRF token追加（統一性のため）
+                .andDo(print()).andExpect(status().isOk());
 
         verify(userRepository, times(1)).findByUsername(ADMIN_USERNAME);
     }
@@ -208,26 +185,20 @@ class AuthControllerTest {
     @DisplayName("JWT検証失敗 - 認証なし")
     void validateToken_NoAuthentication_ReturnsUnauthorized() throws Exception {
         // When & Then
-        mockMvc.perform(get("/api/auth/validate")
-                .with(csrf())) // CSRF token追加（統一性のため）
-                .andDo(print())
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/auth/validate").with(csrf())) // CSRF token追加（統一性のため）
+                .andDo(print()).andExpect(status().isUnauthorized());
     }
 
     @Test
-    @WithMockUser(
-            username = "nonexistent",
-            roles = {"USER"})
+    @WithMockUser(username = "nonexistent", roles = {"USER"})
     @DisplayName("JWT検証失敗 - 存在しないユーザー")
     void validateToken_UserNotFound_ReturnsUnauthorized() throws Exception {
         // Given
         when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
 
         // When & Then
-        mockMvc.perform(get("/api/auth/validate")
-                .with(csrf())) // CSRF token追加（統一性のため）
-                .andDo(print())
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/auth/validate").with(csrf())) // CSRF token追加（統一性のため）
+                .andDo(print()).andExpect(status().isUnauthorized());
 
         verify(userRepository, times(1)).findByUsername("nonexistent");
     }
@@ -240,21 +211,19 @@ class AuthControllerTest {
     @DisplayName("大量リクエスト処理テスト")
     void login_HighVolumeRequests_HandlesGracefully() throws Exception {
         // Given - より具体的なモック設定
-        when(authService.authenticateUser(any(LoginRequest.class)))
-                .thenReturn(successLoginResponse);
-        
+        when(authService.authenticateUser(validLoginRequest)).thenReturn(successLoginResponse);
+
         // デバッグ用：リクエスト内容確認
-        System.out.println("validLoginRequest: " + objectMapper.writeValueAsString(validLoginRequest));
-        System.out.println("successLoginResponse: " + objectMapper.writeValueAsString(successLoginResponse));
+        System.out.println(
+                "validLoginRequest: " + objectMapper.writeValueAsString(validLoginRequest));
+        System.out.println(
+                "successLoginResponse: " + objectMapper.writeValueAsString(successLoginResponse));
 
         // When & Then - 複数回リクエストを送信
         for (int i = 0; i < 10; i++) {
-            mockMvc.perform(
-                            post("/api/auth/login")
-                                    .with(csrf()) // CSRF token追加
-                                    .contentType(MediaType.APPLICATION_JSON)
-                                    .content(objectMapper.writeValueAsString(validLoginRequest)))
-                    .andDo(print()) // レスポンス詳細をログ出力
+            mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(validLoginRequest))).andDo(print()) // レスポンス詳細をログ出力
                     .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     .andExpect(jsonPath("$.token").value("test.jwt.token"));
