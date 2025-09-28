@@ -101,6 +101,11 @@ jobs:
                     -Dspring.jpa.hibernate.ddl-auto=create-drop \
                     -Djunit.jupiter.execution.parallel.enabled=false
 
+            - name: Generate Test Reports
+              working-directory: ./backend
+              if: always()
+              run: ./mvnw jacoco:report
+
             - name: debug jacco exist
               working-directory: ./backend
               if: always()
@@ -118,11 +123,6 @@ jobs:
                   ./mvnw verify \
                     -Dspring.jpa.hibernate.ddl-auto=create-drop \
                     -Dtest=**/integration/**/*Test
-
-            # - name: Generate Test Reports
-            #   working-directory: ./backend
-            #   if: always()
-            #   run: ./mvnw jacoco:report
 
             - name: Upload Test Results
               uses: actions/upload-artifact@v4
