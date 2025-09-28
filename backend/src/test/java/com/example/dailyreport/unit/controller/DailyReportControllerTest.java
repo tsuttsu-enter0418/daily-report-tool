@@ -141,6 +141,20 @@ class DailyReportControllerTest {
                         .reportDate(validRequest.getReportDate())
                         .createdAt(LocalDateTime.now())
                         .build();
+
+        // BaseController用のUserRepositoryモック設定
+        when(userRepository.findByUsername(TestConfig.TestConstants.EMPLOYEE_USERNAME))
+                .thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername(TestConfig.TestConstants.MANAGER_USERNAME))
+                .thenReturn(Optional.of(supervisorUser));
+        when(userRepository.findByUsername(TestConfig.TestConstants.ADMIN_USERNAME))
+                .thenReturn(Optional.of(supervisorUser));
+        when(userRepository.findByUsername("employee1"))
+                .thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername("manager1"))
+                .thenReturn(Optional.of(supervisorUser));
+        when(userRepository.findByUsername("admin"))
+                .thenReturn(Optional.of(supervisorUser));
     }
 
     @Nested
