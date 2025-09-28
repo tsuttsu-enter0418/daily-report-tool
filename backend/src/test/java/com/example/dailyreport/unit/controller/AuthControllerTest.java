@@ -48,8 +48,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
-    "jwt.auth.enabled=false",  // Unit test用：認証処理をモック化
-    "debug.default.user.username=admin"  // デバッグモード用デフォルトユーザー
+    "jwt.auth.enabled=true",  // Unit test用：@WithMockUserと連携した認証フロー
+    "debug.default.user.username=admin"  // BaseController用（念のため）
 })
 @DisplayName("AuthController - 認証API")
 class AuthControllerTest {
