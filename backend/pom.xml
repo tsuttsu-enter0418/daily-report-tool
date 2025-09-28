@@ -143,10 +143,6 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
-                        <configuration>
-                            <formats>XML</formats>
-                            <outputFile>target/site/jacoco/cobertura.xml</outputFile>
-                        </configuration>
                     </execution>
                 </executions>
                 <configuration>

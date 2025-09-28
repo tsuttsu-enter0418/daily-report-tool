@@ -113,8 +113,8 @@ jobs:
               if: always()
               run: |
                   echo "--- Listing files in target/site/jacoco/ ---"
-                  # cobertura.xmlが生成されているはず
-                  ls -al target/site/jacoco/cobertura.xml || true
+                  # jacoco.xmlが生成されているはず
+                  ls -al target/site/jacoco/jacoco.xml || true
                   echo "--- Listing jacoco.exec data file ---"
                   ls -al target/jacoco.exec || true
 
@@ -149,7 +149,7 @@ jobs:
               if: github.event_name == 'pull_request'
               uses: 5monkeys/cobertura-action@master
               with:
-                  path: backend/target/site/jacoco/cobertura.xml
+                  path: backend/target/site/jacoco/jacoco.xml
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
                   minimum_coverage: 80
 
