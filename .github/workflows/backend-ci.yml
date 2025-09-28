@@ -241,7 +241,7 @@ jobs:
                   echo "Tests: ${{ needs.test.result }}"
 
                   if [[ "${{ needs.code-quality.result }}" != "success" ]] || \
-                     [[ "${{ needs.test.result }}" != "success" ]] || \
+                     [[ "${{ needs.test.result }}" != "success" ]]; then
                     echo "❌ PR validation failed"
                     exit 1
                   else
