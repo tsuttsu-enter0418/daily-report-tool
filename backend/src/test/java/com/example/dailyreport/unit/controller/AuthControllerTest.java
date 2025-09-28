@@ -150,6 +150,7 @@ class AuthControllerTest {
             // When & Then
             mockMvc.perform(
                             post("/api/auth/login")
+                                    .with(csrf()) // CSRF token追加
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(invalidLoginRequest)))
                     .andExpect(status().isBadRequest())
@@ -170,6 +171,7 @@ class AuthControllerTest {
             // When & Then
             mockMvc.perform(
                             post("/api/auth/login")
+                                    .with(csrf()) // CSRF token追加
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(invalidLoginRequest)))
                     // 検証（エラーが発生するか）
@@ -192,6 +194,7 @@ class AuthControllerTest {
             // When & Then
             mockMvc.perform(
                             post("/api/auth/login")
+                                    .with(csrf()) // CSRF token追加
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(emptyRequest)))
                     .andExpect(status().isBadRequest())
@@ -208,6 +211,7 @@ class AuthControllerTest {
             // When & Then
             mockMvc.perform(
                             post("/api/auth/login")
+                                    .with(csrf()) // CSRF token追加
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(""))
                     .andExpect(status().isBadRequest());
@@ -221,6 +225,7 @@ class AuthControllerTest {
             // When & Then
             mockMvc.perform(
                             post("/api/auth/login")
+                                    .with(csrf()) // CSRF token追加
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content("{invalid json"))
                     .andExpect(status().isBadRequest());
@@ -321,7 +326,6 @@ class AuthControllerTest {
                             .displayName("部下ユーザー")
                             .isActive(true)
                             .build();
-
             when(userRepository.findByUsername(TestConfig.TestConstants.EMPLOYEE_USERNAME))
                     .thenReturn(Optional.of(employeeUser));
 
@@ -383,6 +387,7 @@ class AuthControllerTest {
             // When & Then
             mockMvc.perform(
                             post("/api/auth/login")
+                                    .with(csrf()) // CSRF token追加
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(longUsernameRequest)))
                     .andExpect(status().isBadRequest())
@@ -407,6 +412,7 @@ class AuthControllerTest {
             // When & Then
             mockMvc.perform(
                             post("/api/auth/login")
+                                    .with(csrf()) // CSRF token追加
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(specialRequest)))
                     .andExpect(status().isOk())
@@ -427,6 +433,7 @@ class AuthControllerTest {
             // When & Then - ログイン（認証不要）
             mockMvc.perform(
                             post("/api/auth/login")
+                                    .with(csrf()) // CSRF token追加
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(validLoginRequest)))
                     .andExpect(status().isOk());
@@ -460,6 +467,7 @@ class AuthControllerTest {
         void validateEndpoint_PostMethod_ShouldReturn405() throws Exception {
             mockMvc.perform(
                             post("/api/auth/validate")
+                                    .with(csrf()) // CSRF token追加
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content("{}"))
                     .andExpect(status().isMethodNotAllowed());
@@ -472,6 +480,7 @@ class AuthControllerTest {
         void meEndpoint_PostMethod_ShouldReturn405() throws Exception {
             mockMvc.perform(
                             post("/api/auth/me")
+                                    .with(csrf()) // CSRF token追加
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content("{}"))
                     .andExpect(status().isMethodNotAllowed());
