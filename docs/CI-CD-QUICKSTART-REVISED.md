@@ -128,17 +128,24 @@ fi
 
 ```bash
 echo "backend/pom.xml に以下のプラグインが必要です:"
-echo "1. maven-surefire-plugin（並行テスト実行）"
-echo "2. jacoco-maven-plugin（テストカバレッジ）"
+echo "1. maven-surefire-plugin（並行テスト実行 + JaCoCo連携）"
+echo "2. jacoco-maven-plugin v0.8.11（テストカバレッジ CSV/XML/HTML出力）"
 echo "3. maven-checkstyle-plugin（コード品質）"
 echo "4. dependency-check-maven（セキュリティスキャン）"
 echo ""
-echo "詳細設定は docs/CI-CD-IMPLEMENTATION-PLAN-REVISED.md を参照"
+echo "詳細設定は docs/CI-CD-CONFIG-TEMPLATES.md を参照"
 
 # 基本的なプラグインが存在するか確認
 grep -q "maven-surefire-plugin" backend/pom.xml && echo "✅ Surefire plugin found" || echo "❌ Surefire plugin missing"
 grep -q "jacoco-maven-plugin" backend/pom.xml && echo "✅ JaCoCo plugin found" || echo "❌ JaCoCo plugin missing"
 grep -q "maven-checkstyle-plugin" backend/pom.xml && echo "✅ Checkstyle plugin found" || echo "❌ Checkstyle plugin missing"
+
+# JaCoCo設定の詳細確認
+echo ""
+echo "🔍 JaCoCo設定詳細確認:"
+grep -q "jacoco.surefire.argLine" backend/pom.xml && echo "✅ JaCoCo-Surefire integration configured" || echo "⚠️ JaCoCo-Surefire integration missing"
+grep -q "<format>CSV</format>" backend/pom.xml && echo "✅ CSV output format configured" || echo "⚠️ CSV output format missing"
+grep -q "**/entity/**" backend/pom.xml && echo "✅ Entity classes excluded from coverage" || echo "⚠️ Coverage exclusions missing"
 ```
 
 ### ステップ 5: CI ワークフロー実装テスト (20分)
@@ -170,6 +177,9 @@ git commit -m "Phase 1: Add simple CI pipeline (no external dependencies)
 - Add basic code quality checks (Checkstyle only)
 - Add security vulnerability scanning (OWASP only)
 - Add Docker build validation (local only)
+- Add JaCoCo 0.8.11 test coverage with CSV/XML/HTML output
+- Configure cicirello/jacoco-badge-generator@v2 for coverage badges
+- Add JaCoCo-Surefire integration with proper exclusions
 - No GitHub Secrets required for Phase 1"
 
 # 4. プッシュして PR 作成
@@ -189,37 +199,86 @@ echo "https://github.com/tsuttsu-enter0418/daily-report-tool/compare/feature/ci-
 
 ---
 
-## ⚡ 即座開始: Phase 2 実装手順
+## ⚡ 即座開始: Phase 2 実装手順（AWS CD基盤重点化）
 
-### Phase 1 完了後の開始手順
+### 🎯 **現在の目標**: AWS ECR/ECS 自動デプロイ + TestContainers統合テスト
+
+### 🚀 **Priority 1: AWS CD基盤 即座開始**
 
 ```bash
 # 1. Phase 1 完了確認
-echo "Phase 1 完了チェック:"
-echo "✅ シンプルCI ワークフローが正常動作している"
-echo "✅ JUnit テストが継続的に成功している"
-echo "✅ 基本的なコード品質チェックが通過している"
-echo "✅ Docker ビルドが成功している"
+echo "✅ Phase 1 完了状況確認:"
+echo "- CI ワークフローが安定動作している"
+echo "- JaCoCo カバレッジ 80% 以上を維持"
+echo "- H2 単体テストが高速実行されている"
+echo "- Docker ビルドが成功している"
 
-# 2. Phase 2 ブランチ作成
+# 2. Phase 2 AWS CD ブランチ作成
 git checkout main
 git pull origin main
-git checkout -b feature/cd-pipeline-phase2
+git checkout -b feature/aws-cd-deployment
 
-# 3. 🔧 ここで初めて AWS 設定が必要！
-echo "⚠️ Phase 2 では AWS 認証情報が必要です"
-echo "GitHub Repository Settings → Secrets で以下を設定:"
-echo "- AWS_ACCESS_KEY_ID"
-echo "- AWS_SECRET_ACCESS_KEY"
+# 3. 🔧 AWS 認証設定（最重要）
+echo "🚨 AWS デプロイに必要な設定:"
+echo "GitHub Repository → Settings → Secrets and variables → Actions"
+echo ""
+echo "必須 Secrets:"
+echo "- AWS_ACCESS_KEY_ID: $(echo 'ECS デプロイ用 AWS アクセスキー')"
+echo "- AWS_SECRET_ACCESS_KEY: $(echo 'ECS デプロイ用 AWS シークレットキー')"
+echo ""
+echo "オプション Secrets:"
+echo "- SLACK_WEBHOOK_URL: $(echo 'デプロイ通知用（後で設定可能）')"
 
-# 4. ECR リポジトリ確認・作成
-aws ecr describe-repositories --repository-names daily-report-backend --region ap-northeast-1 2>/dev/null || {
-    echo "ECR リポジトリを作成します..."
-    aws ecr create-repository --repository-name daily-report-backend --region ap-northeast-1
+# 4. AWS リソース確認・準備
+echo ""
+echo "🔍 AWS リソース確認:"
+aws ecr describe-repositories --repository-names daily-report-backend --region ap-northeast-1 2>/dev/null && echo "✅ ECR リポジトリ存在" || {
+    echo "⚠️ ECR リポジトリ作成が必要"
+    echo "aws ecr create-repository --repository-name daily-report-backend --region ap-northeast-1"
 }
 
-# 5. CD ワークフロー確認
-cat .github/workflows/backend-cd.yml | head -20
+aws ecs describe-clusters --clusters daily-report-cluster --region ap-northeast-1 2>/dev/null && echo "✅ ECS クラスター存在" || echo "⚠️ ECS クラスター確認が必要"
+
+aws ecs describe-services --cluster daily-report-cluster --services daily-report-task-service --region ap-northeast-1 2>/dev/null && echo "✅ ECS サービス存在" || echo "⚠️ ECS サービス確認が必要"
+
+# 5. 既存 CD ワークフロー・スクリプト確認
+echo ""
+echo "📋 既存リソース確認:"
+ls -la .github/workflows/backend-cd.yml && echo "✅ CD ワークフロー存在" || echo "⚠️ CD ワークフロー要確認"
+ls -la scripts/push-to-ecr.sh && echo "✅ ECR プッシュスクリプト存在" || echo "⚠️ ECR スクリプト要確認"
+
+# 6. CD ワークフロー内容確認
+echo ""
+echo "🔍 CD ワークフロー設定確認:"
+head -20 .github/workflows/backend-cd.yml
+```
+
+### 🧪 **Priority 2: TestContainers統合テスト準備**
+
+```bash
+# 1. TestContainers 依存関係確認
+echo "🔍 TestContainers 設定確認:"
+grep -q "testcontainers" backend/pom.xml && echo "✅ TestContainers 依存関係存在" || {
+    echo "⚠️ TestContainers 依存関係の追加が必要"
+    echo "詳細: docs/CI-CD-CONFIG-TEMPLATES.md を参照"
+}
+
+# 2. 統合テスト用設定ファイル作成準備
+echo ""
+echo "📋 統合テスト環境準備:"
+echo "- application-integration-test.yml 作成予定"
+echo "- PostgreSQL TestContainers 設定予定"
+echo "- 統合テスト用データセット整備予定"
+echo ""
+echo "注意: 単体テストは H2 継続（高速実行維持）"
+echo "統合テストのみ PostgreSQL TestContainers 使用"
+
+# 3. 段階的実装計画表示
+echo ""
+echo "📅 TestContainers 実装計画:"
+echo "Phase 2a: AWS CD基盤完成後"
+echo "Phase 2b: TestContainers 統合テスト環境構築"
+echo "Phase 2c: CI環境での TestContainers 実行確認"
 ```
 
 ---
@@ -366,5 +425,32 @@ echo "- AWS 認証情報の準備が完了している"
 
 ---
 
-**クイックスタート（修正版）最終更新**: 2025年9月20日  
-**シンプル化理由**: AWS、SonarQube、Slack連携を除去した段階的実装アプローチ
+---
+
+## 📝 最新更新事項 (2025年9月28日)
+
+### JaCoCo設定手順強化
+- [x] **Maven設定確認の詳細化**: JaCoCo v0.8.11 + CSV/XML/HTML出力確認
+- [x] **Surefire連携確認**: `jacoco.surefire.argLine` 設定確認手順追加
+- [x] **除外設定確認**: entity/dto/config クラス除外確認追加
+- [x] **コミットメッセージ更新**: JaCoCo関連の更新内容を明記
+
+### GitHub Actions統合改善
+- cicirello/jacoco-badge-generator@v2 統合手順追加
+- カバレッジバッジ自動生成機能の説明追加
+
+### 2025年9月28日 (Phase 1 → Phase 2 移行対応)
+- [x] **Phase 2 重点化**: AWS CD基盤（ECR/ECS デプロイ）を最優先実装に変更
+- [x] **TestContainers計画**: 統合テスト用PostgreSQL環境の段階的導入手順追加
+- [x] **実装優先度明確化**: Priority 1 (AWS CD) → Priority 2 (TestContainers)
+- [x] **戦略的方針**: 単体テストH2継続 + 統合テストPostgreSQL導入の二重構造
+
+### 即座開始ガイド更新
+- AWS認証設定の詳細手順追加
+- ECR/ECS リソース確認コマンド整備
+- TestContainers準備手順の段階的計画追加
+
+---
+
+**クイックスタート（修正版）最終更新**: 2025年9月28日  
+**現在の実装フェーズ**: Phase 2 AWS CD基盤構築 + TestContainers統合テスト計画

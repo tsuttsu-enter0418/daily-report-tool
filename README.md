@@ -126,6 +126,98 @@ daily-report-tool/
 └── README.md
 ```
 
+## 🏗 AWS設定
+
+本プロジェクトは以下のAWSサービスを使用しています。
+
+### CloudFront（CDN・静的サイト配信）
+
+**ディストリビューション情報**
+- **Distribution ID**: `E2WDA103AF64NB`
+- **ドメイン**: `kouhei-portfolio.net`
+- **CloudFront URL**: `d33fixrixjks4n.cloudfront.net`
+
+**OAC（Origin Access Control）設定**
+- **OAC ID**: `E3B8LDMOGYQY9U`
+- **Origin**: S3 REST APIエンドポイント（`kouhei-portfolio.net.s3.ap-northeast-1.amazonaws.com`）
+- **設定ファイル**: `dist-config.yaml`
+
+**設定変更履歴**
+```bash
+# OAC設定適用
+aws cloudfront update-distribution --id E2WDA103AF64NB --cli-input-yaml file://dist-config.yaml
+```
+
+**重要な変更点**
+- S3ウェブサイトエンドポイント → S3 REST APIエンドポイントに変更
+- `CustomOriginConfig` → `S3OriginConfig`に変更
+- OACによるセキュアなS3アクセス制御を実現
+
+### RDS（PostgreSQL データベース）
+
+**インスタンス情報**
+- **DB Instance**: `daily-report-tool`
+- **Engine**: `PostgreSQL`
+- **Parameter Group**: `rds-postgres-custom`
+- **Status**: `available`
+
+**クエリログ設定（有効化済み）**
+```bash
+# クエリログ関連パラメータ
+log_statement = all                    # すべてのSQL文をログ出力
+log_min_duration_statement = 0         # すべてのクエリ（0ms以上）をログ出力
+log_line_prefix = %t:%r:%u@%d:[%p]:   # 詳細ログフォーマット
+```
+
+**CloudWatch Logs統合**
+- **ログ出力先**: `/aws/rds/instance/daily-report-tool/postgresql`
+- **ログストリーム**: `daily-report-tool.0`
+- **用途**: デバッグ・パフォーマンス分析・セキュリティ監査
+
+**ログ確認コマンド**
+```bash
+# RDS基本情報確認
+aws rds describe-db-instances --db-instance-identifier daily-report-tool
+
+# クエリログパラメータ確認
+aws rds describe-db-parameters --db-parameter-group-name rds-postgres-custom \
+  --query 'Parameters[?contains(ParameterName, `log_statement`)]'
+
+# CloudWatch Logsからクエリログ確認
+aws logs get-log-events \
+  --log-group-name "/aws/rds/instance/daily-report-tool/postgresql" \
+  --log-stream-name "daily-report-tool.0" \
+  --limit 50
+```
+
+### S3（静的サイトホスティング）
+
+**バケット設定**
+- **バケット名**: `kouhei-portfolio.net`
+- **リージョン**: `ap-northeast-1`
+- **アクセス制御**: CloudFront OAC経由のみ
+
+**セキュリティ強化**
+- 直接S3アクセスをブロック
+- CloudFront経由でのみアクセス可能
+- OACによる認証済みリクエストのみ許可
+
+### 設定ファイル
+
+**`dist-config.yaml`** - CloudFront設定
+```yaml
+# 主要設定項目
+DomainName: kouhei-portfolio.net.s3.ap-northeast-1.amazonaws.com
+OriginAccessControlId: 'E3B8LDMOGYQY9U'
+S3OriginConfig:
+  OriginAccessIdentity: ''
+```
+
+**運用メモ**
+- CloudFront設定変更は5-15分で反映
+- RDSクエリログは全てのSQL文を記録（パフォーマンス影響を考慮）
+- OAC設定により、S3への不正アクセスを防止
+
 ## 🔧 開発コマンド
 
 ### フロントエンド

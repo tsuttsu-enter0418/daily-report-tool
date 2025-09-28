@@ -53,7 +53,8 @@ public class TestConfig {
         public static final long TEST_JWT_EXPIRATION = 3600000L;
 
         /** テスト用有効JWTトークン（モック用） */
-        public static final String VALID_JWT_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token";
+        public static final String VALID_JWT_TOKEN =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token";
 
         /** 管理者ユーザー情報 */
         public static final String ADMIN_USERNAME = "admin";

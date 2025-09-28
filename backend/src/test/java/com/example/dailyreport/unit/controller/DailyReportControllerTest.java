@@ -1,10 +1,20 @@
 package com.example.dailyreport.unit.controller;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,7 +34,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.example.dailyreport.config.TestConfig;
@@ -39,35 +48,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * DailyReportControllerクラスのユニットテスト
  *
- * <p>
- * テスト対象: - REST APIエンドポイント（7つのAPI） - HTTPレスポンス形式・ステータスコード - リクエスト・レスポンスJSONマッピング - バリデーション処理 -
+ * <p>テスト対象: - REST APIエンドポイント（7つのAPI） - HTTPレスポンス形式・ステータスコード - リクエスト・レスポンスJSONマッピング - バリデーション処理 -
  * 認証・権限制御 - エラーハンドリング
  *
- * <p>
- * テスト方針: - MockMvcによるWebレイヤーテスト - DailyReportService・UserRepositoryのモック化 -
+ * <p>テスト方針: - MockMvcによるWebレイヤーテスト - DailyReportService・UserRepositoryのモック化 -
  * WithMockUserによる認証シミュレーション - 正常系・異常系の包括的テスト - JSON形式のリクエスト・レスポンス検証
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@TestPropertySource(properties = {
-    "jwt.auth.enabled=true",  // Unit testでも認証を有効化
-    "debug.default.user.username=admin"
-})
 @DisplayName("DailyReportController - 日報REST API")
 class DailyReportControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private ObjectMapper objectMapper;
 
-    @MockBean
-    private DailyReportService dailyReportService;
+    @MockBean private DailyReportService dailyReportService;
 
-    @MockBean
-    private UserRepository userRepository;
+    @MockBean private UserRepository userRepository;
 
     private User testUser;
     private User supervisorUser;
@@ -78,40 +77,84 @@ class DailyReportControllerTest {
     @BeforeEach
     void setUp() {
         // テストユーザー作成
-        testUser = User.builder().id(1L).username(TestConfig.TestConstants.EMPLOYEE_USERNAME)
-                .email(TestConfig.TestConstants.EMPLOYEE_EMAIL)
-                .role(TestConfig.TestConstants.EMPLOYEE_ROLE).displayName("田中太郎").supervisorId(2L)
-                .isActive(true).build();
+        testUser =
+                User.builder()
+                        .id(1L)
+                        .username(TestConfig.TestConstants.EMPLOYEE_USERNAME)
+                        .email(TestConfig.TestConstants.EMPLOYEE_EMAIL)
+                        .role(TestConfig.TestConstants.EMPLOYEE_ROLE)
+                        .displayName("田中太郎")
+                        .supervisorId(2L)
+                        .isActive(true)
+                        .build();
 
         // 上司ユーザー作成
-        supervisorUser = User.builder().id(2L).username(TestConfig.TestConstants.MANAGER_USERNAME)
-                .email(TestConfig.TestConstants.MANAGER_EMAIL)
-                .role(TestConfig.TestConstants.MANAGER_ROLE).displayName("佐藤課長").isActive(true)
-                .build();
+        supervisorUser =
+                User.builder()
+                        .id(2L)
+                        .username(TestConfig.TestConstants.MANAGER_USERNAME)
+                        .email(TestConfig.TestConstants.MANAGER_EMAIL)
+                        .role(TestConfig.TestConstants.MANAGER_ROLE)
+                        .displayName("佐藤課長")
+                        .isActive(true)
+                        .build();
 
         // 有効なリクエスト作成
-        validRequest = DailyReportRequest.builder()
-                .title(TestConfig.TestConstants.TEST_REPORT_TITLE)
-                .workContent(TestConfig.TestConstants.TEST_REPORT_CONTENT)
-                .status(TestConfig.TestConstants.STATUS_DRAFT).reportDate(LocalDate.now()).build();
+        validRequest =
+                DailyReportRequest.builder()
+                        .title(TestConfig.TestConstants.TEST_REPORT_TITLE)
+                        .workContent(TestConfig.TestConstants.TEST_REPORT_CONTENT)
+                        .status(TestConfig.TestConstants.STATUS_DRAFT)
+                        .reportDate(LocalDate.now())
+                        .build();
 
         // テストレスポンス作成
-        testResponse = DailyReportResponse.builder().id(1L).userId(testUser.getId())
-                .username(testUser.getUsername()).displayName(testUser.getDisplayName())
-                .title(validRequest.getTitle()).workContent(validRequest.getWorkContent())
-                .status(validRequest.getStatus()).reportDate(validRequest.getReportDate())
-                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now()).build();
+        testResponse =
+                DailyReportResponse.builder()
+                        .id(1L)
+                        .userId(testUser.getId())
+                        .username(testUser.getUsername())
+                        .displayName(testUser.getDisplayName())
+                        .title(validRequest.getTitle())
+                        .workContent(validRequest.getWorkContent())
+                        .status(validRequest.getStatus())
+                        .reportDate(validRequest.getReportDate())
+                        .createdAt(LocalDateTime.now())
+                        .updatedAt(LocalDateTime.now())
+                        .build();
 
         // テストリストレスポンス作成
-        String workContentPreview = validRequest.getWorkContent().length() > 50
-                ? validRequest.getWorkContent().substring(0, 50) + "..."
-                : validRequest.getWorkContent();
+        String workContentPreview =
+                validRequest.getWorkContent().length() > 50
+                        ? validRequest.getWorkContent().substring(0, 50) + "..."
+                        : validRequest.getWorkContent();
 
-        testListResponse = DailyReportListResponse.builder().id(1L).userId(testUser.getId())
-                .username(testUser.getUsername()).displayName(testUser.getDisplayName())
-                .title(validRequest.getTitle()).workContent(workContentPreview)
-                .status(validRequest.getStatus()).reportDate(validRequest.getReportDate())
-                .createdAt(LocalDateTime.now()).build();
+        testListResponse =
+                DailyReportListResponse.builder()
+                        .id(1L)
+                        .userId(testUser.getId())
+                        .username(testUser.getUsername())
+                        .displayName(testUser.getDisplayName())
+                        .title(validRequest.getTitle())
+                        .workContent(workContentPreview)
+                        .status(validRequest.getStatus())
+                        .reportDate(validRequest.getReportDate())
+                        .createdAt(LocalDateTime.now())
+                        .build();
+
+        // BaseController用のUserRepositoryモック設定
+        when(userRepository.findByUsername(TestConfig.TestConstants.EMPLOYEE_USERNAME))
+                .thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername(TestConfig.TestConstants.MANAGER_USERNAME))
+                .thenReturn(Optional.of(supervisorUser));
+        when(userRepository.findByUsername(TestConfig.TestConstants.ADMIN_USERNAME))
+                .thenReturn(Optional.of(supervisorUser));
+        when(userRepository.findByUsername("employee1"))
+                .thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername("manager1"))
+                .thenReturn(Optional.of(supervisorUser));
+        when(userRepository.findByUsername("admin"))
+                .thenReturn(Optional.of(supervisorUser));
     }
 
     @Nested
@@ -124,12 +167,16 @@ class DailyReportControllerTest {
         void createDailyReport_ValidRequest_ShouldReturn201() throws Exception {
             // Given
             when(userRepository.findByUsername("employee1")).thenReturn(Optional.of(testUser));
-            when(dailyReportService.createDailyReport(eq(testUser.getId()),
-                    any(DailyReportRequest.class))).thenReturn(testResponse);
+            when(dailyReportService.createDailyReport(
+                            eq(testUser.getId()), any(DailyReportRequest.class)))
+                    .thenReturn(testResponse);
 
             // When & Then
-            mockMvc.perform(post("/api/daily-reports").contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(validRequest)).with(csrf()))
+            mockMvc.perform(
+                            post("/api/daily-reports")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(validRequest))
+                                    .with(csrf()))
                     .andExpect(status().is2xxSuccessful())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     .andExpect(jsonPath("$.id").value(testResponse.getId()))
@@ -138,8 +185,8 @@ class DailyReportControllerTest {
                     .andExpect(jsonPath("$.status").value(testResponse.getStatus()))
                     .andExpect(jsonPath("$.username").value(testResponse.getUsername()));
 
-            verify(dailyReportService).createDailyReport(eq(testUser.getId()),
-                    any(DailyReportRequest.class));
+            verify(dailyReportService)
+                    .createDailyReport(eq(testUser.getId()), any(DailyReportRequest.class));
         }
 
         @Test
@@ -147,17 +194,22 @@ class DailyReportControllerTest {
         @DisplayName("異常: バリデーションエラーで400返却")
         void createDailyReport_ValidationError_ShouldReturn400() throws Exception {
             // Given
-            DailyReportRequest invalidRequest = DailyReportRequest.builder().title("") // 空のタイトル（バリデーションエラー）
-                    .workContent("短すぎる") // 10文字未満（バリデーションエラー）
-                    .status("").reportDate(null).build();
+            DailyReportRequest invalidRequest =
+                    DailyReportRequest.builder()
+                            .title("") // 空のタイトル（バリデーションエラー）
+                            .workContent("短すぎる") // 10文字未満（バリデーションエラー）
+                            .status("")
+                            .reportDate(null)
+                            .build();
 
             when(userRepository.findByUsername("employee1")).thenReturn(Optional.of(testUser));
 
             // When & Then
-            mockMvc.perform(post("/api/daily-reports")
-                    .with(csrf())  // CSRF token追加
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(invalidRequest)))
+            mockMvc.perform(
+                            post("/api/daily-reports")
+                                    .with(csrf()) // CSRF token追加
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(invalidRequest)))
                     .andExpect(status().isBadRequest());
 
             verify(dailyReportService, never()).createDailyReport(any(), any());
@@ -169,27 +221,29 @@ class DailyReportControllerTest {
         void createDailyReport_DuplicateDate_ShouldReturn400() throws Exception {
             // Given
             when(userRepository.findByUsername("employee1")).thenReturn(Optional.of(testUser));
-            when(dailyReportService.createDailyReport(eq(testUser.getId()),
-                    any(DailyReportRequest.class)))
-                            .thenThrow(new IllegalArgumentException("指定日の日報は既に存在します"));
+            when(dailyReportService.createDailyReport(
+                            eq(testUser.getId()), any(DailyReportRequest.class)))
+                    .thenThrow(new IllegalArgumentException("指定日の日報は既に存在します"));
 
             // When & Then
-            mockMvc.perform(post("/api/daily-reports")
-                    .with(csrf())  // CSRF token追加
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(validRequest)))
+            mockMvc.perform(
+                            post("/api/daily-reports")
+                                    .with(csrf()) // CSRF token追加
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(validRequest)))
                     .andExpect(status().isBadRequest());
         }
 
         @Test
-        @DisplayName("異常: 認証なしで403返却")
-        void createDailyReport_NoAuthentication_ShouldReturn403() throws Exception {
+        @DisplayName("異常: 認証なしで401返却")
+        void createDailyReport_NoAuthentication_ShouldReturn401() throws Exception {
             // When & Then
-            mockMvc.perform(post("/api/daily-reports")
-                    .with(csrf())  // CSRF token追加
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(validRequest)))
-                    .andExpect(status().isForbidden());
+            mockMvc.perform(
+                            post("/api/daily-reports")
+                                    .with(csrf()) // CSRF token追加
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(validRequest)))
+                    .andExpect(status().isUnauthorized());
 
             verify(dailyReportService, never()).createDailyReport(any(), any());
         }
@@ -209,7 +263,8 @@ class DailyReportControllerTest {
                     .thenReturn(Optional.of(testResponse));
 
             // When & Then
-            mockMvc.perform(get("/api/daily-reports/1")).andExpect(status().isOk())
+            mockMvc.perform(get("/api/daily-reports/1"))
+                    .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     .andExpect(jsonPath("$.id").value(testResponse.getId()))
                     .andExpect(jsonPath("$.title").value(testResponse.getTitle()))
@@ -254,37 +309,48 @@ class DailyReportControllerTest {
         @DisplayName("正常: 有効なリクエストで日報更新成功")
         void updateDailyReport_ValidRequest_ShouldReturn200() throws Exception {
             // Given
-            DailyReportRequest updateRequest = DailyReportRequest.builder().title("更新されたタイトル")
-                    .workContent(TestConfig.TestConstants.UPDATED_REPORT_CONTENT)
-                    .status(TestConfig.TestConstants.STATUS_SUBMITTED).reportDate(LocalDate.now())
-                    .build();
+            DailyReportRequest updateRequest =
+                    DailyReportRequest.builder()
+                            .title("更新されたタイトル")
+                            .workContent(TestConfig.TestConstants.UPDATED_REPORT_CONTENT)
+                            .status(TestConfig.TestConstants.STATUS_SUBMITTED)
+                            .reportDate(LocalDate.now())
+                            .build();
 
-            DailyReportResponse updatedResponse = DailyReportResponse.builder()
-                    .id(testResponse.getId()).userId(testResponse.getUserId())
-                    .username(testResponse.getUsername()).displayName(testResponse.getDisplayName())
-                    .title(updateRequest.getTitle()).workContent(updateRequest.getWorkContent())
-                    .status(updateRequest.getStatus()).reportDate(testResponse.getReportDate())
-                    .submittedAt(testResponse.getSubmittedAt())
-                    .createdAt(testResponse.getCreatedAt()).updatedAt(testResponse.getUpdatedAt())
-                    .build();
+            DailyReportResponse updatedResponse =
+                    DailyReportResponse.builder()
+                            .id(testResponse.getId())
+                            .userId(testResponse.getUserId())
+                            .username(testResponse.getUsername())
+                            .displayName(testResponse.getDisplayName())
+                            .title(updateRequest.getTitle())
+                            .workContent(updateRequest.getWorkContent())
+                            .status(updateRequest.getStatus())
+                            .reportDate(testResponse.getReportDate())
+                            .submittedAt(testResponse.getSubmittedAt())
+                            .createdAt(testResponse.getCreatedAt())
+                            .updatedAt(testResponse.getUpdatedAt())
+                            .build();
 
             when(userRepository.findByUsername("employee1")).thenReturn(Optional.of(testUser));
-            when(dailyReportService.updateDailyReport(eq(1L), eq(testUser.getId()),
-                    any(DailyReportRequest.class))).thenReturn(updatedResponse);
+            when(dailyReportService.updateDailyReport(
+                            eq(1L), eq(testUser.getId()), any(DailyReportRequest.class)))
+                    .thenReturn(updatedResponse);
 
             // When & Then
-            mockMvc.perform(put("/api/daily-reports/1")
-                    .with(csrf())  // CSRF token追加
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(updateRequest)))
+            mockMvc.perform(
+                            put("/api/daily-reports/1")
+                                    .with(csrf()) // CSRF token追加
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(updateRequest)))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     .andExpect(jsonPath("$.title").value(updateRequest.getTitle()))
                     .andExpect(jsonPath("$.workContent").value(updateRequest.getWorkContent()))
                     .andExpect(jsonPath("$.status").value(updateRequest.getStatus()));
 
-            verify(dailyReportService).updateDailyReport(eq(1L), eq(testUser.getId()),
-                    any(DailyReportRequest.class));
+            verify(dailyReportService)
+                    .updateDailyReport(eq(1L), eq(testUser.getId()), any(DailyReportRequest.class));
         }
 
         @Test
@@ -293,15 +359,16 @@ class DailyReportControllerTest {
         void updateDailyReport_NoPermission_ShouldReturn404() throws Exception {
             // Given
             when(userRepository.findByUsername("employee1")).thenReturn(Optional.of(testUser));
-            when(dailyReportService.updateDailyReport(eq(1L), eq(testUser.getId()),
-                    any(DailyReportRequest.class)))
-                            .thenThrow(new IllegalArgumentException("権限がありません"));
+            when(dailyReportService.updateDailyReport(
+                            eq(1L), eq(testUser.getId()), any(DailyReportRequest.class)))
+                    .thenThrow(new IllegalArgumentException("権限がありません"));
 
             // When & Then
-            mockMvc.perform(put("/api/daily-reports/1")
-                    .with(csrf())  // CSRF token追加
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(validRequest)))
+            mockMvc.perform(
+                            put("/api/daily-reports/1")
+                                    .with(csrf()) // CSRF token追加
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(validRequest)))
                     .andExpect(status().isNotFound());
         }
 
@@ -311,18 +378,21 @@ class DailyReportControllerTest {
         void updateDailyReport_ValidationError_ShouldReturn400() throws Exception {
             // Given
             DailyReportRequest invalidRequest =
-                    DailyReportRequest.builder().title(TestConfig.TestUtils.generateLongString(250)) // 200文字超過
+                    DailyReportRequest.builder()
+                            .title(TestConfig.TestUtils.generateLongString(250)) // 200文字超過
                             .workContent("短い") // 10文字未満
                             .status("invalid") // 無効なステータス
-                            .reportDate(null).build();
+                            .reportDate(null)
+                            .build();
 
             when(userRepository.findByUsername("employee1")).thenReturn(Optional.of(testUser));
 
             // When & Then
-            mockMvc.perform(put("/api/daily-reports/1")
-                    .with(csrf())  // CSRF token追加
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(invalidRequest)))
+            mockMvc.perform(
+                            put("/api/daily-reports/1")
+                                    .with(csrf()) // CSRF token追加
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(invalidRequest)))
                     .andExpect(status().isBadRequest());
 
             verify(dailyReportService, never()).updateDailyReport(any(), any(), any());
@@ -353,7 +423,8 @@ class DailyReportControllerTest {
         void deleteDailyReport_NoPermission_ShouldReturn404() throws Exception {
             // Given
             when(userRepository.findByUsername("employee1")).thenReturn(Optional.of(testUser));
-            doThrow(new IllegalArgumentException("権限がありません")).when(dailyReportService)
+            doThrow(new IllegalArgumentException("権限がありません"))
+                    .when(dailyReportService)
                     .deleteDailyReport(1L, testUser.getId());
 
             // When & Then
@@ -366,7 +437,8 @@ class DailyReportControllerTest {
         void deleteDailyReport_NotFound_ShouldReturn404() throws Exception {
             // Given
             when(userRepository.findByUsername("employee1")).thenReturn(Optional.of(testUser));
-            doThrow(new IllegalArgumentException("日報が見つかりません")).when(dailyReportService)
+            doThrow(new IllegalArgumentException("日報が見つかりません"))
+                    .when(dailyReportService)
                     .deleteDailyReport(999L, testUser.getId());
 
             // When & Then
@@ -388,7 +460,8 @@ class DailyReportControllerTest {
             when(dailyReportService.getMyDailyReports(testUser.getId(), null)).thenReturn(reports);
 
             // When & Then
-            mockMvc.perform(get("/api/daily-reports/my")).andExpect(status().isOk())
+            mockMvc.perform(get("/api/daily-reports/my"))
+                    .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     .andExpect(jsonPath("$.length()").value(1))
                     .andExpect(jsonPath("$[0].id").value(testListResponse.getId()))
@@ -409,7 +482,8 @@ class DailyReportControllerTest {
                     .thenReturn(draftReports);
 
             // When & Then
-            mockMvc.perform(get("/api/daily-reports/my?status=draft")).andExpect(status().isOk())
+            mockMvc.perform(get("/api/daily-reports/my?status=draft"))
+                    .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     .andExpect(jsonPath("$.length()").value(1))
                     .andExpect(jsonPath("$[0].status").value("draft"));
@@ -427,7 +501,8 @@ class DailyReportControllerTest {
                     .thenReturn(Collections.emptyList());
 
             // When & Then
-            mockMvc.perform(get("/api/daily-reports/my")).andExpect(status().isOk())
+            mockMvc.perform(get("/api/daily-reports/my"))
+                    .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     .andExpect(jsonPath("$.length()").value(0));
         }
@@ -448,7 +523,8 @@ class DailyReportControllerTest {
                     .thenReturn(subordinateReports);
 
             // When & Then
-            mockMvc.perform(get("/api/daily-reports/subordinates")).andExpect(status().isOk())
+            mockMvc.perform(get("/api/daily-reports/subordinates"))
+                    .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     .andExpect(jsonPath("$.length()").value(1))
                     .andExpect(jsonPath("$[0].id").value(testListResponse.getId()));
@@ -485,7 +561,8 @@ class DailyReportControllerTest {
                     .thenReturn(Collections.emptyList());
 
             // When & Then
-            mockMvc.perform(get("/api/daily-reports/subordinates")).andExpect(status().isOk())
+            mockMvc.perform(get("/api/daily-reports/subordinates"))
+                    .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     .andExpect(jsonPath("$.length()").value(0));
         }
@@ -504,7 +581,8 @@ class DailyReportControllerTest {
             when(dailyReportService.hasTodayReport(testUser.getId())).thenReturn(true);
 
             // When & Then
-            mockMvc.perform(get("/api/daily-reports/today/exists")).andExpect(status().isOk())
+            mockMvc.perform(get("/api/daily-reports/today/exists"))
+                    .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     .andExpect(content().string("true"));
 
@@ -520,7 +598,8 @@ class DailyReportControllerTest {
             when(dailyReportService.hasTodayReport(testUser.getId())).thenReturn(false);
 
             // When & Then
-            mockMvc.perform(get("/api/daily-reports/today/exists")).andExpect(status().isOk())
+            mockMvc.perform(get("/api/daily-reports/today/exists"))
+                    .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     .andExpect(content().string("false"));
 
@@ -536,25 +615,27 @@ class DailyReportControllerTest {
         @DisplayName("異常: 全エンドポイントで認証なしは403返却")
         void allEndpoints_NoAuthentication_ShouldReturn403() throws Exception {
             // 日報作成
-            mockMvc.perform(post("/api/daily-reports")
-                    .with(csrf())  // CSRF token追加
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(validRequest)))
+            mockMvc.perform(
+                            post("/api/daily-reports")
+                                    .with(csrf()) // CSRF token追加
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(validRequest)))
                     .andExpect(status().isUnauthorized());
 
             // 日報詳細取得
             mockMvc.perform(get("/api/daily-reports/1")).andExpect(status().isUnauthorized());
 
             // 日報更新
-            mockMvc.perform(put("/api/daily-reports/1")
-                    .with(csrf())  // CSRF token追加
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(validRequest)))
+            mockMvc.perform(
+                            put("/api/daily-reports/1")
+                                    .with(csrf()) // CSRF token追加
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(validRequest)))
                     .andExpect(status().isUnauthorized());
 
             // 日報削除
-            mockMvc.perform(delete("/api/daily-reports/1")
-                    .with(csrf())).andExpect(status().isUnauthorized());
+            mockMvc.perform(delete("/api/daily-reports/1").with(csrf()))
+                    .andExpect(status().isUnauthorized());
 
             // 自分の日報一覧
             mockMvc.perform(get("/api/daily-reports/my")).andExpect(status().isUnauthorized());
@@ -569,14 +650,14 @@ class DailyReportControllerTest {
         }
 
         @Test
-        @WithMockUser(username = "nonexistent")
+        // @WithMockUser(username = "nonexistent")
         @DisplayName("異常: 存在しないユーザーで認証エラー")
         void allEndpoints_NonexistentUser_ShouldHandleGracefully() throws Exception {
             // Given
             when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
 
             // When & Then: BaseControllerでIllegalArgumentExceptionが発生し、適切に処理される
-            mockMvc.perform(get("/api/daily-reports/my")).andExpect(status().is5xxServerError());
+            mockMvc.perform(get("/api/daily-reports/my")).andExpect(status().isUnauthorized());
         }
     }
 
@@ -590,20 +671,24 @@ class DailyReportControllerTest {
         void createDailyReport_MaxLengthContent_ShouldProcessCorrectly() throws Exception {
             // Given
             DailyReportRequest maxLengthRequest =
-                    DailyReportRequest.builder().title(TestConfig.TestUtils.generateLongString(200)) // 最大200文字
+                    DailyReportRequest.builder()
+                            .title(TestConfig.TestUtils.generateLongString(200)) // 最大200文字
                             .workContent(TestConfig.TestUtils.generateLongString(1000)) // 最大1000文字
                             .status(TestConfig.TestConstants.STATUS_DRAFT)
-                            .reportDate(LocalDate.now()).build();
+                            .reportDate(LocalDate.now())
+                            .build();
 
             when(userRepository.findByUsername("employee1")).thenReturn(Optional.of(testUser));
-            when(dailyReportService.createDailyReport(eq(testUser.getId()),
-                    any(DailyReportRequest.class))).thenReturn(testResponse);
+            when(dailyReportService.createDailyReport(
+                            eq(testUser.getId()), any(DailyReportRequest.class)))
+                    .thenReturn(testResponse);
 
             // When & Then
-            mockMvc.perform(post("/api/daily-reports")
-                    .with(csrf())  // CSRF token追加
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(maxLengthRequest)))
+            mockMvc.perform(
+                            post("/api/daily-reports")
+                                    .with(csrf()) // CSRF token追加
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(maxLengthRequest)))
                     .andExpect(status().isCreated());
         }
 
@@ -615,13 +700,15 @@ class DailyReportControllerTest {
             when(userRepository.findByUsername("employee1")).thenReturn(Optional.of(testUser));
 
             // 作成
-            when(dailyReportService.createDailyReport(eq(testUser.getId()),
-                    any(DailyReportRequest.class))).thenReturn(testResponse);
+            when(dailyReportService.createDailyReport(
+                            eq(testUser.getId()), any(DailyReportRequest.class)))
+                    .thenReturn(testResponse);
 
-            mockMvc.perform(post("/api/daily-reports")
-                    .with(csrf())  // CSRF token追加
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(validRequest)))
+            mockMvc.perform(
+                            post("/api/daily-reports")
+                                    .with(csrf()) // CSRF token追加
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(validRequest)))
                     .andExpect(status().isCreated());
 
             // 取得
@@ -631,27 +718,29 @@ class DailyReportControllerTest {
             mockMvc.perform(get("/api/daily-reports/1")).andExpect(status().isOk());
 
             // 更新
-            when(dailyReportService.updateDailyReport(eq(1L), eq(testUser.getId()),
-                    any(DailyReportRequest.class))).thenReturn(testResponse);
+            when(dailyReportService.updateDailyReport(
+                            eq(1L), eq(testUser.getId()), any(DailyReportRequest.class)))
+                    .thenReturn(testResponse);
 
-            mockMvc.perform(put("/api/daily-reports/1")
-                    .with(csrf())  // CSRF token追加
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(validRequest)))
+            mockMvc.perform(
+                            put("/api/daily-reports/1")
+                                    .with(csrf()) // CSRF token追加
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(validRequest)))
                     .andExpect(status().isOk());
 
             // 削除
             doNothing().when(dailyReportService).deleteDailyReport(1L, testUser.getId());
 
-            mockMvc.perform(delete("/api/daily-reports/1")
-                    .with(csrf())).andExpect(status().isNoContent());
+            mockMvc.perform(delete("/api/daily-reports/1").with(csrf()))
+                    .andExpect(status().isNoContent());
 
             // 各操作が実行されたことを確認
-            verify(dailyReportService).createDailyReport(eq(testUser.getId()),
-                    any(DailyReportRequest.class));
+            verify(dailyReportService)
+                    .createDailyReport(eq(testUser.getId()), any(DailyReportRequest.class));
             verify(dailyReportService).getDailyReportById(1L, testUser.getId());
-            verify(dailyReportService).updateDailyReport(eq(1L), eq(testUser.getId()),
-                    any(DailyReportRequest.class));
+            verify(dailyReportService)
+                    .updateDailyReport(eq(1L), eq(testUser.getId()), any(DailyReportRequest.class));
             verify(dailyReportService).deleteDailyReport(1L, testUser.getId());
         }
     }

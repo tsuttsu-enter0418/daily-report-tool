@@ -1,8 +1,18 @@
 package com.example.dailyreport.unit.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,8 +44,8 @@ import com.example.dailyreport.service.DailyReportService;
 /**
  * DailyReportServiceクラスのユニットテスト
  *
- * <p>テスト対象: - CRUD操作（作成・取得・更新・削除） - 権限制御（本人・上司のみアクセス） - ビジネスルール（1日1件制限等）
- * - バリデーション処理 - ステータス管理（下書き・提出済み） - エラーハンドリング
+ * <p>テスト対象: - CRUD操作（作成・取得・更新・削除） - 権限制御（本人・上司のみアクセス） - ビジネスルール（1日1件制限等） - バリデーション処理 -
+ * ステータス管理（下書き・提出済み） - エラーハンドリング
  *
  * <p>テスト方針: - Mockitoによる依存関係のモック化 - 正常系・異常系の網羅的テスト - 権限制御ロジックの詳細テスト - エッジケース対応の確認
  */
@@ -141,8 +151,8 @@ class DailyReportServiceTest {
             assertEquals(testDailyReport.getWorkContent(), result.getWorkContent());
             assertEquals(testUser.getUsername(), result.getUsername());
 
-            verify(dailyReportRepository).existsByUserIdAndReportDate(
-                    testUser.getId(), validRequest.getReportDate());
+            verify(dailyReportRepository)
+                    .existsByUserIdAndReportDate(testUser.getId(), validRequest.getReportDate());
             verify(userRepository).findById(testUser.getId());
             verify(dailyReportRepository).save(any(DailyReport.class));
         }
@@ -189,7 +199,9 @@ class DailyReportServiceTest {
             IllegalArgumentException exception =
                     assertThrows(
                             IllegalArgumentException.class,
-                            () -> dailyReportService.createDailyReport(testUser.getId(), validRequest),
+                            () ->
+                                    dailyReportService.createDailyReport(
+                                            testUser.getId(), validRequest),
                             "1日1件制限違反でIllegalArgumentException例外が発生");
 
             assertEquals("指定日の日報は既に存在します", exception.getMessage());
@@ -306,7 +318,9 @@ class DailyReportServiceTest {
                             IllegalArgumentException.class,
                             () ->
                                     dailyReportService.updateDailyReport(
-                                            testDailyReport.getId(), otherUser.getId(), validRequest),
+                                            testDailyReport.getId(),
+                                            otherUser.getId(),
+                                            validRequest),
                             "権限のないユーザーでIllegalArgumentException例外が発生");
 
             assertEquals("権限がありません", exception.getMessage());
@@ -323,7 +337,9 @@ class DailyReportServiceTest {
             IllegalArgumentException exception =
                     assertThrows(
                             IllegalArgumentException.class,
-                            () -> dailyReportService.updateDailyReport(999L, testUser.getId(), validRequest),
+                            () ->
+                                    dailyReportService.updateDailyReport(
+                                            999L, testUser.getId(), validRequest),
                             "存在しない日報でIllegalArgumentException例外が発生");
 
             assertEquals("日報が見つかりません", exception.getMessage());
@@ -344,7 +360,8 @@ class DailyReportServiceTest {
 
             // When
             Optional<DailyReportResponse> result =
-                    dailyReportService.getDailyReportById(testDailyReport.getId(), testUser.getId());
+                    dailyReportService.getDailyReportById(
+                            testDailyReport.getId(), testUser.getId());
 
             // Then
             assertTrue(result.isPresent(), "本人による日報詳細取得が成功");
@@ -380,7 +397,8 @@ class DailyReportServiceTest {
 
             // When
             Optional<DailyReportResponse> result =
-                    dailyReportService.getDailyReportById(testDailyReport.getId(), otherUser.getId());
+                    dailyReportService.getDailyReportById(
+                            testDailyReport.getId(), otherUser.getId());
 
             // Then
             assertTrue(result.isEmpty(), "権限のないユーザーによる取得は空を返却");
@@ -555,7 +573,8 @@ class DailyReportServiceTest {
             // Then
             assertNotNull(result);
             assertTrue(result.isEmpty(), "部下がいない場合は空リストを返却");
-            verify(dailyReportRepository, never()).findByUserIdInOrderByReportDateDescUserIdAsc(any());
+            verify(dailyReportRepository, never())
+                    .findByUserIdInOrderByReportDateDescUserIdAsc(any());
         }
     }
 
@@ -629,7 +648,8 @@ class DailyReportServiceTest {
         @DisplayName("正常: 本日の日報が存在する場合trueを返却")
         void hasTodayReport_ReportExists_ShouldReturnTrue() {
             // Given
-            when(dailyReportRepository.existsByUserIdAndReportDate(testUser.getId(), LocalDate.now()))
+            when(dailyReportRepository.existsByUserIdAndReportDate(
+                            testUser.getId(), LocalDate.now()))
                     .thenReturn(true);
 
             // When
@@ -643,7 +663,8 @@ class DailyReportServiceTest {
         @DisplayName("正常: 本日の日報が存在しない場合falseを返却")
         void hasTodayReport_ReportNotExists_ShouldReturnFalse() {
             // Given
-            when(dailyReportRepository.existsByUserIdAndReportDate(testUser.getId(), LocalDate.now()))
+            when(dailyReportRepository.existsByUserIdAndReportDate(
+                            testUser.getId(), LocalDate.now()))
                     .thenReturn(false);
 
             // When
@@ -715,7 +736,8 @@ class DailyReportServiceTest {
 
             // When
             Optional<DailyReportResponse> result =
-                    dailyReportService.getDailyReportById(testDailyReport.getId(), testUser.getId());
+                    dailyReportService.getDailyReportById(
+                            testDailyReport.getId(), testUser.getId());
 
             // Then
             assertTrue(result.isPresent(), "ユーザー情報なしでも日報は取得できる");
@@ -733,7 +755,8 @@ class DailyReportServiceTest {
 
             // When & Then: 本人アクセス
             Optional<DailyReportResponse> ownerResult =
-                    dailyReportService.getDailyReportById(testDailyReport.getId(), testUser.getId());
+                    dailyReportService.getDailyReportById(
+                            testDailyReport.getId(), testUser.getId());
             assertTrue(ownerResult.isPresent(), "本人はアクセス可能");
 
             // When & Then: 上司アクセス
@@ -744,7 +767,8 @@ class DailyReportServiceTest {
 
             // When & Then: 他人アクセス
             Optional<DailyReportResponse> otherResult =
-                    dailyReportService.getDailyReportById(testDailyReport.getId(), otherUser.getId());
+                    dailyReportService.getDailyReportById(
+                            testDailyReport.getId(), otherUser.getId());
             assertTrue(otherResult.isEmpty(), "関係ないユーザーはアクセス不可");
         }
     }

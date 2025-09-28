@@ -1,6 +1,7 @@
 package com.example.dailyreport.unit.repository;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,25 +22,26 @@ import com.example.dailyreport.repository.UserRepository;
 
 /**
  * UserRepositoryの単体テスト
- * 
- * テスト対象: - findByUsername メソッド - findByEmail メソッド - findBySupervisorId メソッド - カスタムクエリメソッドの動作確認
- * 
- * 使用技術: - @DataJpaTest: JPA Repository層のスライステスト - TestEntityManager: JPA テスト用のエンティティ管理 - H2
+ *
+ * <p>テスト対象: - findByUsername メソッド - findByEmail メソッド - findBySupervisorId メソッド - カスタムクエリメソッドの動作確認
+ *
+ * <p>使用技術: - @DataJpaTest: JPA Repository層のスライステスト - TestEntityManager: JPA テスト用のエンティティ管理 - H2
  * Database: インメモリテストDB
  */
 @DataJpaTest
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@TestPropertySource(properties = {"spring.jpa.defer-datasource-initialization=false",
-        "spring.sql.init.mode=never"})
+@TestPropertySource(
+        properties = {
+            "spring.jpa.defer-datasource-initialization=false",
+            "spring.sql.init.mode=never"
+        })
 @DisplayName("UserRepository テスト")
 class UserRepositoryTest {
 
-    @Autowired
-    private TestEntityManager entityManager;
+    @Autowired private TestEntityManager entityManager;
 
-    @Autowired
-    private UserRepository userRepository;
+    @Autowired private UserRepository userRepository;
 
     private User testUser;
     private User managerUser;
@@ -53,21 +55,40 @@ class UserRepositoryTest {
         dateTimeString = System.currentTimeMillis() + "";
 
         // Given: テストデータの準備（IDを明示的に設定しない）
-        managerUser = User.builder().username("manager_" + dateTimeString)
-                .email("manager" + dateTimeString + "@company.com").password("encoded_password")
-                .role("管理者").displayName("管理者太郎").supervisorId(null).isActive(true).build();
+        managerUser =
+                User.builder()
+                        .username("manager_" + dateTimeString)
+                        .email("manager" + dateTimeString + "@company.com")
+                        .password("encoded_password")
+                        .role("管理者")
+                        .displayName("管理者太郎")
+                        .supervisorId(null)
+                        .isActive(true)
+                        .build();
         managerUser = entityManager.persistAndFlush(managerUser);
 
-        testUser = User.builder().username("testuser_" + dateTimeString)
-                .email("testuser" + dateTimeString + "@company.com").password("encoded_password")
-                .role("上長").displayName("上長花子").supervisorId(managerUser.getId()).isActive(true)
-                .build();
+        testUser =
+                User.builder()
+                        .username("testuser_" + dateTimeString)
+                        .email("testuser" + dateTimeString + "@company.com")
+                        .password("encoded_password")
+                        .role("上長")
+                        .displayName("上長花子")
+                        .supervisorId(managerUser.getId())
+                        .isActive(true)
+                        .build();
         testUser = entityManager.persistAndFlush(testUser);
 
-        subordinateUser = User.builder().username("subordinate_" + dateTimeString)
-                .email("subordinate" + dateTimeString + "@company.com").password("encoded_password")
-                .role("部下").displayName("部下次郎").supervisorId(testUser.getId()).isActive(true)
-                .build();
+        subordinateUser =
+                User.builder()
+                        .username("subordinate_" + dateTimeString)
+                        .email("subordinate" + dateTimeString + "@company.com")
+                        .password("encoded_password")
+                        .role("部下")
+                        .displayName("部下次郎")
+                        .supervisorId(testUser.getId())
+                        .isActive(true)
+                        .build();
         subordinateUser = entityManager.persistAndFlush(subordinateUser);
 
         // テスト前の状態をクリア（キャッシュ対策）
@@ -187,8 +208,15 @@ class UserRepositoryTest {
         @DisplayName("新しいユーザーの保存")
         void save_NewUser_ShouldPersistCorrectly() {
             // Given: 新しいユーザー
-            User newUser = User.builder().username("newuser").email("newuser@company.com")
-                    .password("password").role("部下").displayName("新規ユーザー").isActive(true).build();
+            User newUser =
+                    User.builder()
+                            .username("newuser")
+                            .email("newuser@company.com")
+                            .password("password")
+                            .role("部下")
+                            .displayName("新規ユーザー")
+                            .isActive(true)
+                            .build();
 
             // When: 保存
             User savedUser = userRepository.save(newUser);
@@ -239,15 +267,22 @@ class UserRepositoryTest {
         @DisplayName("一意制約違反 - 重複ユーザー名")
         void save_DuplicateUsername_ShouldThrowException() {
             // Given: 既存と同じユーザー名の新しいユーザー
-            User duplicateUser = User.builder().username("testuser001") // 既存と重複
-                    .email("different@company.com").password("password").role("部下")
-                    .displayName("重複ユーザー").build();
+            User duplicateUser =
+                    User.builder()
+                            .username("testuser_" + dateTimeString) // 既存と重複
+                            .email("different@company.com")
+                            .password("password")
+                            .role("部下")
+                            .displayName("重複ユーザー")
+                            .build();
 
             // When & Then: 一意制約違反で例外発生
-            assertThatThrownBy(() -> {
-                userRepository.save(duplicateUser);
-                entityManager.flush(); // 強制的にDB制約チェック
-            }).isInstanceOf(Exception.class);
+            assertThatThrownBy(
+                            () -> {
+                                userRepository.save(duplicateUser);
+                                entityManager.flush(); // 強制的にDB制約チェック
+                            })
+                    .isInstanceOf(Exception.class);
         }
 
         @Test
@@ -282,10 +317,16 @@ class UserRepositoryTest {
 
             for (int i = 0; i < 100; i++) {
                 String username = "bulkuser" + i + "_" + timestamp;
-                User user = User.builder().username(username)
-                        .email("bulkuser" + i + "_" + timestamp + "@company.com")
-                        .password("password").role("部下").displayName("バルクユーザー" + i)
-                        .supervisorId(testUser.getId()).isActive(true).build();
+                User user =
+                        User.builder()
+                                .username(username)
+                                .email("bulkuser" + i + "_" + timestamp + "@company.com")
+                                .password("password")
+                                .role("部下")
+                                .displayName("バルクユーザー" + i)
+                                .supervisorId(testUser.getId())
+                                .isActive(true)
+                                .build();
                 entityManager.persist(user);
 
                 // 50番目のユーザー名を保存（検索対象）

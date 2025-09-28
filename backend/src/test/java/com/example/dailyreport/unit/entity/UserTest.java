@@ -1,6 +1,6 @@
 package com.example.dailyreport.unit.entity;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
 

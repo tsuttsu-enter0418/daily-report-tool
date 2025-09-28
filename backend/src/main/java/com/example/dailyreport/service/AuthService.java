@@ -2,6 +2,7 @@ package com.example.dailyreport.service;
 
 import java.util.Optional;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,8 @@ import com.example.dailyreport.dto.LoginResponse;
 import com.example.dailyreport.entity.User;
 import com.example.dailyreport.repository.UserRepository;
 import com.example.dailyreport.security.JwtUtil;
+
+import io.micrometer.common.util.StringUtils;
 
 /**
  * 認証関連のビジネスロジックを担当するサービスクラス
@@ -39,6 +42,12 @@ public class AuthService {
      * @throws RuntimeException ユーザーが見つからない、またはパスワードが間違っている場合
      */
     public LoginResponse authenticateUser(LoginRequest loginRequest) {
+
+        // 不正入力防止
+        if (ObjectUtils.isEmpty(loginRequest) || StringUtils.isEmpty(loginRequest.getUsername())) {
+            throw new RuntimeException("不正な値です");
+        }
+
         // ユーザー名でユーザー情報を検索
         Optional<User> userOptional = userRepository.findByUsername(loginRequest.getUsername());
 

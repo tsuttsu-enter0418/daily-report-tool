@@ -30,61 +30,105 @@
 
 ## 🚀 実装計画：3フェーズアプローチ
 
-### Phase 1: CI基盤構築（1週間）
+### Phase 1: CI基盤構築 ✅ **完了**
 **目標**: PR時の自動検証パイプライン構築
 
-#### 実装項目
-1. **GitHub Actions CI ワークフロー** (`backend-ci.yml`)
-   - JUnit テスト自動実行
-   - PostgreSQL テスト DB 統合
-   - コード品質チェック（Checkstyle, SonarQube）
-   - セキュリティスキャン（OWASP, Trivy）
+#### 完了済み実装項目
+1. **GitHub Actions CI ワークフロー** (`backend-ci.yml`) ✅
+   - JUnit テスト自動実行（H2インメモリDB使用）
+   - JaCoCo 0.8.11 テストカバレッジ（CSV/XML/HTML出力）
+   - cicirello/jacoco-badge-generator@v2 統合
+   - コード品質チェック（Checkstyle）
+   - セキュリティスキャン（OWASP）
    - Docker ビルド検証
 
-2. **テスト環境整備**
-   - `application-test.yml` 作成
-   - GitHub Actions Services での PostgreSQL 設定
-   - 並行テスト実行設定
+2. **テスト環境整備** ✅
+   - Maven Surefire Plugin 並行テスト実行設定
+   - JaCoCo-Surefire 連携設定
+   - H2 PostgreSQL MODE 設定
 
-3. **GitHub Secrets 設定**
-   - AWS 認証情報
-   - SonarQube トークン
-   - Slack Webhook URL
+3. **品質ゲート設定** ✅
+   - テストカバレッジ 80% 以上（ライン）
+   - ブランチカバレッジ 70% 以上
+   - Entity/DTO/Config クラス除外設定
 
-#### 受入条件
-- [ ] PR 作成時に CI が自動実行される
-- [ ] JUnit テストが並行実行される
-- [ ] コード品質チェックが動作する
-- [ ] Docker イメージがビルドできる
-- [ ] テストカバレッジが 80% 以上
+#### 受入条件 ✅ **全て完了**
+- [x] PR 作成時に CI が自動実行される
+- [x] JUnit テストが並行実行される
+- [x] コード品質チェックが動作する
+- [x] Docker イメージがビルドできる
+- [x] テストカバレッジが 80% 以上
 
-### Phase 2: CD基盤構築（1週間）
-**目標**: main ブランチマージ時の自動デプロイ
+### Phase 2: CD基盤構築 + 統合テスト強化 🔥 **現在実装中**
+**目標**: AWS自動デプロイ + PostgreSQL統合テスト環境構築
 
-#### 実装項目
+#### 重点実装項目（優先度順）
+
+#### 🚀 **Priority 1: AWS CD基盤**
 1. **GitHub Actions CD ワークフロー** (`backend-cd.yml`)
-   - ECR 自動プッシュ
+   - ECR 自動プッシュ（既存スクリプト活用）
    - ECS タスク定義更新
    - ECS サービス自動デプロイ
-   - デプロイメント検証
+   - デプロイメント成功検証
+   - ヘルスチェック + ロールバック機能
 
-2. **既存スクリプト統合改良**
+2. **AWS 統合設定**
+   - GitHub Secrets 設定（AWS認証情報）
+   - ECR リポジトリ確認・設定
+   - ECS クラスター・サービス設定確認
+   - IAM ロール・ポリシー設定
+
+#### 🧪 **Priority 2: TestContainers統合テスト**
+3. **PostgreSQL TestContainers 環境**
+   - 統合テスト専用の TestContainers 設定
+   - 単体テストは H2 継続（高速実行維持）
+   - 統合テスト用データセット整備
+   - CI環境での TestContainers 実行設定
+
+#### 🔧 **Priority 3: 統合改良**
+4. **既存スクリプト統合改良**
    - `scripts/push-to-ecr.sh` の GitHub Actions 対応
    - エラーハンドリング強化
    - ECS デプロイ機能追加
 
-3. **通知・監視機能**
-   - Slack 通知統合
-   - CloudWatch メトリクス送信
-   - デプロイ状況可視化
+#### 🔧 **TestContainers 詳細設定例**
+```xml
+<!-- pom.xml TestContainers依存関係 -->
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>postgresql</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+```java
+// 統合テスト設定例
+@SpringBootTest
+@Testcontainers
+@ActiveProfiles("integration-test")
+class DailyReportIntegrationTest {
+    
+    @Container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17")
+            .withDatabaseName("daily_report_tool_test")
+            .withUsername("test_user")
+            .withPassword("test_password");
+}
+```
 
 #### 受入条件
+#### 🚀 **AWS CD基盤（Priority 1）**
 - [ ] main ブランチマージ時に CD が自動実行される
 - [ ] ECR に新しいイメージがプッシュされる
 - [ ] ECS タスク定義が更新される
 - [ ] ECS サービスが新しいイメージで起動する
 - [ ] ヘルスチェックが成功する
-- [ ] Slack に通知が送信される
+
+#### 🧪 **統合テスト（Priority 2）**
+- [ ] TestContainers で PostgreSQL 統合テストが実行される
+- [ ] 単体テストは H2 で高速実行を維持
+- [ ] CI環境で TestContainers が正常動作する
+- [ ] 統合テスト用データセットが整備される
 
 ### Phase 3: 高度機能実装（1週間）
 **目標**: 本番運用レベルの機能追加
@@ -233,7 +277,10 @@ EOF
         <threadCount>4</threadCount>
         <forkCount>2</forkCount>
         <reuseForks>true</reuseForks>
-        <argLine>-Xmx1024m</argLine>
+        <argLine>${jacoco.surefire.argLine}</argLine>
+        <systemPropertyVariables>
+            <spring.profiles.active>test</spring.profiles.active>
+        </systemPropertyVariables>
     </configuration>
 </plugin>
 
@@ -241,12 +288,15 @@ EOF
 <plugin>
     <groupId>org.jacoco</groupId>
     <artifactId>jacoco-maven-plugin</artifactId>
-    <version>0.8.8</version>
+    <version>0.8.11</version>
     <executions>
         <execution>
             <goals>
                 <goal>prepare-agent</goal>
             </goals>
+            <configuration>
+                <propertyName>jacoco.surefire.argLine</propertyName>
+            </configuration>
         </execution>
         <execution>
             <id>report</id>
@@ -254,8 +304,23 @@ EOF
             <goals>
                 <goal>report</goal>
             </goals>
+            <configuration>
+                <formats>
+                    <format>HTML</format>
+                    <format>XML</format>
+                    <format>CSV</format>
+                </formats>
+            </configuration>
         </execution>
     </executions>
+    <configuration>
+        <excludes>
+            <exclude>**/entity/**</exclude>
+            <exclude>**/dto/**</exclude>
+            <exclude>**/DailyReportApplication*</exclude>
+            <exclude>**/config/**</exclude>
+        </excludes>
+    </configuration>
 </plugin>
 ```
 
@@ -279,7 +344,10 @@ git commit -m "Phase 1: Add CI pipeline with automated testing
 - Add code quality checks (Checkstyle, SonarQube)
 - Add security vulnerability scanning (OWASP, Trivy)
 - Add Docker build validation
-- Add test coverage reporting with JaCoCo"
+- Add test coverage reporting with JaCoCo 0.8.11
+- Integrate cicirello/jacoco-badge-generator@v2 for coverage badges
+- Configure CSV/XML/HTML output formats for coverage reports
+- Add JaCoCo-Surefire integration with proper excludes"
 
 # プッシュして PR 作成
 git push origin feature/ci-pipeline-phase1
@@ -288,20 +356,80 @@ git push origin feature/ci-pipeline-phase1
 # → CI ワークフローの動作確認
 ```
 
-### Phase 2 開始手順
+### Phase 2 開始手順（現在実装中）
 
-#### 1. CD ワークフロー検証準備
+#### 🚀 **Step 1: AWS CD基盤準備（Priority 1）**
 ```bash
-# Phase 1 完了後、新しいブランチ作成
+# Phase 1 完了確認
+echo "✅ Phase 1 完了状況確認:"
+echo "- CI ワークフローが安定動作している"
+echo "- テストカバレッジが 80% 以上を維持"
+echo "- JaCoCo レポートが正常生成されている"
+
+# Phase 2 ブランチ作成
 git checkout main
 git pull origin main
-git checkout -b feature/cd-pipeline-phase2
+git checkout -b feature/aws-cd-phase2
 
-# CD ワークフロー確認
+# 既存 CD ワークフロー確認
 ls -la .github/workflows/backend-cd.yml
+
+# 既存 ECR スクリプト確認
+ls -la scripts/push-to-ecr.sh
 ```
 
-#### 2. 既存スクリプト改良
+#### 🔧 **Step 2: AWS 認証設定**
+```bash
+# GitHub Secrets 設定（GitHub UI で実行）
+echo "GitHub Repository → Settings → Secrets and variables → Actions"
+echo "必要な Secrets:"
+echo "- AWS_ACCESS_KEY_ID: ECS デプロイ用"
+echo "- AWS_SECRET_ACCESS_KEY: ECS デプロイ用"
+echo "- (オプション) SLACK_WEBHOOK_URL: 通知用"
+
+# AWS リソース確認
+aws ecr describe-repositories --repository-names daily-report-backend --region ap-northeast-1
+aws ecs describe-clusters --clusters daily-report-cluster --region ap-northeast-1
+aws ecs describe-services --cluster daily-report-cluster --services daily-report-task-service --region ap-northeast-1
+```
+
+#### 🧪 **Step 3: TestContainers統合テスト設定（Priority 2）**
+```bash
+# TestContainers 依存関係を pom.xml に追加確認
+grep -q "testcontainers" backend/pom.xml || echo "⚠️ TestContainers依存関係の追加が必要"
+
+# 統合テスト用設定ファイル作成
+mkdir -p backend/src/test/resources
+cat > backend/src/test/resources/application-integration-test.yml << 'EOF'
+spring:
+  profiles:
+    active: integration-test
+  datasource:
+    # TestContainers が自動設定するため url は不要
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+
+# JWT設定（テスト用）
+jwt:
+  secret: test-secret-key-for-integration-testing-32chars-minimum
+  expiration: 86400000
+  auth:
+    enabled: true
+
+# ログ設定（統合テスト用）
+logging:
+  level:
+    com.example.dailyreport: DEBUG
+    org.testcontainers: INFO
+    com.github.dockerjava: WARN
+EOF
+```
+
+#### 🔧 **Step 4: 既存スクリプト改良**
 ```bash
 # 改良版 ECR デプロイスクリプト作成
 cat > scripts/ecr-deploy-improved.sh << 'EOF'
@@ -646,5 +774,39 @@ health-check:
 
 ---
 
-**最終更新**: 2025年9月20日  
-**次回レビュー**: Phase 1 完了時（予定：1週間後）
+---
+
+## 📝 最新更新事項 (2025年9月28日)
+
+### Phase 1 → Phase 2 移行完了
+- [x] **Phase 1 完了状況**: CI基盤構築・JaCoCo統合・テスト自動化完成
+- [x] **Phase 2 重点化**: AWS CD基盤（ECR/ECS デプロイ）を最優先に変更
+- [x] **TestContainers計画**: 統合テスト用PostgreSQL環境の段階的導入計画追加
+
+### 実装優先度の再整理
+```yaml
+Priority 1 (緊急): AWS CD基盤
+  - GitHub Actions CD ワークフロー実装
+  - ECR プッシュ自動化
+  - ECS デプロイ自動化
+  - ヘルスチェック・ロールバック機能
+
+Priority 2 (重要): TestContainers統合テスト
+  - PostgreSQL TestContainers 環境
+  - 統合テスト用データセット
+  - 単体テストは H2 継続（高速性維持）
+
+Priority 3 (推奨): 統合改良
+  - 既存スクリプト改良
+  - 監視・通知機能強化
+```
+
+### 戦略的判断
+- **単体テスト**: H2インメモリDB継続（開発効率重視）
+- **統合テスト**: TestContainers PostgreSQL導入（品質保証強化）
+- **デプロイ**: AWS ECR/ECS自動化を最優先（実用性重視）
+
+---
+
+**最終更新**: 2025年9月28日  
+**次回レビュー**: Phase 2 AWS CD基盤完了時

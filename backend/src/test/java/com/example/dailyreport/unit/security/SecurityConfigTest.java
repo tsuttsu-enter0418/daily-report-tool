@@ -1,11 +1,15 @@
 package com.example.dailyreport.unit.security;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import org.springframework.mock.web.MockHttpServletRequest;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -27,8 +32,8 @@ import com.example.dailyreport.security.SecurityConfig;
 /**
  * SecurityConfigクラスのユニットテスト
  *
- * <p>テスト対象: - セキュリティフィルターチェーンの設定 - JWT認証の有効/無効制御 - CORS設定 - CSRF設定 - 認証・認可設定 - パスワードエンコーダー設定
- * - 公開パスの設定
+ * <p>テスト対象: - セキュリティフィルターチェーンの設定 - JWT認証の有効/無効制御 - CORS設定 - CSRF設定 - 認証・認可設定 - パスワードエンコーダー設定 -
+ * 公開パスの設定
  *
  * <p>テスト方針: - SpringBootTestによるフルコンテキストテスト - MockMvcによるHTTPレイヤーテスト - 実際のセキュリティフィルターチェーンを使用 -
  * 認証有効/無効モードの両方をテスト - CORS・CSRF設定の動作確認
@@ -84,8 +89,7 @@ class SecurityConfigTest {
                     passwordEncoder.matches(rawPassword, encodedPassword),
                     "エンコードされたパスワードと元パスワードが一致する");
             assertFalse(
-                    passwordEncoder.matches("wrongpassword", encodedPassword),
-                    "間違ったパスワードは一致しない");
+                    passwordEncoder.matches("wrongpassword", encodedPassword), "間違ったパスワードは一致しない");
         }
 
         @Test
@@ -143,10 +147,11 @@ class SecurityConfigTest {
         @DisplayName("正常: 許可されたOriginからのリクエストを受け入れる")
         void corsConfiguration_ShouldAllowConfiguredOrigins() throws Exception {
             // When & Then
-            mockMvc.perform(
-                            get("/api/auth/login")
-                                    .header("Origin", "http://localhost:3000"))
-                    .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:3000"));
+            mockMvc.perform(get("/api/auth/login").header("Origin", "http://localhost:3000"))
+                    .andExpect(
+                            header().string(
+                                            "Access-Control-Allow-Origin",
+                                            "http://localhost:3000"));
         }
     }
 
@@ -165,12 +170,10 @@ class SecurityConfigTest {
                     .andExpect(status().is4xxClientError()); // 400 or 401 (認証は通るがバリデーションエラー)
 
             // Swagger UI
-            mockMvc.perform(get("/swagger-ui/index.html"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
 
             // Health check
-            mockMvc.perform(get("/actuator/health"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(get("/actuator/health")).andExpect(status().isOk());
         }
 
         @Test
@@ -178,16 +181,14 @@ class SecurityConfigTest {
         @DisplayName("正常: 認証済みユーザーは保護されたエンドポイントにアクセス可能")
         void protectedEndpoints_WithAuthentication_ShouldBeAccessible() throws Exception {
             // 認証済みユーザーはアクセス可能
-            mockMvc.perform(get("/api/daily-reports/my"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(get("/api/daily-reports/my")).andExpect(status().isOk());
         }
 
         @Test
         @DisplayName("異常: 認証なしで保護されたエンドポイントにアクセスは401返却")
         void protectedEndpoints_WithoutAuthentication_ShouldReturn401() throws Exception {
             // 認証なしではアクセス不可
-            mockMvc.perform(get("/api/daily-reports/my"))
-                    .andExpect(status().isUnauthorized());
+            mockMvc.perform(get("/api/daily-reports/my")).andExpect(status().isUnauthorized());
         }
     }
 
@@ -215,11 +216,12 @@ class SecurityConfigTest {
         @DisplayName("正常: ステートレスセッション管理が設定されている")
         void sessionManagement_ShouldBeStateless() throws Exception {
             // ログインエンドポイントはPOSTのみ対応なのでGETは405エラー
-            mockMvc.perform(get("/api/auth/login"))
-                    .andExpect(status().isMethodNotAllowed()); // GET method not supported
+            mockMvc.perform(get("/api/auth/login")).andExpect(status().isMethodNotAllowed()); // GET
+            // method
+            // not
+            // supported
         }
     }
-
 
     @Nested
     @DisplayName("フィルターチェーン統合テスト")
@@ -230,18 +232,17 @@ class SecurityConfigTest {
         @DisplayName("統合: セキュリティフィルターチェーン動作")
         void securityFilterChain_ShouldWorkCorrectly() throws Exception {
             // 1. 公開エンドポイントへのアクセス
-            mockMvc.perform(get("/actuator/health"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(get("/actuator/health")).andExpect(status().isOk());
 
             // 2. 認証済みユーザーは保護されたエンドポイントにアクセス可能
-            mockMvc.perform(get("/api/daily-reports/my"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(get("/api/daily-reports/my")).andExpect(status().isOk());
 
             // 3. ログインエンドポイントへのアクセス（認証不要）
             mockMvc.perform(
                             post("/api/auth/login")
                                     .contentType(MediaType.APPLICATION_JSON)
-                                    .content("{\"username\":\"invaliduser\",\"password\":\"invalidpass\"}"))
+                                    .content(
+                                            "{\"username\":\"invaliduser\",\"password\":\"invalidpass\"}"))
                     .andExpect(status().is4xxClientError()); // バリデーションエラーまたは認証エラー
         }
 
@@ -250,9 +251,7 @@ class SecurityConfigTest {
         @DisplayName("統合: CORS + 認証でのエンドポイントアクセステスト")
         void corsWithAuthentication_ShouldWorkTogether() throws Exception {
             // CORS付きで認証済みエンドポイントアクセス
-            mockMvc.perform(
-                            get("/api/daily-reports/my")
-                                    .header("Origin", "http://localhost:3000"))
+            mockMvc.perform(get("/api/daily-reports/my").header("Origin", "http://localhost:3000"))
                     .andExpect(status().isOk())
                     .andExpect(header().exists("Access-Control-Allow-Origin"));
         }
@@ -263,11 +262,11 @@ class SecurityConfigTest {
     class ErrorHandlingAndEdgeCaseTests {
 
         @Test
+        @WithMockUser(username = "admin")
         @DisplayName("境界値: 存在しないエンドポイントへのアクセス")
         void nonExistentEndpoint_ShouldReturn404() throws Exception {
             // デバッグモードでは認証をスキップし、存在しないエンドポイントは404を返す
-            mockMvc.perform(get("/api/nonexistent"))
-                    .andExpect(status().isNotFound());
+            mockMvc.perform(get("/api/nonexistent")).andExpect(status().isNotFound());
         }
 
         @Test

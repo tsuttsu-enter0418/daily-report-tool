@@ -1,8 +1,14 @@
 package com.example.dailyreport.unit.service;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 
@@ -25,39 +31,24 @@ import com.example.dailyreport.service.AuthService;
 
 /**
  * AuthServiceの単体テスト
- * 
- * テスト対象:
- * - authenticateUser メソッド
- * - ユーザー認証ロジック
- * - パスワード検証
- * - JWTトークン生成
- * - エラーハンドリング
- * 
- * モック対象:
- * - UserRepository: ユーザー検索をモック化
- * - PasswordEncoder: パスワード検証をモック化  
- * - JwtUtil: JWT生成をモック化
- * 
- * テストパターン:
- * - 正常系: 有効な認証情報での成功ケース
- * - 異常系: 無効な認証情報での失敗ケース
- * - 境界値: 特殊な値での動作確認
+ *
+ * <p>テスト対象: - authenticateUser メソッド - ユーザー認証ロジック - パスワード検証 - JWTトークン生成 - エラーハンドリング
+ *
+ * <p>モック対象: - UserRepository: ユーザー検索をモック化 - PasswordEncoder: パスワード検証をモック化 - JwtUtil: JWT生成をモック化
+ *
+ * <p>テストパターン: - 正常系: 有効な認証情報での成功ケース - 異常系: 無効な認証情報での失敗ケース - 境界値: 特殊な値での動作確認
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AuthService 単体テスト")
 class AuthServiceTest {
 
-    @Mock
-    private UserRepository userRepository;
+    @Mock private UserRepository userRepository;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+    @Mock private PasswordEncoder passwordEncoder;
 
-    @Mock
-    private JwtUtil jwtUtil;
+    @Mock private JwtUtil jwtUtil;
 
-    @InjectMocks
-    private AuthService authService;
+    @InjectMocks private AuthService authService;
 
     private LoginRequest validLoginRequest;
     private User validUser;
@@ -66,20 +57,19 @@ class AuthServiceTest {
     @BeforeEach
     void setUp() {
         // Given: 共通テストデータ準備
-        validLoginRequest = LoginRequest.builder()
-                .username("testuser")
-                .password("password123")
-                .build();
+        validLoginRequest =
+                LoginRequest.builder().username("testuser").password("password123").build();
 
-        validUser = User.builder()
-                .id(1L)
-                .username("testuser")
-                .email("testuser@company.com")
-                .password("$2a$10$encoded.password.hash")
-                .role("部下")
-                .displayName("テストユーザー")
-                .isActive(true)
-                .build();
+        validUser =
+                User.builder()
+                        .id(1L)
+                        .username("testuser")
+                        .email("testuser@company.com")
+                        .password("$2a$10$encoded.password.hash")
+                        .role("部下")
+                        .displayName("テストユーザー")
+                        .isActive(true)
+                        .build();
 
         generatedToken = "jwt.token.example.123";
     }
@@ -92,12 +82,9 @@ class AuthServiceTest {
         @DisplayName("有効な認証情報で認証成功")
         void authenticateUser_ValidCredentials_ShouldReturnLoginResponse() {
             // Given: モックの動作設定
-            when(userRepository.findByUsername("testuser"))
-                    .thenReturn(Optional.of(validUser));
-            when(passwordEncoder.matches("password123", validUser.getPassword()))
-                    .thenReturn(true);
-            when(jwtUtil.generateToken("testuser", "部下"))
-                    .thenReturn(generatedToken);
+            when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(validUser));
+            when(passwordEncoder.matches("password123", validUser.getPassword())).thenReturn(true);
+            when(jwtUtil.generateToken("testuser", "部下")).thenReturn(generatedToken);
 
             // When: 認証実行
             LoginResponse response = authService.authenticateUser(validLoginRequest);
@@ -121,22 +108,22 @@ class AuthServiceTest {
         @DisplayName("displayNameがnullの場合はusernameをフォールバック")
         void authenticateUser_NullDisplayName_ShouldFallbackToUsername() {
             // Given: displayNameがnullのユーザー
-            User userWithNullDisplayName = User.builder()
-                    .id(1L)
-                    .username("testuser")
-                    .email("testuser@company.com")
-                    .password("encoded.password")
-                    .role("部下")
-                    .displayName(null)
-                    .isActive(true)
-                    .build();
+            User userWithNullDisplayName =
+                    User.builder()
+                            .id(1L)
+                            .username("testuser")
+                            .email("testuser@company.com")
+                            .password("encoded.password")
+                            .role("部下")
+                            .displayName(null)
+                            .isActive(true)
+                            .build();
 
             when(userRepository.findByUsername("testuser"))
                     .thenReturn(Optional.of(userWithNullDisplayName));
             when(passwordEncoder.matches("password123", userWithNullDisplayName.getPassword()))
                     .thenReturn(true);
-            when(jwtUtil.generateToken("testuser", "部下"))
-                    .thenReturn(generatedToken);
+            when(jwtUtil.generateToken("testuser", "部下")).thenReturn(generatedToken);
 
             // When: 認証実行
             LoginResponse response = authService.authenticateUser(validLoginRequest);
@@ -149,22 +136,22 @@ class AuthServiceTest {
         @DisplayName("displayNameが空文字の場合はusernameをフォールバック")
         void authenticateUser_EmptyDisplayName_ShouldFallbackToUsername() {
             // Given: displayNameが空文字のユーザー
-            User userWithEmptyDisplayName = User.builder()
-                    .id(1L)
-                    .username("testuser")
-                    .email("testuser@company.com")
-                    .password("encoded.password")
-                    .role("部下")
-                    .displayName("   ")  // 空白のみ
-                    .isActive(true)
-                    .build();
+            User userWithEmptyDisplayName =
+                    User.builder()
+                            .id(1L)
+                            .username("testuser")
+                            .email("testuser@company.com")
+                            .password("encoded.password")
+                            .role("部下")
+                            .displayName("   ") // 空白のみ
+                            .isActive(true)
+                            .build();
 
             when(userRepository.findByUsername("testuser"))
                     .thenReturn(Optional.of(userWithEmptyDisplayName));
             when(passwordEncoder.matches("password123", userWithEmptyDisplayName.getPassword()))
                     .thenReturn(true);
-            when(jwtUtil.generateToken("testuser", "部下"))
-                    .thenReturn(generatedToken);
+            when(jwtUtil.generateToken("testuser", "部下")).thenReturn(generatedToken);
 
             // When: 認証実行
             LoginResponse response = authService.authenticateUser(validLoginRequest);
@@ -177,27 +164,24 @@ class AuthServiceTest {
         @DisplayName("管理者ロールでの認証成功")
         void authenticateUser_AdminRole_ShouldAuthenticateSuccessfully() {
             // Given: 管理者ユーザー
-            User adminUser = User.builder()
-                    .id(2L)
-                    .username("admin")
-                    .email("admin@company.com")
-                    .password("encoded.admin.password")
-                    .role("管理者")
-                    .displayName("管理者")
-                    .isActive(true)
-                    .build();
+            User adminUser =
+                    User.builder()
+                            .id(2L)
+                            .username("admin")
+                            .email("admin@company.com")
+                            .password("encoded.admin.password")
+                            .role("管理者")
+                            .displayName("管理者")
+                            .isActive(true)
+                            .build();
 
-            LoginRequest adminLoginRequest = LoginRequest.builder()
-                    .username("admin")
-                    .password("adminpassword")
-                    .build();
+            LoginRequest adminLoginRequest =
+                    LoginRequest.builder().username("admin").password("adminpassword").build();
 
-            when(userRepository.findByUsername("admin"))
-                    .thenReturn(Optional.of(adminUser));
+            when(userRepository.findByUsername("admin")).thenReturn(Optional.of(adminUser));
             when(passwordEncoder.matches("adminpassword", adminUser.getPassword()))
                     .thenReturn(true);
-            when(jwtUtil.generateToken("admin", "管理者"))
-                    .thenReturn("admin.jwt.token");
+            when(jwtUtil.generateToken("admin", "管理者")).thenReturn("admin.jwt.token");
 
             // When: 管理者認証実行
             LoginResponse response = authService.authenticateUser(adminLoginRequest);
@@ -214,16 +198,26 @@ class AuthServiceTest {
     class ErrorTest {
 
         @Test
+        @DisplayName("input無しの不正入力で認証失敗")
+        void authenticateUser_NoInput_ShouldThrownException() {
+            // Given：input無し
+            LoginRequest invalidUserRequest =
+                    LoginRequest.builder().username("").password("").build();
+
+            // When&Then：例外発生を検証
+            assertThatThrownBy(() -> authService.authenticateUser(invalidUserRequest))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessage("不正な値です");
+        }
+
+        @Test
         @DisplayName("存在しないユーザー名で認証失敗")
         void authenticateUser_UserNotFound_ShouldThrowException() {
             // Given: 存在しないユーザー
-            LoginRequest invalidUserRequest = LoginRequest.builder()
-                    .username("nonexistent")
-                    .password("password123")
-                    .build();
+            LoginRequest invalidUserRequest =
+                    LoginRequest.builder().username("nonexistent").password("password123").build();
 
-            when(userRepository.findByUsername("nonexistent"))
-                    .thenReturn(Optional.empty());
+            when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
 
             // When & Then: 例外発生を検証
             assertThatThrownBy(() -> authService.authenticateUser(invalidUserRequest))
@@ -239,13 +233,10 @@ class AuthServiceTest {
         @DisplayName("間違ったパスワードで認証失敗")
         void authenticateUser_WrongPassword_ShouldThrowException() {
             // Given: 正しいユーザー、間違ったパスワード
-            LoginRequest wrongPasswordRequest = LoginRequest.builder()
-                    .username("testuser")
-                    .password("wrongpassword")
-                    .build();
+            LoginRequest wrongPasswordRequest =
+                    LoginRequest.builder().username("testuser").password("wrongpassword").build();
 
-            when(userRepository.findByUsername("testuser"))
-                    .thenReturn(Optional.of(validUser));
+            when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(validUser));
             when(passwordEncoder.matches("wrongpassword", validUser.getPassword()))
                     .thenReturn(false);
 
@@ -262,15 +253,11 @@ class AuthServiceTest {
         @DisplayName("null パスワードで認証失敗")
         void authenticateUser_NullPassword_ShouldThrowException() {
             // Given: nullパスワード
-            LoginRequest nullPasswordRequest = LoginRequest.builder()
-                    .username("testuser")
-                    .password(null)
-                    .build();
+            LoginRequest nullPasswordRequest =
+                    LoginRequest.builder().username("testuser").password(null).build();
 
-            when(userRepository.findByUsername("testuser"))
-                    .thenReturn(Optional.of(validUser));
-            when(passwordEncoder.matches(null, validUser.getPassword()))
-                    .thenReturn(false);
+            when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(validUser));
+            when(passwordEncoder.matches(null, validUser.getPassword())).thenReturn(false);
 
             // When & Then: 例外発生を検証
             assertThatThrownBy(() -> authService.authenticateUser(nullPasswordRequest))
@@ -282,15 +269,11 @@ class AuthServiceTest {
         @DisplayName("空文字パスワードで認証失敗")
         void authenticateUser_EmptyPassword_ShouldThrowException() {
             // Given: 空文字パスワード
-            LoginRequest emptyPasswordRequest = LoginRequest.builder()
-                    .username("testuser")
-                    .password("")
-                    .build();
+            LoginRequest emptyPasswordRequest =
+                    LoginRequest.builder().username("testuser").password("").build();
 
-            when(userRepository.findByUsername("testuser"))
-                    .thenReturn(Optional.of(validUser));
-            when(passwordEncoder.matches("", validUser.getPassword()))
-                    .thenReturn(false);
+            when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(validUser));
+            when(passwordEncoder.matches("", validUser.getPassword())).thenReturn(false);
 
             // When & Then: 例外発生を検証
             assertThatThrownBy(() -> authService.authenticateUser(emptyPasswordRequest))
@@ -307,12 +290,9 @@ class AuthServiceTest {
         @DisplayName("UserRepositoryが複数回呼び出されないことを確認")
         void authenticateUser_ShouldCallUserRepositoryOnlyOnce() {
             // Given
-            when(userRepository.findByUsername("testuser"))
-                    .thenReturn(Optional.of(validUser));
-            when(passwordEncoder.matches("password123", validUser.getPassword()))
-                    .thenReturn(true);
-            when(jwtUtil.generateToken("testuser", "部下"))
-                    .thenReturn(generatedToken);
+            when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(validUser));
+            when(passwordEncoder.matches("password123", validUser.getPassword())).thenReturn(true);
+            when(jwtUtil.generateToken("testuser", "部下")).thenReturn(generatedToken);
 
             // When
             authService.authenticateUser(validLoginRequest);
@@ -326,12 +306,9 @@ class AuthServiceTest {
         @DisplayName("JwtUtilが正しい引数で呼び出されることを確認")
         void authenticateUser_ShouldCallJwtUtilWithCorrectArguments() {
             // Given
-            when(userRepository.findByUsername("testuser"))
-                    .thenReturn(Optional.of(validUser));
-            when(passwordEncoder.matches("password123", validUser.getPassword()))
-                    .thenReturn(true);
-            when(jwtUtil.generateToken(eq("testuser"), eq("部下")))
-                    .thenReturn(generatedToken);
+            when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(validUser));
+            when(passwordEncoder.matches("password123", validUser.getPassword())).thenReturn(true);
+            when(jwtUtil.generateToken(eq("testuser"), eq("部下"))).thenReturn(generatedToken);
 
             // When
             authService.authenticateUser(validLoginRequest);
@@ -344,12 +321,10 @@ class AuthServiceTest {
         @DisplayName("PasswordEncoderがBCryptで検証することを確認")
         void authenticateUser_ShouldUsePasswordEncoderForVerification() {
             // Given
-            when(userRepository.findByUsername("testuser"))
-                    .thenReturn(Optional.of(validUser));
+            when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(validUser));
             when(passwordEncoder.matches(eq("password123"), eq(validUser.getPassword())))
                     .thenReturn(true);
-            when(jwtUtil.generateToken("testuser", "部下"))
-                    .thenReturn(generatedToken);
+            when(jwtUtil.generateToken("testuser", "部下")).thenReturn(generatedToken);
 
             // When
             authService.authenticateUser(validLoginRequest);
@@ -368,27 +343,25 @@ class AuthServiceTest {
         void authenticateUser_VeryLongUsername_ShouldHandleCorrectly() {
             // Given: 長いユーザー名
             String longUsername = "a".repeat(100);
-            LoginRequest longUsernameRequest = LoginRequest.builder()
-                    .username(longUsername)
-                    .password("password")
-                    .build();
+            LoginRequest longUsernameRequest =
+                    LoginRequest.builder().username(longUsername).password("password").build();
 
-            User longUsernameUser = User.builder()
-                    .id(1L)
-                    .username(longUsername)
-                    .email("longuser@company.com")
-                    .password("encoded.password")
-                    .role("部下")
-                    .displayName("長い名前のユーザー")
-                    .isActive(true)
-                    .build();
+            User longUsernameUser =
+                    User.builder()
+                            .id(1L)
+                            .username(longUsername)
+                            .email("longuser@company.com")
+                            .password("encoded.password")
+                            .role("部下")
+                            .displayName("長い名前のユーザー")
+                            .isActive(true)
+                            .build();
 
             when(userRepository.findByUsername(longUsername))
                     .thenReturn(Optional.of(longUsernameUser));
             when(passwordEncoder.matches("password", longUsernameUser.getPassword()))
                     .thenReturn(true);
-            when(jwtUtil.generateToken(longUsername, "部下"))
-                    .thenReturn(generatedToken);
+            when(jwtUtil.generateToken(longUsername, "部下")).thenReturn(generatedToken);
 
             // When: 認証実行
             LoginResponse response = authService.authenticateUser(longUsernameRequest);
@@ -403,27 +376,25 @@ class AuthServiceTest {
         void authenticateUser_JapaneseUsername_ShouldHandleCorrectly() {
             // Given: 日本語ユーザー名
             String japaneseUsername = "田中太郎";
-            LoginRequest japaneseUsernameRequest = LoginRequest.builder()
-                    .username(japaneseUsername)
-                    .password("password")
-                    .build();
+            LoginRequest japaneseUsernameRequest =
+                    LoginRequest.builder().username(japaneseUsername).password("password").build();
 
-            User japaneseUsernameUser = User.builder()
-                    .id(1L)
-                    .username(japaneseUsername)
-                    .email("tanaka@company.com")
-                    .password("encoded.password")
-                    .role("上長")
-                    .displayName("田中 太郎")
-                    .isActive(true)
-                    .build();
+            User japaneseUsernameUser =
+                    User.builder()
+                            .id(1L)
+                            .username(japaneseUsername)
+                            .email("tanaka@company.com")
+                            .password("encoded.password")
+                            .role("上長")
+                            .displayName("田中 太郎")
+                            .isActive(true)
+                            .build();
 
             when(userRepository.findByUsername(japaneseUsername))
                     .thenReturn(Optional.of(japaneseUsernameUser));
             when(passwordEncoder.matches("password", japaneseUsernameUser.getPassword()))
                     .thenReturn(true);
-            when(jwtUtil.generateToken(japaneseUsername, "上長"))
-                    .thenReturn(generatedToken);
+            when(jwtUtil.generateToken(japaneseUsername, "上長")).thenReturn(generatedToken);
 
             // When: 認証実行
             LoginResponse response = authService.authenticateUser(japaneseUsernameRequest);

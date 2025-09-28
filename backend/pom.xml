@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.2.0</version>
         <relativePath/>
     </parent>
-    
+
     <groupId>com.example</groupId>
     <artifactId>daily-report-tool</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>daily-report-tool</name>
-    
+
     <properties>
         <java.version>17</java.version>
     </properties>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -107,7 +107,7 @@
             <version>2.3.0</version>
         </dependency>
     </dependencies>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -122,7 +122,7 @@
                     </excludes>
                 </configuration>
             </plugin>
-            
+
             <!-- JaCoCo コードカバレッジプラグイン -->
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -133,6 +133,9 @@
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
+                        <configuration>
+                            <propertyName>jacoco.surefire.argLine</propertyName>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>report</id>
@@ -140,19 +143,82 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <configuration>
+                            <formats>
+                                <format>HTML</format>
+                                <format>XML</format>
+                                <format>CSV</format>
+                            </formats>
+                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
                     <excludes>
-                        <!-- エンティティクラス除外 -->
                         <exclude>**/entity/**</exclude>
-                        <!-- DTOクラス除外 -->
                         <exclude>**/dto/**</exclude>
-                        <!-- アプリケーション起動クラス除外 -->
                         <exclude>**/DailyReportApplication*</exclude>
-                        <!-- 設定クラス除外 -->
                         <exclude>**/config/**</exclude>
                     </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- Maven Surefire Plugin (並行テスト実行設定) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M9</version>
+                <configuration>
+                    <parallel>methods</parallel>
+                    <threadCount>4</threadCount>
+                    <forkCount>2</forkCount>
+                    <reuseForks>true</reuseForks>
+
+                    <argLine>${jacoco.surefire.argLine}</argLine>
+
+                    <systemPropertyVariables>
+                        <spring.profiles.active>test</spring.profiles.active>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+
+            <!-- Maven Checkstyle Plugin (コード品質チェック) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <configLocation>google_checks.xml</configLocation>
+                    <encoding>UTF-8</encoding>
+                    <consoleOutput>true</consoleOutput>
+                    <failsOnError>false</failsOnError>
+                    <linkXRef>false</linkXRef>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- OWASP 依存関係脆弱性チェック -->
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>12.1.0</version>
+                <configuration>
+                    <format>ALL</format>
+                    <failBuildOnCVSS>8</failBuildOnCVSS>
+                    <outputDirectory>${project.build.directory}/dependency-check</outputDirectory>
+                    <!-- NVD API 2.0 対応設定 -->
+                    <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
+                    <nvdMaxRetryCount>10</nvdMaxRetryCount>
+                    <nvdApiDelay>4000</nvdApiDelay>
+                    <!-- APIキーなしでもローカルDBで動作可能 -->
+                    <skipNvdUpdate>false</skipNvdUpdate>
                 </configuration>
             </plugin>
 
