@@ -53,8 +53,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
-    "jwt.auth.enabled=false",  // JWT認証無効化でBaseController認証スキップ
-    "debug.default.user.username=admin"  // BaseController用デフォルトユーザー
+    "jwt.auth.enabled=true",  // 実際のJWT認証フローをテスト
+    "debug.default.user.username=admin"  // BaseController用（念のため）
 })
 @DisplayName("AuthController 統合テスト")
 class AuthControllerTest {
