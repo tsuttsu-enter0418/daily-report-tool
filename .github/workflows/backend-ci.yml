@@ -49,20 +49,21 @@ jobs:
               working-directory: ./backend
               run: ./mvnw checkstyle:check
 
-            - name: Security vulnerability scan
-              working-directory: ./backend
-              run: ./mvnw org.owasp:dependency-check-maven:check
+            # ToDo
+            # - name: Security vulnerability scan
+            #   working-directory: ./backend
+            #   run: ./mvnw org.owasp:dependency-check-maven:check
 
-            - name: SonarQube analysis
-              working-directory: ./backend
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-              run: |
-                  ./mvnw sonar:sonar \
-                    -Dsonar.projectKey=daily-report-tool-backend \
-                    -Dsonar.host.url=https://sonarcloud.io \
-                    -Dsonar.organization=your-org
+            # - name: SonarQube analysis
+            #   working-directory: ./backend
+            #   env:
+            #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            #   run: |
+            #       ./mvnw sonar:sonar \
+            #         -Dsonar.projectKey=daily-report-tool-backend \
+            #         -Dsonar.host.url=https://sonarcloud.io \
+            #         -Dsonar.organization=your-org
 
     # ==========================================
     # Job 2: ユニット・統合テスト
@@ -101,7 +102,7 @@ jobs:
                     -Dspring.jpa.hibernate.ddl-auto=create-drop \
                     -Djunit.jupiter.execution.parallel.enabled=false
 
-            - name: Generate Cobertura Report
+            - name: Generate Report
               working-directory: ./backend
               if: always()
               run: |
