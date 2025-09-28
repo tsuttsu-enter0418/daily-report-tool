@@ -97,9 +97,16 @@ jobs:
               env:
                   SPRING_PROFILES_ACTIVE: test
               run: |
-                  ./mvnw clean test jacoco:report \
+                  ./mvnw test \
                     -Dspring.jpa.hibernate.ddl-auto=create-drop \
                     -Djunit.jupiter.execution.parallel.enabled=false
+
+            - name: Generate Cobertura Report
+              working-directory: ./backend
+              if: always()
+              run: |
+                  # pom.xmlで設定したformats/outputFileを使ってcobertura.xmlを生成
+                  ./mvnw jacoco:report
 
             - name: debug jacco exist
               working-directory: ./backend
@@ -142,7 +149,7 @@ jobs:
               if: github.event_name == 'pull_request'
               uses: 5monkeys/cobertura-action@master
               with:
-                  path: backend/target/site/jacoco/jacoco.xml
+                  path: backend/target/site/jacoco/cobertura.xml
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
                   minimum_coverage: 80
 
