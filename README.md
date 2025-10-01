@@ -79,6 +79,7 @@ AWS は初めてなので、簡単にデプロイできるサービスではな�
 - **JPA/Hibernate** (ORM)
 - **Lombok** (ボイラープレート削減)
 - **SpringDoc OpenAPI** (API 仕様書生成)
+- **Maven** (依存関係管理)
 
 ### テスト環境
 
@@ -90,9 +91,22 @@ AWS は初めてなので、簡単にデプロイできるサービスではな�
 
 ### データベース・インフラ
 
-- **PostgreSQL 15**
-- **Docker Compose** (コンテナ管理)
-- **Maven** (依存関係管理)
+- **AWS**
+  - CloudFront
+  - S3
+  - Route53
+  - ACM
+  - ECS for Fargate
+  - ECR
+  - ALB
+  - RDS（PostgrSQL）
+  - VPC
+  - SecretManager
+- **Docker/Docker compose**（ローカル環境）
+
+### CI/CD
+
+- **GithubActions**
 
 ### 開発・設計手法
 
@@ -101,6 +115,7 @@ AWS は初めてなので、簡単にデプロイできるサービスではな�
 - **確認ダイアログパターン** (安全な操作確認)
 - **Toast 通知システム** (統一されたフィードバック)
 - **コード品質重視** (ESLint strict・型安全性・本番最適化)
+- **ISSUE 駆動開発**
 
 ## 📁 プロジェクト構成
 
