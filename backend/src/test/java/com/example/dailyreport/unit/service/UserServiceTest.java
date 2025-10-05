@@ -1,6 +1,8 @@
 package com.example.dailyreport.unit.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -8,6 +10,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +25,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.example.dailyreport.entity.User;
 import com.example.dailyreport.repository.UserRepository;
 import com.example.dailyreport.service.UserService;
+
+import jakarta.persistence.EntityNotFoundException;
 
 /**
  * Userメンテ機能のServiceクラス単体テスト この機能はTDDで開発
@@ -158,6 +163,26 @@ public class UserServiceTest {
             verify(passwordEncoder, times(1)).encode(password);
             verify(userRepository, times(1)).save(createUser);
             assertThat(createUser.getPassword()).isEqualTo(encodedPassword);
+        }
+    }
+
+    @Nested
+    @DisplayName("異常系テスト")
+    class FailureTest {
+
+        @Test
+        @DisplayName("削除済みのユーザーを削除しようとしてエラーが発生する")
+
+        void userService_deleteUser_Error() {
+            // Given
+            when(userRepository.findById(1L)).thenReturn(Optional.empty());
+            // When&Then
+            EntityNotFoundException exception = assertThrows(
+                    EntityNotFoundException.class,
+                    () -> userService.deleteUser(activeUser1));
+            assertThat(exception.getMessage()).isEqualTo("既にユーザーは削除されています");
+            verify(userRepository, never()).delete(activeUser1);
+            verify(userRepository, times(1)).findById(activeUser1.getId());
         }
     }
 }

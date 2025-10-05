@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import com.example.dailyreport.entity.User;
 import com.example.dailyreport.repository.UserRepository;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @Service
 public class UserService {
     @Autowired
@@ -29,6 +31,11 @@ public class UserService {
     }
 
     public void deleteUser(User targetUser) {
+        // Optional<User> user = userRepository.findById(targetUser.getId());
+        userRepository.findById(targetUser.getId()).orElseThrow(() -> new EntityNotFoundException("既にユーザーは削除されています"));
+        // if (user.isEmpty()) {
+        // throw new IllegalArgumentException("既にユーザーは削除されています");
+        // }
         userRepository.delete(targetUser);
     }
 
