@@ -7,7 +7,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,8 +25,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.example.dailyreport.entity.User;
 import com.example.dailyreport.repository.UserRepository;
 import com.example.dailyreport.service.UserService;
-
-import jakarta.persistence.EntityNotFoundException;
 
 /**
  * Userメンテ機能のServiceクラス単体テスト この機能はTDDで開発
@@ -54,17 +52,20 @@ public class UserServiceTest {
     private UserService userService;
     private User activeUser1;
     private User activeUser2;
+    private LocalDateTime sharedNow;
 
     @BeforeEach
     void setUp() {
+        sharedNow = LocalDateTime.now();
         // アクティブユーザー
-        LocalDate now = LocalDate.now();
         activeUser1 = User.builder().id(1L)
                 .username("ActiveUser1")
                 .email("test1@email.com")
                 .role("部下")
                 .displayName("有効 太郎1")
                 .isActive(true)
+                .createdAt(sharedNow)
+                .updatedAt(sharedNow)
                 .build();
         activeUser2 = User.builder()
                 .id(2L)
@@ -73,6 +74,8 @@ public class UserServiceTest {
                 .role("部下")
                 .displayName("有効 太郎2")
                 .isActive(true)
+                .createdAt(sharedNow)
+                .updatedAt(sharedNow)
                 .build();
     }
 
@@ -124,6 +127,7 @@ public class UserServiceTest {
         @DisplayName("ユーザー削除を削除する")
         void userService_deleteUser_Ok() {
             // Given
+            when(userRepository.findById(1L)).thenReturn(Optional.of(activeUser1));
             // When
             userService.deleteUser(activeUser1);
             // Then
@@ -132,12 +136,26 @@ public class UserServiceTest {
 
         @Test
         @DisplayName("ユーザー編集を行う")
-        void userService_updateUser_Ok() {
+        void userService_updateUser_Ok() throws Exception {
             // Given
+            User changedUser = User.builder()
+                    .id(1L)
+                    .username("ActiveUser1")
+                    .email("test10@email.com")
+                    .role("部下")
+                    .displayName("有効 太郎10")
+                    .createdAt(sharedNow)
+                    .updatedAt(sharedNow)
+                    .isActive(true)
+                    .build();
+            when(userRepository.findById(1L)).thenReturn(Optional.of(activeUser1));
             // When
-            userService.updateUser(activeUser1);
+            userService.updateUser(changedUser);
             // Then
-            verify(userRepository, times(1)).save(activeUser1);
+            verify(userRepository, times(1)).save(changedUser);
+            assertThat(activeUser1.getUsername()).isEqualTo("ActiveUser1");
+            assertThat(activeUser1.getEmail()).isEqualTo("test10@email.com");
+            assertThat(activeUser1.getDisplayName()).isEqualTo("有効 太郎10");
         }
 
         @Test
@@ -164,25 +182,59 @@ public class UserServiceTest {
             verify(userRepository, times(1)).save(createUser);
             assertThat(createUser.getPassword()).isEqualTo(encodedPassword);
         }
+
+        @Test
+        @DisplayName("削除済みユーザーの場合削除処理をスキップして正常終了する")
+        void userService_deleteUser_ErrorSkip() {
+            // Given
+            when(userRepository.findById(1L)).thenReturn(Optional.empty());
+            // When
+            userService.deleteUser(activeUser1);
+            // Then
+            verify(userRepository, never()).delete(activeUser1);
+            verify(userRepository, times(1)).findById(activeUser1.getId());
+        }
     }
 
     @Nested
     @DisplayName("異常系テスト")
     class FailureTest {
+        @Test
+        @DisplayName("ユーザーを編集しようとすると排他制御エラーが発生する")
+        void userService_updateUser_ExclusiveError() {
+            // Given
+            LocalDateTime updatedAt = sharedNow.minusMinutes(5);
+            User validUser = User.builder()
+                    .id(1L)
+                    .username("ActiveUser1")
+                    .email("test1@email.com")
+                    .role("部下")
+                    .displayName("有効 太郎1")
+                    .isActive(true)
+                    .updatedAt(updatedAt)
+                    .build();
+            when(userRepository.findById(1L)).thenReturn(Optional.of(activeUser1));
+            // When&Then
+            RuntimeException exception = assertThrows(
+                    RuntimeException.class,
+                    () -> userService.updateUser(validUser));
+            assertThat(exception.getMessage()).isEqualTo("既に編集されています。更新してください。");
+            verify(userRepository, never()).save(activeUser1);
+        }
 
         @Test
-        @DisplayName("削除済みのユーザーを削除しようとしてエラーが発生する")
-
-        void userService_deleteUser_Error() {
+        @DisplayName("編集対象のユーザーが削除されている場合エラーが発生する")
+        void userService_updateUser_deleteUserError() {
             // Given
             when(userRepository.findById(1L)).thenReturn(Optional.empty());
-            // When&Then
-            EntityNotFoundException exception = assertThrows(
-                    EntityNotFoundException.class,
-                    () -> userService.deleteUser(activeUser1));
-            assertThat(exception.getMessage()).isEqualTo("既にユーザーは削除されています");
-            verify(userRepository, never()).delete(activeUser1);
-            verify(userRepository, times(1)).findById(activeUser1.getId());
+            // When
+            RuntimeException exception = assertThrows(
+                    RuntimeException.class,
+                    () -> userService.updateUser(activeUser1));
+            // Then
+            assertThat(exception.getMessage()).isEqualTo("対象のユーザーは削除されています。");
+            verify(userRepository, never()).save(activeUser1);
         }
     }
+
 }

@@ -1,6 +1,7 @@
 package com.example.dailyreport.entity;
 
 import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
@@ -45,5 +46,23 @@ class BaseEntity {
     @PreUpdate
     public void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * 排他制御チェック
+     *
+     * @param targetUpdatedAt 更新日時
+     * @return true:問題なし false:排他
+     */
+
+    public boolean isLocked(LocalDateTime targetUpdatedAt) {
+        if (this.updatedAt == null) {
+            return true;
+        }
+        if (this.updatedAt != targetUpdatedAt) {
+            return false;
+        }
+
+        return true;
     }
 }
