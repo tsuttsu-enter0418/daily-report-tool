@@ -11,9 +11,12 @@ import com.example.dailyreport.entity.User;
 /**
  * ユーザーデータアクセス層
  *
- * <p>機能: - ユーザーの基本CRUD操作 - ユーザー名・メールでの検索 - 上司-部下関係検索 - アクティブユーザー管理
+ * <p>
+ * 機能: - ユーザーの基本CRUD操作 - ユーザー名・メールでの検索 - 上司-部下関係検索 - アクティブユーザー管理
  *
- * <p>主要メソッド: - findByUsername: ログイン認証用 - findBySupervisorId: 上司による部下一覧取得 - findByIsActiveTrue:
+ * <p>
+ * 主要メソッド: - findByUsername: ログイン認証用 - findBySupervisorId: 上司による部下一覧取得 -
+ * findByIsActiveTrue:
  * アクティブユーザー一覧
  */
 @Repository
@@ -81,4 +84,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return アクティブな部下一覧
      */
     List<User> findBySupervisorIdAndIsActiveTrue(Long supervisorId);
+
+    /**
+     * ユーザーIDとRoleで検索
+     *
+     * @param id   ユーザーID
+     * @param role 役職
+     * @return ユーザー情報
+     */
+    Optional<User> findByIdAndRole(String username, String role);
 }

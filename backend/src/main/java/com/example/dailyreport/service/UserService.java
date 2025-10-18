@@ -15,7 +15,7 @@ import com.example.dailyreport.repository.UserRepository;
  * ユーザーの取得・作成・更新・削除・有効/無効切り替えを提供
  */
 @Service
-public class UserService {
+public class UserService extends BaseService {
     @Autowired
     private UserRepository userRepository;
 
@@ -79,11 +79,13 @@ public class UserService {
     /**
      * ユーザー新規作成（パスワードハッシュ化）
      *
-     * @param createUser 作成するユーザー情報
+     * @param user 作成するユーザー情報（Controllerでマッピング済み）
      */
-    public void createUser(User createUser) {
-        String encodedPassword = passwordEncoder.encode(createUser.getPassword());
-        createUser.setPassword(encodedPassword);
-        userRepository.save(createUser);
+    public void createUser(User user) {
+        // パスワードをハッシュ化
+        String encodedPassword = passwordEncoder.encode(user.getPassword());
+        user.setPassword(encodedPassword);
+
+        userRepository.save(user);
     }
 }
