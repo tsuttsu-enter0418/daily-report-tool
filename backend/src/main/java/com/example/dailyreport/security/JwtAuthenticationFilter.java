@@ -22,11 +22,13 @@ import jakarta.servlet.http.HttpServletResponse;
  * JWT認証フィルター
  *
  * <p>
- * 機能: - HTTPリクエストのAuthorizationヘッダーからJWTトークンを抽出 - JwtUtilを使用してトークンの有効性を検証 - 有効なトークンの場合、Spring
+ * 機能: - HTTPリクエストのAuthorizationヘッダーからJWTトークンを抽出 - JwtUtilを使用してトークンの有効性を検証 -
+ * 有効なトークンの場合、Spring
  * SecurityのSecurityContextに認証情報を設定 - 無効または存在しないトークンの場合は何もしない
  *
  * <p>
- * フィルター動作: - /api/auth/**パスは認証をスキップ（ログイン処理のため） - Authorizationヘッダーが存在しない場合はスキップ -
+ * フィルター動作: - /api/auth/**パスは認証をスキップ（ログイン処理のため） - Authorizationヘッダーが存在しない場合はスキップ
+ * -
  * Bearer形式でないトークンはスキップ - 有効なJWTトークンからユーザー名と権限を抽出してSecurityContextに設定
  *
  * <p>
@@ -63,19 +65,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     String role = jwtUtil.getRoleFromToken(token);
 
                     // Spring Security用の権限オブジェクト作成
-                    SimpleGrantedAuthority authority =
-                            new SimpleGrantedAuthority("ROLE_" + role.toUpperCase());
+                    SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role.toUpperCase());
 
                     // 認証オブジェクト作成
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(username, null,
-                                    Collections.singletonList(authority));
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            username, null,
+                            Collections.singletonList(authority));
 
                     // リクエスト詳細情報を設定
+                    // WebAuthenticationDetailsSourceを使用してリクエスト詳細情報を設定
+                    // getRemoteAddr()はリクエストの送信元IPアドレスを返す
+                    // getSessionId()はセッションIDを返す
                     authentication
                             .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                    // SecurityContextに認証情報を設定
+                    // SecurityContext(静的クラス)に認証情報を設定
+                    // ThreadLocalであることで、同時に複数のリクエストに対して認証情報を設定可能
+                    // さらに、Controllerへの自動注入が可能
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
                     logger.debug("JWT認証成功: ユーザー=" + username + ", 権限=" + role);

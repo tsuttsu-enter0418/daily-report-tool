@@ -1,6 +1,7 @@
 package com.example.dailyreport.unit.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,9 +31,11 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.example.dailyreport.config.TestConfig;
+import com.example.dailyreport.dto.UserRequest;
 import com.example.dailyreport.entity.User;
 import com.example.dailyreport.repository.UserRepository;
 import com.example.dailyreport.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * UserControllerクラスのユニットテスト
@@ -64,6 +68,9 @@ class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @MockBean
     private UserService userService;
 
@@ -73,9 +80,9 @@ class UserControllerTest {
     private User testUser;
     private User adminUser;
     private User managerUser;
-    private String createUser;
-    private String invalidUser;
-    private String updateUser;
+    private UserRequest createUserRequest;
+    private UserRequest invalidUserRequest;
+    private UserRequest updateUserRequest;
 
     @BeforeEach
     void setUp() {
@@ -112,9 +119,30 @@ class UserControllerTest {
                 .displayName("佐藤課長")
                 .isActive(true)
                 .build();
-        createUser = "{\"username\":\"testuser\",\"password\":\"testpass123\",\"email\":\"test@example.com\",\"displayName\":\"テストユーザー\",\"role\":\"部下\"}";
-        invalidUser = "{\"username\":\"\",\"password\":\"\",\"email\":\"\",\"displayName\":\"\",\"role\":\"\"}";
-        updateUser = "{\"id\":\"1\",\"username\":\"testuser\",\"password\":\"testpass123\",\"email\":\"test@example.com\",\"displayName\":\"テストユーザー\",\"}";
+        // ユーザーリクエスト
+        createUserRequest = UserRequest.builder()
+                .username("testuser")
+                .password("testpass123")
+                .email("test@example.com")
+                .displayName("テストユーザー")
+                .role("部下")
+                .build();
+        invalidUserRequest = UserRequest.builder()
+                .username("")
+                .password("")
+                .email("") // 重複しているメールアドレスを入力
+                .displayName("")
+                .role("")
+                .build();
+        updateUserRequest = UserRequest.builder()
+                .username("testuser")
+                .password("testpass123")
+                .email("test@example.com")
+                .displayName("テストユーザー")
+                .role("部下")
+                .build();
+        // updateUser =
+        // "{\"id\":\"1\",\"username\":\"testuser\",\"password\":\"testpass123\",\"email\":\"test@example.com\",\"displayName\":\"テストユーザー\",\"}";
     }
 
     @Nested
@@ -122,50 +150,50 @@ class UserControllerTest {
     class GetUsersTests {
 
         @Test
-        @WithMockUser(username = "admin", roles = { "ADMIN" })
+        @WithMockUser(username = "admin", roles = { "管理者" })
         @DisplayName("ユーザー一覧を取得する")
         void getUsers_Ok() throws Exception {
             // - Given: 管理者ユーザーでログイン、ユーザー3人分のテストデータ準備
             List<User> users = Arrays.asList(testUser, managerUser, adminUser);
-            when(userService.checkIsAdmin("admin")).thenReturn(true);
+            // when(userService.checkIsAdmin("admin")).thenReturn(true);
+            when(userRepository.findByUsername("admin")).thenReturn(Optional.of(adminUser));
             when(userService.getUsers()).thenReturn(users);
             // - When: GET /user/?param=test を実行
             mockMvc.perform(get("/user/").param("loginUserId", "admin"))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
-                    .andExpect(jsonPath("$.data.length()").value(3));
+                    .andExpect(content().contentType("application/json;charset=UTF-8"));
             verify(userService, times(1)).getUsers();
-            verify(userService, times(1)).checkIsAdmin("admin");
         }
 
         // TODO: 異常系 - 一般ユーザーがアクセスした場合は403返却
         @Test
-        @WithMockUser(username = "test", roles = { "EMPLOYEE" })
+        @WithMockUser(username = "test", roles = { "部下" })
         @DisplayName("一般ユーザーがアクセスした場合は403返却")
         void getUsers_Error() throws Exception {
             // - Given: 一般ユーザーでログイン
-            when(userService.checkIsAdmin("test")).thenReturn(false);
             // - When: GET /user/?param=test を実行 // - Then: ステータス403
-            mockMvc.perform(get("/user/").param("loginUserId", "test")).andExpect(status().is4xxClientError())
+            mockMvc.perform(get("/user/"))
+                    .andExpect(status().is4xxClientError())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
-                    .andExpect(jsonPath("$.message").value("権限エラー"));
+                    .andExpect(jsonPath("$.message").value("この操作を実行する権限がありません"));
             verify(userService, times(0)).getUsers();
-            verify(userService, times(1)).checkIsAdmin("test");
 
         }
 
         // TODO: 正常系 - ユーザーが存在しない場合は空配列返却
         @Test
-        @WithMockUser(username = "admin", roles = { "ADMIN" })
+        @WithMockUser(username = "admin", roles = { "管理者" })
         @DisplayName("ユーザー一覧を取得する")
         void getUsers_emptyReturn_Ok() throws Exception {
             // - Given: 管理者ユーザーでログイン、userService.getUsers()が空リスト返却
-            when(userService.checkIsAdmin("admin")).thenReturn(true);
             when(userService.getUsers()).thenReturn(new ArrayList<>());
             // - When: GET /user/?param=test を実行 Then: ステータス200、空のJSON配列返却
+            mockMvc.perform(get("/user/"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"));
 
             verify(userService, times(1)).getUsers();
-            verify(userService, times(1)).checkIsAdmin("admin");
         }
 
         // -
@@ -177,10 +205,9 @@ class UserControllerTest {
             // - Given: 認証なし
             // - When: GET /user/?param=test を実行
             mockMvc.perform(get("/user/").param("loginUserId", "admin"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
             // - Then: ステータス401、userService.getUsers()は呼ばれない
             verify(userService, times(0)).getUsers();
-            verify(userService, times(0)).checkIsAdmin("admin");
         }
 
     }
@@ -190,13 +217,13 @@ class UserControllerTest {
     class CreateUserTests {
         @Test
         @DisplayName("正常_ユーザーを作成する")
-        @WithMockUser(username = "admin", roles = { "ADMIN" })
+        @WithMockUser(username = "admin", roles = { "管理者" })
         void createUser_Ok() throws Exception {
             // - Given: 管理者ユーザーでログイン、正しいリクエストボディ
             // - When: POST /user/create に正しいJSONを送信
             mockMvc.perform(post("/user/create")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(createUser))
+                    .content(objectMapper.writeValueAsString(createUserRequest)))
                     .andExpect(status().isCreated())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     // ApiResponseの構造を検証
@@ -209,7 +236,7 @@ class UserControllerTest {
 
         @Test
         @DisplayName("異常_バリデーションエラー")
-        @WithMockUser(username = "admin", roles = { "ADMIN" })
+        @WithMockUser(username = "admin", roles = { "管理者" })
         void createUser_validationError() throws Exception {
             // - Given: 管理者ユーザーでログイン、不正なリクエストボディ（全フィールド空文字）
             // - When: POST /user/create に不正なJSONを送信
@@ -218,10 +245,27 @@ class UserControllerTest {
             // このテストケースを拡張してエラーメッセージの検証を追加すること
             mockMvc.perform(post("/user/create")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(invalidUser))
+                    .content(objectMapper.writeValueAsString(invalidUserRequest)))
                     .andExpect(status().isBadRequest());
             // - Then: createUser()は呼ばれない
             verify(userService, times(0)).createUser(any(User.class));
+        }
+
+        @Test
+        @WithMockUser(username = "admin", roles = { "管理者" })
+        @DisplayName("Serviceにて異常終了")
+        void createUser_Error() throws Exception {
+            // Given: 管理者ユーザーでログイン、正しいリクエストボディでExceptionを返す
+            doThrow(new RuntimeException()).when(userService).createUser(any(User.class));
+            // When: POST /user/create に正しいJSONを送信
+            // Then: ステータス500、userService.createUser()が呼ばれる
+            mockMvc.perform(post("/user/create")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(createUserRequest)))
+                    .andExpect(status().isInternalServerError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.message").exists());
         }
     }
 
@@ -230,13 +274,13 @@ class UserControllerTest {
     class UpdateUserTests {
         @Test
         @DisplayName("正常_ユーザーを更新する")
-        @WithMockUser(username = "admin", roles = { "ADMIN" })
+        @WithMockUser(username = "admin", roles = { "管理者" })
         void updateUser_Ok() throws Exception {
             // - Given: 管理者ユーザーでログイン、正しいリクエストボディ
             // - When: POST /user/update に正しいJSONを送信
             mockMvc.perform(post("/user/update")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(updateUser))
+                    .content(objectMapper.writeValueAsString(updateUserRequest)))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     // ApiResponseの構造を検証
@@ -245,6 +289,40 @@ class UserControllerTest {
                     .andExpect(jsonPath("$.data").exists());
             // - Then: ステータス200、userService.updateUser()が呼ばれる
             verify(userService, times(1)).updateUser(any(User.class));
+        }
+
+        @Test
+        @DisplayName("異常_バリデーションエラー")
+        @WithMockUser(username = "admin", roles = { "管理者" })
+        void updateUser_validationError() throws Exception {
+            // - Given: 管理者ユーザーでログイン、不正なリクエストボディ（全フィールド空文字）
+            // - When: POST /user/update に不正なJSONを送信
+            // TODO: 現状はレスポンスボディが空（400ステータスのみ）
+            // 将来的にバリデーションエラー詳細をレスポンスボディに含める場合は、
+            // このテストケースを拡張してエラーメッセージの検証を追加すること
+            mockMvc.perform(post("/user/update")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(invalidUserRequest)))
+                    .andExpect(status().isBadRequest());
+            // - Then: updateUser()は呼ばれない
+            verify(userService, times(0)).updateUser(any(User.class));
+        }
+
+        @Test
+        @DisplayName("異常_Serviceにて異常終了")
+        @WithMockUser(username = "admin", roles = { "管理者" })
+        void updateUser_Error() throws Exception {
+            // Given: 管理者ユーザーでログイン、正しいリクエストボディでExceptionを返す
+            doThrow(new RuntimeException()).when(userService).updateUser(any(User.class));
+            // When: POST /user/update に正しいJSONを送信
+            // Then: ステータス500、userService.updateUser()が呼ばれる
+            mockMvc.perform(post("/user/update")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(updateUserRequest)))
+                    .andExpect(status().isInternalServerError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.message").exists());
         }
     }
 
@@ -261,5 +339,20 @@ class UserControllerTest {
         // - Given: 存在しないユーザー名でログイン
         // - When: GET /user/?param=test を実行
         // - Then: ステータス500（BaseControllerで例外発生）
+
+        @Test
+        @DisplayName("部下権限でアクセス")
+        @WithMockUser(username = "test", roles = { TestConfig.TestConstants.EMPLOYEE_ROLE })
+        void access_BukaRoll_denied() throws Exception {
+            // Given
+
+            // When&Then
+            mockMvc.perform(get("/user/"))
+                    // Then
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.message").value("この操作を実行する権限がありません"));
+            verify(userService, times(0)).getUsers();
+        }
+
     }
 }

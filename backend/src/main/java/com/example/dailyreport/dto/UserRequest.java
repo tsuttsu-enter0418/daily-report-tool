@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,9 +14,10 @@ import lombok.NoArgsConstructor;
  * エンティティとは分離して、セキュリティとバリデーションを強化
  */
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateUserRequest {
+public class UserRequest {
 
     /**
      * ユーザー名（ログインID）

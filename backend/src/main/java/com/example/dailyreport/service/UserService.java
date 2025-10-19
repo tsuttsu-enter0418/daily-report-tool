@@ -81,7 +81,8 @@ public class UserService extends BaseService {
      *
      * @param user 作成するユーザー情報（Controllerでマッピング済み）
      */
-    public void createUser(User user) {
+    public void createUser(User user) throws RuntimeException {
+        user.setIsActive(true);
         // パスワードをハッシュ化
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);

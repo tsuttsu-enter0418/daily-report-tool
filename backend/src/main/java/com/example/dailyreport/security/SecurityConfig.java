@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -21,12 +22,16 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  * Spring Security設定クラス
  *
  * <p>機能: - JWT認証の有効/無効制御 - デバッグモード時の認証スキップ - CORS設定 - エンドポイントアクセス制御
+ * - カスタムエラーハンドリング（401/403のレスポンスカスタマイズ）
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity  // @PreAuthorize アノテーションを有効化
 public class SecurityConfig {
 
     @Autowired private JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Autowired private CustomAccessDeniedHandler customAccessDeniedHandler;
+    @Autowired private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     /** JWT認証の有効/無効を制御 デバッグプロファイル時は false に設定 */
     @Value("${jwt.auth.enabled:true}")
@@ -58,7 +63,11 @@ public class SecurityConfig {
                                             .anyRequest()
                                             .authenticated())
                     .addFilterBefore(
-                            jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                            jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                    // カスタムエラーハンドラー設定
+                    .exceptionHandling(exception -> exception
+                            .authenticationEntryPoint(customAuthenticationEntryPoint)  // 401エラー
+                            .accessDeniedHandler(customAccessDeniedHandler));          // 403エラー
         } else {
             // デバッグモード：すべてのリクエストを許可
             http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
