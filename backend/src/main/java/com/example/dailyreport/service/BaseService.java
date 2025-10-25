@@ -18,7 +18,7 @@ public class BaseService {
      * @param loginUserId ユーザーID
      * @return true: 管理者、false: 管理者以外
      */
-    public boolean checkIsAdmin(String loginUserId) {
+    public boolean checkIsAdmin(Long loginUserId) {
         User user = userRepository.findByIdAndRole(loginUserId, "管理者").orElse(null);
         return ObjectUtils.isEmpty(user);
     }

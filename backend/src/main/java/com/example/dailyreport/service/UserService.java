@@ -39,7 +39,7 @@ public class UserService extends BaseService {
     public void changeValidUser(User targetUser) {
         boolean result = !targetUser.getIsActive();
         targetUser.setIsActive(result);
-        userRepository.save(targetUser);
+        updateUser(targetUser);
     }
 
     /**

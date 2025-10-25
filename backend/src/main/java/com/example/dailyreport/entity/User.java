@@ -2,6 +2,7 @@ package com.example.dailyreport.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -51,6 +52,7 @@ public class User extends BaseEntity {
 
     /** ユーザーの役職（管理者、上長、部下） */
     @Column(nullable = false, length = 20)
+    @Builder.Default
     private String role = "部下";
 
     /** 表示名（画面表示用の名前） */
@@ -63,5 +65,6 @@ public class User extends BaseEntity {
 
     /** アクティブフラグ（論理削除用） */
     @Column(name = "is_active", nullable = false)
+    @Builder.Default
     private Boolean isActive = true;
 }

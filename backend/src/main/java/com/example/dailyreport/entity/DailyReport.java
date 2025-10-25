@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -57,6 +58,7 @@ public class DailyReport extends BaseEntity {
 
     /** ステータス（draft: 下書き, submitted: 提出済み） */
     @Column(nullable = false, length = 20)
+    @Builder.Default
     private String status = "draft";
 
     /** 対象日（どの日の日報か） */

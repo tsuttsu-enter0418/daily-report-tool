@@ -92,5 +92,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @param role 役職
      * @return ユーザー情報
      */
-    Optional<User> findByIdAndRole(String username, String role);
+    Optional<User> findByIdAndRole(Long id, String role);
 }
