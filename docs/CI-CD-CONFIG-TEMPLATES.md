@@ -107,7 +107,7 @@ spring:
     <!-- テスト関連バージョン -->
     <maven-surefire-plugin.version>3.0.0-M9</maven-surefire-plugin.version>
     <maven-failsafe-plugin.version>3.0.0-M9</maven-failsafe-plugin.version>
-    <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
+    <jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
     <checkstyle-maven-plugin.version>3.2.0</checkstyle-maven-plugin.version>
 </properties>
 
@@ -123,8 +123,8 @@ spring:
         <forkCount>2</forkCount>
         <reuseForks>true</reuseForks>
         
-        <!-- メモリ設定 -->
-        <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+        <!-- JaCoCo 連携設定 -->
+        <argLine>${jacoco.surefire.argLine}</argLine>
         
         <!-- テストプロファイル -->
         <systemPropertyVariables>
@@ -173,6 +173,9 @@ spring:
             <goals>
                 <goal>prepare-agent</goal>
             </goals>
+            <configuration>
+                <propertyName>jacoco.surefire.argLine</propertyName>
+            </configuration>
         </execution>
         <execution>
             <id>report</id>
@@ -180,6 +183,13 @@ spring:
             <goals>
                 <goal>report</goal>
             </goals>
+            <configuration>
+                <formats>
+                    <format>HTML</format>
+                    <format>XML</format>
+                    <format>CSV</format>
+                </formats>
+            </configuration>
         </execution>
         <execution>
             <id>check</id>
@@ -196,12 +206,25 @@ spring:
                                 <value>COVEREDRATIO</value>
                                 <minimum>0.80</minimum>
                             </limit>
+                            <limit>
+                                <counter>BRANCH</counter>
+                                <value>COVEREDRATIO</value>
+                                <minimum>0.70</minimum>
+                            </limit>
                         </limits>
                     </rule>
                 </rules>
             </configuration>
         </execution>
     </executions>
+    <configuration>
+        <excludes>
+            <exclude>**/entity/**</exclude>
+            <exclude>**/dto/**</exclude>
+            <exclude>**/DailyReportApplication*</exclude>
+            <exclude>**/config/**</exclude>
+        </excludes>
+    </configuration>
 </plugin>
 
 <!-- Checkstyle コード品質チェック -->
@@ -569,5 +592,23 @@ INSERT INTO daily_reports (id, user_id, title, work_content, status, report_date
 
 ---
 
-**設定テンプレート最終更新**: 2025年9月20日  
+---
+
+## 📝 最新更新事項 (2025年9月28日)
+
+### JaCoCo設定テンプレート更新
+- [x] **JaCoCo Plugin バージョン更新**: 0.8.8 → 0.8.11
+- [x] **Surefire-JaCoCo 連携**: `${jacoco.surefire.argLine}` 設定追加
+- [x] **複数形式出力**: CSV/XML/HTML フォーマット対応
+- [x] **除外設定追加**: entity/dto/config/Application クラス除外
+- [x] **ブランチカバレッジ基準**: 70% 最小値設定
+
+### カバレッジ品質ゲート強化
+- Line Coverage: 80% 以上
+- Branch Coverage: 70% 以上
+- 自動除外: データクラス・設定クラス
+
+---
+
+**設定テンプレート最終更新**: 2025年9月28日  
 **関連ドキュメント**: [CI-CD-IMPLEMENTATION-PLAN.md](./CI-CD-IMPLEMENTATION-PLAN.md), [CI-CD-CHECKLIST.md](./CI-CD-CHECKLIST.md)

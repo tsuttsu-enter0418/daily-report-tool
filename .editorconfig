@@ -1,0 +1,48 @@
+# EditorConfig helps developers define and maintain consistent
+# coding styles between different editors and IDEs
+# https://editorconfig.org
+
+root = true
+
+# すべてのファイル
+[*]
+charset = utf-8
+indent_style = space
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Java ファイル
+[*.java]
+indent_size = 4
+max_line_length = 120
+continuation_indent_size = 8
+
+# JSON ファイル
+[*.json]
+indent_size = 2
+
+# XML ファイル（pom.xml等）
+[*.xml]
+indent_size = 2
+
+# YAML ファイル
+[*.{yml,yaml}]
+indent_size = 2
+
+# Properties ファイル
+[*.properties]
+indent_size = 4
+
+# Markdown ファイル
+[*.md]
+indent_size = 2
+trim_trailing_whitespace = false
+
+# TypeScript/JavaScript ファイル
+[*.{ts,tsx,js,jsx}]
+indent_size = 2
+
+# CSS/SCSS ファイル
+[*.{css,scss}]
+indent_size = 2

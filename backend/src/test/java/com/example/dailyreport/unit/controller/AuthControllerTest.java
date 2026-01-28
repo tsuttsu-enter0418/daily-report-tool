@@ -1,13 +1,17 @@
 package com.example.dailyreport.unit.controller;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -21,7 +25,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-
 import com.example.dailyreport.config.TestConfig;
 import com.example.dailyreport.dto.LoginRequest;
 import com.example.dailyreport.dto.LoginResponse;
@@ -34,22 +37,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * AuthControllerクラスのユニットテスト
  *
  * <p>
- * テスト対象: - POST /api/auth/login: ユーザーログイン認証 
- *  - GET /api/auth/validate: JWTトークンの有効性検証 
- *  - GET /api/auth/me: 現在のユーザー情報取得
+ * テスト対象: - POST /api/auth/login: ユーザーログイン認証 - GET /api/auth/validate: JWTトークンの有効性検証 - GET
+ * /api/auth/me: 現在のユーザー情報取得
  *
  * <p>
- * テスト方針: 
- * - WebMvcTestによるWebレイヤーテスト 
- * - AuthServiceをモック化してコントローラー動作をテスト 
- * - 正常系・異常系の包括的テスト -
+ * テスト方針: - WebMvcTestによるWebレイヤーテスト - AuthServiceをモック化してコントローラー動作をテスト - 正常系・異常系の包括的テスト -
  * JSON形式のリクエスト・レスポンス検証
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@TestPropertySource(properties = {"jwt.auth.enabled=true", // Unit testでも認証を有効化
-        "debug.default.user.username=admin"})
+@TestPropertySource(properties = {
+    "jwt.auth.enabled=true",  // Unit test用：@WithMockUserと連携した認証フロー
+    "debug.default.user.username=admin"  // BaseController用（念のため）
+})
 @DisplayName("AuthController - 認証API")
 class AuthControllerTest {
 
@@ -96,6 +97,10 @@ class AuthControllerTest {
         // BaseController用のUserRepositoryモック設定
         when(userRepository.findByUsername(TestConfig.TestConstants.ADMIN_USERNAME))
                 .thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername(TestConfig.TestConstants.EMPLOYEE_USERNAME))
+                .thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername(TestConfig.TestConstants.MANAGER_USERNAME))
+                .thenReturn(Optional.of(testUser));
     }
 
     @Nested
@@ -121,7 +126,7 @@ class AuthControllerTest {
                     .andExpect(jsonPath("$.email").value(testUser.getEmail()))
                     .andExpect(jsonPath("$.role").value(testUser.getRole()))
                     .andExpect(jsonPath("$.displayName").value(testUser.getDisplayName()));
-            // authService.authenticateUserが1回呼び出される    
+            // authService.authenticateUserが1回呼び出される
             verify(authService).authenticateUser(any(LoginRequest.class));
             // responsOKの場合
         }
@@ -134,7 +139,8 @@ class AuthControllerTest {
                     .thenThrow(new RuntimeException("ユーザーが見つかりません"));
 
             // When & Then
-            mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+            mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
+                    .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(invalidLoginRequest)))
                     .andExpect(status().isBadRequest())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -152,7 +158,8 @@ class AuthControllerTest {
                     .thenThrow(new RuntimeException("パスワードが一致しません"));
 
             // When & Then
-            mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+            mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
+                    .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(invalidLoginRequest)))
                     // 検証（エラーが発生するか）
                     .andExpect(status().isBadRequest())
@@ -161,7 +168,6 @@ class AuthControllerTest {
                     .andExpect(jsonPath("$.status").value("400"));
 
             verify(authService).authenticateUser(any(LoginRequest.class));
-
         }
 
         @Test
@@ -173,7 +179,8 @@ class AuthControllerTest {
                     .thenThrow(new RuntimeException("ユーザーが見つかりません"));
 
             // When & Then
-            mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+            mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
+                    .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(emptyRequest)))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.message").value("ログインに失敗しました: ユーザーが見つかりません"))
@@ -187,8 +194,8 @@ class AuthControllerTest {
         @DisplayName("異常: 空のリクエストボディで400返却")
         void login_EmptyRequestBody_ShouldReturn400() throws Exception {
             // When & Then
-            mockMvc.perform(
-                    post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(""))
+            mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
+                    .contentType(MediaType.APPLICATION_JSON).content(""))
                     .andExpect(status().isBadRequest());
 
             verifyNoInteractions(authService);
@@ -198,8 +205,9 @@ class AuthControllerTest {
         @DisplayName("異常: 不正なJSON形式で400返却")
         void login_InvalidJson_ShouldReturn400() throws Exception {
             // When & Then
-            mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                    .content("{invalid json")).andExpect(status().isBadRequest());
+            mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
+                    .contentType(MediaType.APPLICATION_JSON).content("{invalid json"))
+                    .andExpect(status().isBadRequest());
 
             verifyNoInteractions(authService);
         }
@@ -241,7 +249,8 @@ class AuthControllerTest {
             when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
 
             // When & Then
-            mockMvc.perform(get("/api/auth/validate")).andExpect(status().isUnauthorized());
+            mockMvc.perform(get("/api/auth/validate").with(csrf()))
+                    .andExpect(status().isUnauthorized());
 
             verify(userRepository).findByUsername("nonexistent");
         }
@@ -250,7 +259,8 @@ class AuthControllerTest {
         @DisplayName("異常: 認証なしで401返却")
         void validateToken_NoAuth_ShouldReturn401() throws Exception {
             // When & Then - 認証なしでアクセス
-            mockMvc.perform(get("/api/auth/validate")).andExpect(status().isUnauthorized());
+            mockMvc.perform(get("/api/auth/validate").with(csrf()))
+                    .andExpect(status().isUnauthorized());
 
             // UserRepositoryが呼ばれないことを確認
             verifyNoInteractions(userRepository);
@@ -269,7 +279,7 @@ class AuthControllerTest {
             when(userRepository.findByUsername("admin")).thenReturn(Optional.of(testUser));
 
             // When & Then
-            mockMvc.perform(get("/api/auth/me")).andExpect(status().isOk())
+            mockMvc.perform(get("/api/auth/me").with(csrf())).andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     .andExpect(jsonPath("$.token").value("")) // /meではトークンは空
                     .andExpect(jsonPath("$.id").value(testUser.getId().toString()))
@@ -291,12 +301,11 @@ class AuthControllerTest {
                             .email(TestConfig.TestConstants.EMPLOYEE_EMAIL)
                             .role(TestConfig.TestConstants.EMPLOYEE_ROLE).displayName("部下ユーザー")
                             .isActive(true).build();
-
             when(userRepository.findByUsername(TestConfig.TestConstants.EMPLOYEE_USERNAME))
                     .thenReturn(Optional.of(employeeUser));
 
             // When & Then
-            mockMvc.perform(get("/api/auth/me")).andExpect(status().isOk())
+            mockMvc.perform(get("/api/auth/me").with(csrf())).andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     .andExpect(jsonPath("$.token").value("")).andExpect(jsonPath("$.id").value("2"))
                     .andExpect(jsonPath("$.username")
@@ -314,7 +323,7 @@ class AuthControllerTest {
             when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
 
             // When & Then
-            mockMvc.perform(get("/api/auth/me")).andExpect(status().isUnauthorized());
+            mockMvc.perform(get("/api/auth/me").with(csrf())).andExpect(status().isUnauthorized());
 
             verify(userRepository).findByUsername("nonexistent");
         }
@@ -346,7 +355,8 @@ class AuthControllerTest {
                     .thenThrow(new RuntimeException("ユーザーが見つかりません"));
 
             // When & Then
-            mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+            mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
+                    .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(longUsernameRequest)))
                     .andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").exists());
 
@@ -364,7 +374,8 @@ class AuthControllerTest {
                     .thenReturn(expectedLoginResponse);
 
             // When & Then
-            mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+            mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
+                    .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(specialRequest)))
                     .andExpect(status().isOk()).andExpect(jsonPath("$.token").exists());
 
@@ -381,7 +392,8 @@ class AuthControllerTest {
                     .thenReturn(expectedLoginResponse);
 
             // When & Then - ログイン（認証不要）
-            mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+            mockMvc.perform(post("/api/auth/login").with(csrf()) // CSRF token追加
+                    .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(validLoginRequest)))
                     .andExpect(status().isOk());
 
@@ -412,8 +424,9 @@ class AuthControllerTest {
         @Test
         @DisplayName("異常: POST /api/auth/validateは405返却")
         void validateEndpoint_PostMethod_ShouldReturn405() throws Exception {
-            mockMvc.perform(post("/api/auth/validate").contentType(MediaType.APPLICATION_JSON)
-                    .content("{}")).andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/auth/validate").with(csrf()) // CSRF token追加
+                    .contentType(MediaType.APPLICATION_JSON).content("{}"))
+                    .andExpect(status().isMethodNotAllowed());
 
             verifyNoInteractions(authService);
         }
@@ -421,8 +434,8 @@ class AuthControllerTest {
         @Test
         @DisplayName("異常: POST /api/auth/meは405返却")
         void meEndpoint_PostMethod_ShouldReturn405() throws Exception {
-            mockMvc.perform(
-                    post("/api/auth/me").contentType(MediaType.APPLICATION_JSON).content("{}"))
+            mockMvc.perform(post("/api/auth/me").with(csrf()) // CSRF token追加
+                    .contentType(MediaType.APPLICATION_JSON).content("{}"))
                     .andExpect(status().isMethodNotAllowed());
 
             verifyNoInteractions(authService);
@@ -431,7 +444,8 @@ class AuthControllerTest {
         @Test
         @DisplayName("異常: 存在しないエンドポイントは404返却")
         void nonExistentEndpoint_ShouldReturn404() throws Exception {
-            mockMvc.perform(get("/api/auth/nonexistent")).andExpect(status().isNotFound());
+            mockMvc.perform(get("/api/auth/nonexistent").with(csrf()))
+                    .andExpect(status().isNotFound());
 
             verifyNoInteractions(authService);
         }

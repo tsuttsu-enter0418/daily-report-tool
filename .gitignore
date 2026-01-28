@@ -5,6 +5,7 @@
 
 # Java/Maven関連
 backend/target/
+backend/target*/
 **/*.class
 *.jar
 *.war
